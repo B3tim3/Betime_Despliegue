@@ -1,0 +1,34 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Mi panel Bienestar | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h1 class="h3 fw-bold mb-1">
+    Hola👋, {{ request.user.get_full_name }}
+</h1>
+
+<p class="text-muted mb-4">
+    Panel de Personal de Bienestar. Cargo: {{ personal_bienestar.cargo }}.
+</p>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <p class="mb-3">
+            Desde aquí puedes gestionar los eventos y publicaciones de Bienestar. Próximamente también podrás asignar horas de bienestar y gestionar asesorías.
+        </p>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'eventos:panel_lista' %}" class="btn btn-success">
+                <i class="bi bi-calendar-event"></i> Gestionar eventos
+            </a>
+            <a href="{% url 'publicaciones:panel_lista' %}" class="btn btn-outline-success">
+                <i class="bi bi-file-earmark-text"></i> Gestionar publicaciones
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

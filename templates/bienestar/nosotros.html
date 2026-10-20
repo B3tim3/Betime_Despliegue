@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Nosotros | Be Time
+{% endblock %}
+
+{% block content %}
+
+<section class="home-section">
+    <div class="container">
+
+        <a href="/" class="text-muted small text-decoration-none d-inline-block mb-3">
+            <i class="bi bi-arrow-left"></i> Volver al inicio
+        </a>
+
+        <div class="mb-4 text-center">
+            <div class="home-section__eyebrow mb-1">Conócenos</div>
+            <h1 class="home-section__title mb-2">Nuestro equipo de Bienestar</h1>
+            <p class="text-muted mb-0">
+                El área de Bienestar al Aprendiz del CDM está para acompañarte. Escríbele
+                directamente a quien corresponda si necesitas una asesoría.
+            </p>
+        </div>
+
+        {% if miembros %}
+            <div class="row g-4">
+                {% for miembro in miembros %}
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="equipo-card text-center">
+
+                            <div class="equipo-card__foto"
+                                 style="width:100px;height:100px;border-radius:50%;overflow:hidden;margin:0 auto 1rem;">
+                                {% if miembro.foto %}
+                                    <img src="{{ miembro.foto.url }}" alt="{{ miembro.nombre }}"
+                                         style="width:100%;height:100%;object-fit:cover;">
+                                {% else %}
+                                    <i class="bi bi-person-fill"></i>
+                                {% endif %}
+                            </div>
+
+                            <h2 class="h6 fw-bold mb-1 equipo-card__nombre">{{ miembro.nombre }}</h2>
+                            <div class="equipo-card__cargo mb-2">{{ miembro.cargo }}</div>
+
+                            {% if miembro.descripcion %}
+                                <p class="text-muted small mb-3 equipo-card__descripcion">
+                                    {{ miembro.descripcion|truncatewords:16 }}
+                                </p>
+                            {% endif %}
+
+                            {% if miembro.correo_asesorias %}
+                                <a href="mailto:{{ miembro.correo_asesorias }}"
+                                   class="btn btn-sm btn-outline-success equipo-card__correo">
+                                    <i class="bi bi-envelope"></i>
+                                    <span>{{ miembro.correo_asesorias }}</span>
+                                </a>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="home-card p-4 text-center text-muted">
+                Todavía no se ha registrado el equipo de Bienestar.
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}

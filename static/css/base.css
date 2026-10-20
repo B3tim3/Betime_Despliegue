@@ -1,0 +1,279 @@
+/*
+    Tokens de marca — Be Time / Bienestar al Aprendiz SENA
+    Verde institucional + un dorado cálido como acento secundario.
+*/
+
+:root {
+    --bt-verde: #2E8B3D;
+    --bt-verde-oscuro: #1E5E2A;
+    --bt-tinta: #16241A;
+    --bt-fondo-alt: #F3F8F0;
+    --bt-dorado: #E8A233;
+    --bt-borde: #E1E9DC;
+}
+
+body {
+    color: var(--bt-tinta);
+    background-color: #FFFFFF;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+}
+
+/* Navbar "flotante": se queda fija arriba y gana un efecto de
+   vidrio esmerilado en vez de blanco sólido, para que el
+   contenido se sienta que pasa "por debajo" al hacer scroll. */
+
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background-color: rgba(255, 255, 255, 0.82) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+h1, h2, h3, h4, h5, h6,
+.font-display {
+    font-family: "Space Grotesk", "Inter", sans-serif;
+    letter-spacing: -0.01em;
+}
+
+a {
+    color: var(--bt-verde-oscuro);
+}
+
+.btn-success {
+    background-color: var(--bt-verde);
+    border-color: var(--bt-verde);
+}
+
+.btn-success:hover,
+.btn-success:focus {
+    background-color: var(--bt-verde-oscuro);
+    border-color: var(--bt-verde-oscuro);
+}
+
+.btn-outline-success {
+    color: var(--bt-verde-oscuro);
+    border-color: var(--bt-verde);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--bt-verde);
+    border-color: var(--bt-verde);
+}
+
+.text-bt-verde {
+    color: var(--bt-verde-oscuro);
+}
+
+.bg-bt-alt {
+    background-color: var(--bt-fondo-alt);
+    background-image: radial-gradient(rgba(30, 94, 42, 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+/* ============================================================
+   Fondos y encuadres — se aplica en todo el aplicativo porque
+   usa las mismas clases de Bootstrap que ya trae cada plantilla
+   (.card, .table, .form-control, .list-group-item). La página
+   sigue blanca; lo que gana un tinte son los "encuadros" de
+   contenido, para que no floten como texto suelto sobre blanco.
+   ============================================================ */
+
+/* ---------- Tarjetas (paneles, formularios, confirmaciones) ---------- */
+
+.card {
+    background-color: var(--bt-fondo-alt);
+    border-radius: 16px;
+}
+
+.card .card-body .card,
+.card .card-body .table {
+    background-color: #fff;
+}
+
+/* ---------- Tablas ---------- */
+
+.table {
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table > thead > tr > th {
+    background-color: var(--bt-fondo-alt);
+    color: var(--bt-verde-oscuro);
+    font-weight: 600;
+    border-bottom: 2px solid var(--bt-borde);
+}
+
+.table > tbody > tr:nth-of-type(even) > * {
+    background-color: var(--bt-fondo-alt);
+}
+
+/* ---------- Formularios ---------- */
+
+.form-control,
+.form-select {
+    background-color: var(--bt-fondo-alt);
+    border: 1px solid var(--bt-borde);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: #fff;
+    border-color: var(--bt-verde);
+    box-shadow: 0 0 0 0.2rem rgba(46, 139, 61, 0.15);
+}
+
+/* ---------- Sidebar del panel ---------- */
+
+.list-group-item {
+    background-color: transparent;
+    border: none !important;
+    border-radius: 10px !important;
+    margin-bottom: 0.2rem;
+    color: var(--bt-tinta);
+    font-weight: 500;
+}
+
+.list-group-item:hover {
+    background-color: var(--bt-fondo-alt);
+    color: var(--bt-verde-oscuro);
+}
+
+.list-group-item.active {
+    background-color: var(--bt-verde);
+    color: #fff;
+}
+
+/* ============================================================
+   Pulido general — botones, scroll, foco, micro-animaciones.
+   Sigue siendo CSS puro sobre clases que ya existen en las
+   plantillas; no depende de ningún cambio de HTML.
+   ============================================================ */
+
+/* ---------- Entrada suave de cada página ---------- */
+
+body {
+    animation: bt-fade-in 0.35s ease;
+}
+
+@keyframes bt-fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body { animation: none; }
+}
+
+/* ---------- Botones con más cuerpo ---------- */
+
+.btn {
+    border-radius: 10px;
+    font-weight: 600;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--bt-verde), var(--bt-verde-oscuro));
+    border: none;
+    box-shadow: 0 6px 16px -6px rgba(30, 94, 42, 0.5);
+}
+
+.btn-success:hover,
+.btn-success:focus {
+    background: linear-gradient(135deg, var(--bt-verde), var(--bt-verde-oscuro));
+    filter: brightness(1.08);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px -6px rgba(30, 94, 42, 0.55);
+}
+
+.btn-outline-success:hover {
+    transform: translateY(-2px);
+}
+
+.btn-danger:hover,
+.btn-outline-danger:hover {
+    transform: translateY(-2px);
+}
+
+/* ---------- Insignias (badges) más legibles ---------- */
+
+.badge {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 0.42em 0.85em;
+    border-radius: 999px;
+}
+
+/* ---------- Enlaces del menú con subrayado animado ---------- */
+
+.navbar-nav .nav-link {
+    position: relative;
+    font-weight: 500;
+}
+
+.navbar-nav .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.05rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--bt-verde);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover::after {
+    transform: scaleX(1);
+}
+
+/* ---------- Scrollbar de marca (navegadores basados en Webkit) ---------- */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bt-fondo-alt);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bt-verde);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bt-verde-oscuro);
+}
+
+/* ---------- Foco visible (accesibilidad + pulido) ---------- */
+
+a:focus-visible,
+.btn:focus-visible,
+.list-group-item:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+    outline: 2px solid var(--bt-verde);
+    outline-offset: 2px;
+}
+
+/* ---------- Pie de página ---------- */
+
+footer a.text-muted {
+    transition: color 0.15s ease;
+}
+
+footer a.text-muted:hover {
+    color: var(--bt-verde-oscuro) !important;
+}

@@ -1,0 +1,30 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Eliminar miembro de Bienestar | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+
+        <h1 class="h4 fw-bold mb-3">¿Eliminar a este miembro del equipo?</h1>
+
+        <p class="text-muted mb-4">
+            Vas a eliminar a <strong>{{ miembro.nombre }}</strong> ({{ miembro.cargo }}) de la página
+            de Nosotros. Esta acción no se puede deshacer.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+                <a href="{% url 'bienestar:panel_nosotros' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

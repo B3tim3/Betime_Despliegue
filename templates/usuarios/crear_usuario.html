@@ -1,0 +1,199 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Crear usuario | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h1 class="h3 fw-bold mb-1">Crear usuario</h1>
+<p class="text-muted mb-4">
+    Crea una cuenta de Aprendiz, Personal de Bienestar o Administrador
+    directamente desde aquí.
+</p>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="mb-4">
+                <label for="{{ form.tipo_perfil.id_for_label }}" class="form-label fw-semibold">
+                    {{ form.tipo_perfil.label }}
+                </label>
+                {{ form.tipo_perfil }}
+                {% for error in form.tipo_perfil.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-sm-6 mb-3">
+                    <label for="{{ form.tipo_documento.id_for_label }}" class="form-label">{{ form.tipo_documento.label }}</label>
+                    {{ form.tipo_documento }}
+                    {% for error in form.tipo_documento.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="col-12 col-sm-6 mb-3">
+                    <label for="{{ form.numero_documento.id_for_label }}" class="form-label">{{ form.numero_documento.label }}</label>
+                    {{ form.numero_documento }}
+                    {% for error in form.numero_documento.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-sm-6 mb-3">
+                    <label for="{{ form.nombres.id_for_label }}" class="form-label">{{ form.nombres.label }}</label>
+                    {{ form.nombres }}
+                    {% for error in form.nombres.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="col-12 col-sm-6 mb-3">
+                    <label for="{{ form.apellidos.id_for_label }}" class="form-label">{{ form.apellidos.label }}</label>
+                    {{ form.apellidos }}
+                    {% for error in form.apellidos.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% for error in form.email.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <!-- Solo aparece si el tipo de cuenta elegido es "Aprendiz" -->
+            <div id="bloque-aprendiz" class="d-none">
+                <div class="mb-3">
+                    <label for="{{ form.programa_formacion.id_for_label }}" class="form-label">{{ form.programa_formacion.label }}</label>
+                    {{ form.programa_formacion }}
+                    {% for error in form.programa_formacion.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.ficha.id_for_label }}" class="form-label">{{ form.ficha.label }}</label>
+                    {{ form.ficha }}
+                    {% for error in form.ficha.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <!-- Solo aparece si el tipo de cuenta elegido es "Personal de Bienestar" -->
+            <div id="bloque-bienestar" class="d-none">
+                <div class="mb-3">
+                    <label for="{{ form.cargo.id_for_label }}" class="form-label">{{ form.cargo.label }}</label>
+                    {{ form.cargo }}
+                    {% for error in form.cargo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-sm-6 mb-3">
+                    <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
+                    {{ form.password }}
+                    {% for error in form.password.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="col-12 col-sm-6 mb-4">
+                    <label for="{{ form.password_confirm.id_for_label }}" class="form-label">{{ form.password_confirm.label }}</label>
+                    {{ form.password_confirm }}
+                    {% for error in form.password_confirm.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">Crear cuenta</button>
+                <a href="{% url 'usuarios:dashboard' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // ---------- Mostrar/ocultar campos según el tipo de cuenta ----------
+        const tipoPerfilSelect = document.getElementById('id_tipo_perfil');
+        const bloqueAprendiz = document.getElementById('bloque-aprendiz');
+        const bloqueBienestar = document.getElementById('bloque-bienestar');
+
+        function actualizarBloques() {
+            const tipo = tipoPerfilSelect.value;
+            bloqueAprendiz.classList.toggle('d-none', tipo !== 'aprendiz');
+            bloqueBienestar.classList.toggle('d-none', tipo !== 'bienestar');
+        }
+
+        tipoPerfilSelect.addEventListener('change', actualizarBloques);
+        actualizarBloques();  // por si el formulario se recarga con un tipo ya elegido (tras un error)
+
+        // ---------- Cascade Programa -> Ficha (igual que en el registro de aprendices) ----------
+        const programaSelect = document.getElementById('id_programa_formacion');
+        const fichaSelect = document.getElementById('id_ficha');
+
+        function establecerOpcionUnica(texto) {
+            fichaSelect.innerHTML = '';
+            const opcion = document.createElement('option');
+            opcion.value = '';
+            opcion.textContent = texto;
+            fichaSelect.appendChild(opcion);
+        }
+
+        function cargarFichas(programaId) {
+
+            if (!programaId) {
+                establecerOpcionUnica('Selecciona primero el programa');
+                return;
+            }
+
+            fetch(`{% url 'usuarios:fichas_por_programa' %}?programa_formacion=${programaId}`)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (fichas) {
+
+                    if (fichas.length === 0) {
+                        establecerOpcionUnica('No hay fichas activas para este programa');
+                        return;
+                    }
+
+                    fichaSelect.innerHTML = '';
+
+                    const opcionVacia = document.createElement('option');
+                    opcionVacia.value = '';
+                    opcionVacia.textContent = 'Selecciona la ficha';
+                    fichaSelect.appendChild(opcionVacia);
+
+                    fichas.forEach(function (ficha) {
+                        const opcion = document.createElement('option');
+                        opcion.value = ficha.id;
+                        opcion.textContent = `${ficha.numero_ficha} - ${ficha.jornada_nombre}`;
+                        fichaSelect.appendChild(opcion);
+                    });
+                })
+                .catch(function () {
+                    establecerOpcionUnica('No se pudieron cargar las fichas. Intenta de nuevo.');
+                });
+        }
+
+        if (programaSelect && fichaSelect) {
+            programaSelect.addEventListener('change', function () {
+                cargarFichas(this.value);
+            });
+        }
+
+    });
+    </script>
+{% endblock %}

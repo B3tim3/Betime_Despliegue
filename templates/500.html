@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error del servidor | Be Time</title>
+    <style>
+        /*
+         * CSS incrustado a propósito, sin depender de ningún archivo
+         * externo -- si el servidor está fallando, esta página no
+         * puede arriesgarse a que también falle cargar un .css o una
+         * librería de íconos desde un CDN. Tiene que renderizar sí o
+         * sí, con lo mínimo indispensable.
+         */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: #F3F8F0;
+            color: #16241A;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .tarjeta {
+            background: #FFFFFF;
+            border-radius: 0.75rem;
+            padding: 3rem 2rem;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .numero {
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: #2E8B3D;
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+
+        .icono {
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            color: #5c6b5f;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1.75rem;
+        }
+
+        .boton {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background-color: #2E8B3D;
+            color: #FFFFFF;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .boton:hover {
+            background-color: #1E5E2A;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tarjeta">
+
+        <div class="numero">500</div>
+
+        <div class="icono">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2E8B3D" stroke-width="1.8">
+                <path d="M12 9v4M12 17h.01M10.29 3.86l-8.18 14.18A1.5 1.5 0 0 0 3.32 20.5h17.36a1.5 1.5 0 0 0 1.21-2.46L13.71 3.86a1.5 1.5 0 0 0-2.42 0z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <h1>Algo salió mal de nuestro lado</h1>
+        <p>
+            No fue algo que hiciste tú — el error ya quedó registrado.
+            Intenta de nuevo en un momento; si sigue pasando, avísale al
+            equipo de Be Time.
+        </p>
+
+        <a href="/" class="boton">Volver al inicio</a>
+
+    </div>
+
+</body>
+</html>

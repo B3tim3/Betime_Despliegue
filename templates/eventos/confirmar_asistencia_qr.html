@@ -1,0 +1,52 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Confirmar asistencia | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h1 class="h3 fw-bold mb-4">Confirmar asistencia</h1>
+
+<div class="card border-0 shadow-sm" style="max-width: 480px;">
+    <div class="card-body p-4">
+
+        <p class="text-muted small mb-1">Aprendiz</p>
+        <p class="fw-semibold mb-3">
+            {{ inscripcion.aprendiz.usuario.get_full_name }}
+            <span class="text-muted">({{ inscripcion.aprendiz.usuario.numero_documento }})</span>
+        </p>
+
+        <p class="text-muted small mb-1">Ficha</p>
+        <p class="fw-semibold mb-3">{{ inscripcion.aprendiz.ficha.numero_ficha }}</p>
+
+        <p class="text-muted small mb-1">Evento</p>
+        <p class="fw-semibold mb-3">{{ inscripcion.evento.titulo }}</p>
+
+        <p class="text-muted small mb-1">Horas a otorgar</p>
+        <p class="fw-semibold mb-4">{{ inscripcion.evento.horas_otorgadas }}</p>
+
+        {% if inscripcion.asistencia.asistio %}
+            <div class="alert alert-success py-2 mb-3">
+                <i class="bi bi-check-circle-fill"></i> Ya se confirmó la asistencia de este aprendiz.
+            </div>
+        {% endif %}
+
+        {% if request.user.is_authenticated and request.user.personal_bienestar %}
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="bi bi-check2-square"></i>
+                    {% if inscripcion.asistencia.asistio %}Confirmar de nuevo{% else %}Confirmar asistencia{% endif %}
+                </button>
+            </form>
+        {% elif request.user.is_authenticated %}
+            <div class="alert alert-warning py-2 mb-0">
+                Solo Personal de Bienestar puede confirmar asistencia por QR.
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

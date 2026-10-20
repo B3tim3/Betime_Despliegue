@@ -1,0 +1,43 @@
+{% load static %}
+{# Navbar para usuarios autenticados: aprendices, personal de bienestar y administradores #}
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <div class="container-fluid px-3 px-lg-4">
+
+        <a class="navbar-brand" href="/">
+            <img src="{% static 'img/logo.png' %}" alt="Be Time" height="87">
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarPrivate">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarPrivate">
+
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+
+                <li class="nav-item me-lg-3">
+                    <span class="nav-link text-muted">
+                        {{ request.user.get_full_name }}
+                        {% if request.user.administrador %}
+                            <span class="badge text-bg-light border ms-1">Administrador</span>
+                        {% elif request.user.personal_bienestar %}
+                            <span class="badge text-bg-light border ms-1">Personal de Bienestar</span>
+                        {% elif request.user.aprendiz %}
+                            <span class="badge text-bg-light border ms-1">Aprendiz</span>
+                        {% endif %}
+                    </span>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{% url 'usuarios:logout' %}" class="btn btn-outline-success btn-sm">
+                        Cerrar sesión
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+</nav>

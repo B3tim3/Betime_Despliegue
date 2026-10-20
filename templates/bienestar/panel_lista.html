@@ -1,0 +1,70 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Gestionar equipo de Bienestar | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h1 class="h3 fw-bold mb-0">Nosotros — Equipo de Bienestar</h1>
+    <div class="d-flex gap-2">
+        {% include 'components/exportar/botones.html' with base_url='bienestar:panel_exportar' %}
+        <a href="{% url 'bienestar:crear_miembro' %}" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Agregar miembro
+        </a>
+    </div>
+</div>
+
+{% if miembros %}
+    <div class="table-responsive">
+        <table class="table align-middle bg-white">
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Nombre</th>
+                    <th>Cargo</th>
+                    <th>Correo para asesorías</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for miembro in miembros %}
+                    <tr>
+                        <td>
+                            {% if miembro.foto %}
+                                <img src="{{ miembro.foto.url }}" alt="{{ miembro.nombre }}"
+                                     style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                            {% else %}
+                                <i class="bi bi-person-circle text-muted fs-4"></i>
+                            {% endif %}
+                        </td>
+                        <td>{{ miembro.nombre }}</td>
+                        <td>{{ miembro.cargo }}</td>
+                        <td>{{ miembro.correo_asesorias|default:"—" }}</td>
+                        <td>
+                            <span class="badge text-bg-light border">{{ miembro.get_estado_display|default:miembro.estado }}</span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'bienestar:editar_miembro' miembro.id %}" class="btn btn-sm btn-outline-success">
+                                Editar
+                            </a>
+                            <a href="{% url 'bienestar:eliminar_miembro' miembro.id %}" class="btn btn-sm btn-outline-danger">
+                                Eliminar
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center text-muted py-5">
+            Todavía no has agregado a nadie del equipo de Bienestar.
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

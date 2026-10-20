@@ -1,0 +1,36 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Mi código QR | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<nav class="mb-2">
+    <a href="{% url 'usuarios:dashboard' %}" class="text-decoration-none">&larr; Mi panel</a>
+</nav>
+
+<h1 class="h3 fw-bold mb-1">Mi código QR</h1>
+<p class="text-muted mb-4">
+    Muéstrale este código al funcionario de Bienestar en
+    <strong>{{ inscripcion.evento.titulo }}</strong> para que confirme
+    tu asistencia.
+</p>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4 text-center">
+        <img
+            src="{% url 'eventos:qr_imagen' inscripcion.id %}"
+            alt="Código QR de tu inscripción"
+            class="img-fluid mb-3"
+            style="max-width: 280px;"
+        >
+
+        <p class="fw-semibold mb-1">{{ inscripcion.evento.titulo }}</p>
+        <p class="text-muted small mb-0">
+            {{ inscripcion.evento.fecha_inicio|date:"d/m/Y h:i A" }} — {{ inscripcion.evento.lugar }}
+        </p>
+    </div>
+</div>
+
+{% endblock %}

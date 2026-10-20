@@ -1,0 +1,107 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Mi panel Aprendiz | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h1 class="h3 fw-bold mb-1">
+    Hola👋, {{ request.user.get_full_name }}
+</h1>
+
+<p class="text-muted mb-4">
+    Panel del aprendiz. Ficha {{ aprendiz.ficha.numero_ficha }}.
+</p>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <p class="text-muted mb-1">Horas de bienestar acumuladas</p>
+        <p class="display-6 fw-bold mb-0">{{ total_horas }}</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-6">
+        <h2 class="h5 fw-bold mb-3">Mis horas registradas</h2>
+
+        {% if horas %}
+            <div class="table-responsive">
+                <table class="table align-middle bg-white">
+                    <thead>
+                        <tr>
+                            <th>Evento</th>
+                            <th>Horas</th>
+                            <th>Otorgado por</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for h in horas %}
+                            <tr>
+                                <td>{{ h.asistencia.inscripcion.evento.titulo }}</td>
+                                <td>{{ h.cantidad_horas }}</td>
+                                <td>{{ h.asignado_por.usuario.get_full_name }}</td>
+                                <td>{{ h.fecha|date:"d/m/Y" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center text-muted py-4">
+                    Todavía no tienes horas de bienestar registradas.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <h2 class="h5 fw-bold mb-3">Mis inscripciones</h2>
+
+        {% if inscripciones %}
+            <div class="table-responsive">
+                <table class="table align-middle bg-white">
+                    <thead>
+                        <tr>
+                            <th>Evento</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inscripcion in inscripciones %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'eventos:detalle' inscripcion.evento.id %}">
+                                        {{ inscripcion.evento.titulo }}
+                                    </a>
+                                </td>
+                                <td>{{ inscripcion.evento.fecha_inicio|date:"d/m/Y h:i A" }}</td>
+                                <td><span class="badge text-bg-light border">{{ inscripcion.get_estado_display }}</span></td>
+                                <td>
+                                    {% if inscripcion.estado == "inscrito" %}
+                                        <a href="{% url 'eventos:mi_qr' inscripcion.id %}" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-qr-code"></i> Mi QR
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center text-muted py-4">
+                    Todavía no te has inscrito a ningún evento.
+                    <a href="{% url 'eventos:lista' %}">Ver eventos disponibles</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

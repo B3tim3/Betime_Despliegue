@@ -1,0 +1,86 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+{{ titulo_pagina }} | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h1 class="h3 fw-bold mb-4">{{ titulo_pagina }}</h1>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="{{ form.nombre.id_for_label }}" class="form-label">{{ form.nombre.label }}</label>
+                {{ form.nombre }}
+                {% for error in form.nombre.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.cargo.id_for_label }}" class="form-label">{{ form.cargo.label }}</label>
+                {{ form.cargo }}
+                {% for error in form.cargo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.categoria.id_for_label }}" class="form-label">{{ form.categoria.label }}</label>
+                {{ form.categoria }}
+                <div class="form-text">Determina en qué botón de "Servicios de bienestar" de la portada aparece.</div>
+                {% for error in form.categoria.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.descripcion.id_for_label }}" class="form-label">{{ form.descripcion.label }}</label>
+                {{ form.descripcion }}
+                <div class="form-text">Una breve presentación que verán los aprendices en el sitio público.</div>
+                {% for error in form.descripcion.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.foto.id_for_label }}" class="form-label">{{ form.foto.label }}</label>
+                {% if form.instance.foto %}
+                    <div class="mb-2">
+                        <img src="{{ form.instance.foto.url }}" alt="" style="max-height: 120px; border-radius: 50%;">
+                    </div>
+                {% endif %}
+                {{ form.foto }}
+                {% for error in form.foto.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.correo_asesorias.id_for_label }}" class="form-label">{{ form.correo_asesorias.label }}</label>
+                {{ form.correo_asesorias }}
+                <div class="form-text">A este correo llegarán los aprendices que quieran solicitar una asesoría.</div>
+                {% for error in form.correo_asesorias.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-4">
+                <label for="{{ form.estado.id_for_label }}" class="form-label">{{ form.estado.label }}</label>
+                {{ form.estado }}
+                {% for error in form.estado.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                <div class="form-text">Solo los miembros en estado "Activo" aparecen en la página pública de Nosotros.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">Guardar</button>
+                <a href="{% url 'bienestar:panel_nosotros' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

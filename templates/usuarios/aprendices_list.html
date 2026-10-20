@@ -1,0 +1,49 @@
+{% extends 'base_private.html' %}
+{% load django_tables2 %}
+
+{% block title %}
+Aprendices | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+{% if ficha %}
+    <nav class="mb-2">
+        <a href="{% url 'usuarios:fichas_lista' %}" class="text-decoration-none">&larr; Fichas</a>
+    </nav>
+    <p class="text-muted mb-3">
+        Aprendices de la ficha <strong>{{ ficha.numero_ficha }}</strong>
+        ({{ ficha.programa_formacion.nombre }})
+    </p>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h1 class="h3 fw-bold mb-0">Aprendices</h1>
+    {% include 'components/exportar/botones.html' with base_url='usuarios:aprendices_exportar' %}
+</div>
+
+<!-- Búsqueda y filtro de estado -- ahora son un formulario real que
+     recarga la página (a diferencia de las otras 5 listas, que
+     todavía filtran al instante con JS). Es lo que permite que
+     buscar/ordenar sí funcione bien cruzando páginas, y que
+     "Exportar" siempre traiga exactamente lo filtrado. -->
+<form method="get" class="row g-2 mb-3">
+    <div class="col-12 col-md-4">
+        {{ filter.form.q }}
+    </div>
+    <div class="col-6 col-md-3">
+        {{ filter.form.tipo_documento }}
+    </div>
+    <div class="col-6 col-md-3">
+        {{ filter.form.estado }}
+    </div>
+    <div class="col-12 col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100">Buscar</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    {% render_table table %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,51 @@
+{% load static %}
+<footer class="border-top" style="background-color: var(--bt-fondo-alt);">
+
+    <div class="container py-3">
+        <div class="row g-3 align-items-center">
+
+            <div class="col-12 col-lg-7">
+
+                <div class="d-flex flex-wrap gap-4 mb-2">
+                    <div>
+                        <h6 class="fw-bold text-bt-verde mb-1 small">Dirección</h6>
+                        <p class="small text-muted mb-0">
+                            Calle 15 No. 31-42, SENA complejo Paloquemao, Bogotá D.C.
+                        </p>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-bt-verde mb-1 small">Línea PQRS</h6>
+                        <p class="small text-muted mb-0">
+                            Bogotá: 601 736 60 60 &nbsp;|&nbsp;
+                            Gratuita: 018000 910 270 &nbsp;|&nbsp;
+                            WhatsApp: 316 876 02 55
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="#" class="text-reset" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-reset" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" class="text-reset" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                    <a href="#" class="text-reset" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-reset" aria-label="X (Twitter)"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" class="text-reset" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+                    <span class="small text-muted ms-2">www.sena.edu.co &nbsp;·&nbsp; @SENAcomunica</span>
+                </div>
+
+            </div>
+
+            <div class="col-12 col-lg-5 d-flex justify-content-lg-end">
+                <img src="{% static 'img/logo_cdm.png' %}" alt="Centro de Diseño y Metrología - SENA, Regional Distrito Capital" style="max-width: 250px; width: 100%; height: auto;">
+            </div>
+
+        </div>
+
+        <div class="border-top mt-2 pt-2 text-center">
+            <p class="text-muted small mb-0">
+                Servicio Nacional de Aprendizaje - SENA &copy; {% now "Y" %}
+            </p>
+        </div>
+    </div>
+
+</footer>

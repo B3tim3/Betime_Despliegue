@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Be Time | Bienestar al Aprendiz - SENA
+{% endblock %}
+
+{% block content %}
+
+<!-- ============ HERO ============ -->
+<section class="home-hero">
+    <div class="container">
+        <div class="row align-items-center g-5">
+
+            <div class="col-12 col-lg-6">
+
+                <span class="home-hero__eyebrow">
+                    <i class="bi bi-patch-check-fill"></i>
+                    Plataforma Del Centro de Diseño y Metrologia
+                </span>
+
+                <h1 class="home-hero__title mb-4">
+                    Bienvenido a <span class="text-bt-verde underline">Be Time</span>
+                </h1>
+
+                <p class="home-hero__lead mb-4">
+                    La plataforma para gestionar el Bienestar al Aprendiz del Servicio Nacional
+                    de Aprendizaje: consulta publicaciones, inscríbete a eventos y lleva el
+                    control de tus horas de bienestar en un solo lugar.
+                </p>
+
+                <div class="d-flex flex-wrap gap-3">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'usuarios:dashboard' %}" class="btn btn-success btn-lg px-4">
+                            Ir a mi panel
+                        </a>
+                    {% else %}
+                        <a href="{% url 'usuarios:login' %}" class="btn btn-success btn-lg px-4">
+                            Iniciar sesión
+                        </a>
+                    {% endif %}
+
+                    <a href="#que-es" class="btn btn-outline-success btn-lg px-4">
+                        Conocer más
+                    </a>
+                </div>
+
+            </div>
+
+            <div class="col-12 col-lg-6">
+                <div class="home-hero__art">
+                    <div class="home-hero__ring"></div>
+
+                    <div class="home-hero__badge">
+                        <i class="bi bi-award-fill"></i>
+                        <span>Horas de<br>Bienestar</span>
+                    </div>
+
+                    <div class="home-hero__orbita">
+                        <div class="home-hero__chip home-hero__chip--salud">
+                            <i class="bi bi-heart-pulse-fill"></i> Salud
+                        </div>
+                        <div class="home-hero__chip home-hero__chip--asesorias">
+                            <i class="bi bi-mortarboard-fill"></i> Asesorías
+                        </div>
+                        <div class="home-hero__chip home-hero__chip--deportes">
+                            <i class="bi bi-trophy-fill"></i> Deportes
+                        </div>
+                        <div class="home-hero__chip home-hero__chip--cultura">
+                            <i class="bi bi-palette-fill"></i> Cultura
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ============ QUÉ ES BE TIME ============ -->
+<section id="que-es" class="home-section bg-bt-alt">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-12 col-lg-8">
+
+                <div class="home-section__eyebrow mb-2">
+                    Sobre la plataforma
+                </div>
+
+                <h2 class="home-section__title mb-3">
+                    ¿Qué es Be Time?
+                </h2>
+
+                <p class="lead text-muted">
+                    Be Time centraliza la gestión de los servicios ofrecidos por Bienestar
+                    al Aprendiz, permitiendo consultar publicaciones, eventos y asesorías, y
+                    administrar las horas de bienestar de manera organizada, trazable y segura.
+                </p>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ ÚLTIMAS PUBLICACIONES ============ -->
+<section id="publicaciones" class="home-section">
+    <div class="container">
+
+        <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+            <div>
+                <div class="home-section__eyebrow mb-1">Novedades</div>
+                <h2 class="home-section__title mb-0">Últimas publicaciones</h2>
+            </div>
+        </div>
+
+        {% if publicaciones %}
+            <div class="row g-4">
+                {% for publicacion in publicaciones %}
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="home-card">
+
+                            <div class="home-card__media">
+                                {% if publicacion.imagen %}
+                                    <img src="{{ publicacion.imagen.url }}" alt="{{ publicacion.titulo }}">
+                                {% else %}
+                                    <i class="bi bi-image"></i>
+                                {% endif %}
+                            </div>
+
+                            <div class="home-card__body">
+                                <h3 class="h6 fw-bold mb-2">
+                                    {{ publicacion.titulo }}
+                                </h3>
+                                <p class="text-muted small mb-3">
+                                    {{ publicacion.contenido|truncatewords:18 }}
+                                </p>
+                                <a href="{% url 'publicaciones:detalle' publicacion.id %}" class="text-bt-verde fw-semibold text-decoration-none small">
+                                    Leer más <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="home-card p-4 text-center text-muted">
+                Todavía no hay publicaciones. Cuando Bienestar publique algo, aparecerá aquí.
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+<!-- ============ PRÓXIMOS EVENTOS ============ -->
+<section id="eventos" class="home-section bg-bt-alt">
+    <div class="container">
+
+        <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+            <div>
+                <div class="home-section__eyebrow mb-1">Agenda</div>
+                <h2 class="home-section__title mb-0">Próximos eventos</h2>
+            </div>
+        </div>
+
+        {% if eventos %}
+            <div class="row g-4 mb-4">
+                {% for evento in eventos %}
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <a href="{% url 'eventos:detalle' evento.id %}" class="home-evento-card">
+
+                            <div class="home-evento-card__media">
+                                {% if evento.imagen %}
+                                    <img src="{{ evento.imagen.url }}" alt="{{ evento.titulo }}">
+                                {% else %}
+                                    <i class="bi bi-calendar-event"></i>
+                                {% endif %}
+
+                                <div class="home-evento-card__fecha">
+                                    <span class="dia">{{ evento.fecha_inicio|date:"d" }}</span>
+                                    <span class="mes">{{ evento.fecha_inicio|date:"M" }}</span>
+                                </div>
+                            </div>
+
+                            <div class="home-evento-card__body">
+                                <h3 class="h6 fw-bold mb-2">
+                                    {{ evento.titulo }}
+                                </h3>
+                                <div class="text-muted small">
+                                    <i class="bi bi-geo-alt"></i> {{ evento.lugar }}
+                                </div>
+                                <span class="home-evento-card__horas">
+                                    {{ evento.horas_otorgadas }} horas de bienestar
+                                </span>
+                            </div>
+
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="text-center">
+                <a href="{% url 'eventos:lista' %}" class="btn btn-outline-success">
+                    Ver todos
+                </a>
+            </div>
+        {% else %}
+            <div class="home-card p-4 text-center text-muted">
+                No hay eventos programados por el momento.
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+<!-- ============ SERVICIOS DE BIENESTAR ============ -->
+<section class="home-section">
+    <div class="container">
+
+        <div class="text-center mb-5">
+            <div class="home-section__eyebrow mb-2">Áreas de apoyo</div>
+            <h2 class="home-section__title mb-0">Servicios de bienestar</h2>
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-6 col-lg-3">
+                <a href="{% url 'bienestar:nosotros' %}?categoria=salud" class="home-servicio home-servicio--salud">
+                    <div class="home-servicio__icono">
+                        <i class="bi bi-heart-pulse-fill"></i>
+                    </div>
+                    <div class="fw-semibold">Salud</div>
+                </a>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <a href="{% url 'bienestar:nosotros' %}?categoria=psicosocial" class="home-servicio home-servicio--psicosocial">
+                    <div class="home-servicio__icono">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <div class="fw-semibold">Equipo Psicosocial</div>
+                </a>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <a href="{% url 'bienestar:nosotros' %}?categoria=deporte" class="home-servicio home-servicio--deporte">
+                    <div class="home-servicio__icono">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                    <div class="fw-semibold">Deporte</div>
+                </a>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <a href="{% url 'bienestar:nosotros' %}?categoria=cultura" class="home-servicio home-servicio--cultura">
+                    <div class="home-servicio__icono">
+                        <i class="bi bi-palette-fill"></i>
+                    </div>
+                    <div class="fw-semibold">Arte y Cultura</div>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ============ ACCESO PERSONAL ADMINISTRATIVO ============ -->
+<section class="py-4 text-center">
+    <div class="container">
+        <a href="{% url 'usuarios:login_personal' %}" class="text-muted text-decoration-none small">
+            <i class="bi bi-shield-lock"></i> Acceso personal administrativo
+        </a>
+    </div>
+</section>
+
+{% endblock %}

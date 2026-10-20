@@ -1,0 +1,237 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Inscritos - {{ evento.titulo }} | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<nav class="mb-2">
+    <a href="{% url 'eventos:panel_lista' %}" class="text-decoration-none">&larr; Eventos</a>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+    <h1 class="h3 fw-bold mb-0">Inscritos: {{ evento.titulo }}</h1>
+    <div class="d-flex gap-2">
+        {% include 'components/exportar/botones.html' with base_url='eventos:panel_exportar_inscritos' %}
+        <a href="{% url 'eventos:escanear_qr' %}" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-qr-code-scan"></i> Escanear QR
+        </a>
+    </div>
+</div>
+<p class="text-muted mb-3">
+    Marca quién asistió y con cuántas horas. Se prellenan con las
+    {{ evento.horas_otorgadas }} horas del evento — puedes ajustarlas
+    fila por fila antes de guardar.
+</p>
+
+{% if inscripciones %}
+    <div id="resumen-checklist" class="alert alert-light border d-flex align-items-center gap-2 mb-3">
+        <i class="bi bi-people-fill text-success"></i>
+        <span><strong id="resumen-asistieron">0</strong> de <strong>{{ inscripciones|length }}</strong> marcados como asistieron</span>
+    </div>
+
+    <div class="row g-2 mb-3">
+        <div class="col-12 col-md-5">
+            {% include 'components/tabla/buscador.html' with tabla_id='tabla-checklist' placeholder='Buscar por nombre, documento o ficha...' %}
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center gap-3 p-3 mb-3 bg-light rounded">
+        <div class="form-check mb-0">
+            <input type="checkbox" class="form-check-input" id="seleccionar-todos">
+            <label class="form-check-label" for="seleccionar-todos">
+                Seleccionar / deseleccionar todos (solo lo que ves filtrado)
+            </label>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <label for="horas-para-todos" class="mb-0 small text-muted">Horas para todos:</label>
+            <input
+                type="number"
+                id="horas-para-todos"
+                class="form-control form-control-sm"
+                style="width: 80px;"
+                min="0"
+                value="{{ evento.horas_otorgadas }}"
+            >
+            <button type="button" id="aplicar-horas-todos" class="btn btn-sm btn-outline-secondary">
+                Aplicar a todos (solo lo que ves filtrado)
+            </button>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+            <table class="table align-middle bg-white" id="tabla-checklist">
+                <thead>
+                    <tr>
+                        <th>Aprendiz</th>
+                        <th>Documento</th>
+                        <th>Ficha</th>
+                        <th class="text-center">Asistió</th>
+                        <th style="width: 140px;">Horas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inscripcion in inscripciones %}
+                        <tr class="{% if inscripcion.asistencia.asistio %}fila-asistio-activa{% endif %}">
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="avatar-iniciales">
+                                        {{ inscripcion.aprendiz.usuario.nombres|first|upper }}{{ inscripcion.aprendiz.usuario.apellidos|first|upper }}
+                                    </div>
+                                    <div class="fw-semibold">{{ inscripcion.aprendiz.usuario.get_full_name }}</div>
+                                </div>
+                            </td>
+                            <td>{{ inscripcion.aprendiz.usuario.tipo_documento }} {{ inscripcion.aprendiz.usuario.numero_documento }}</td>
+                            <td>{{ inscripcion.aprendiz.ficha.numero_ficha }}</td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-inline-flex mb-1">
+                                    <input
+                                        type="checkbox"
+                                        class="form-check-input checklist-asistio"
+                                        role="switch"
+                                        name="asistio_{{ inscripcion.id }}"
+                                        {% if inscripcion.asistencia.asistio %}checked{% endif %}
+                                    >
+                                </div>
+                                <div>
+                                    <span class="badge estado-asistio {% if inscripcion.asistencia.asistio %}bg-success{% else %}text-bg-light border text-muted{% endif %}">
+                                        {% if inscripcion.asistencia.asistio %}Asistió{% else %}Pendiente{% endif %}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <input
+                                    type="number"
+                                    class="form-control form-control-sm checklist-horas"
+                                    name="horas_{{ inscripcion.id }}"
+                                    min="0"
+                                    value="{{ evento.horas_otorgadas }}"
+                                    {% if not inscripcion.asistencia.asistio %}disabled{% endif %}
+                                >
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check2-square"></i> Guardar asistencia y horas
+        </button>
+    </form>
+{% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center text-muted py-5">
+            Todavía no hay aprendices inscritos a este evento.
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // Una fila está "visible" si no tiene display:none -- que es
+            // justo lo que tabla-filtro.js le pone a las filas que no
+            // coinciden con la búsqueda. Así, si Bienestar filtró por
+            // una ficha, "seleccionar todos" y "aplicar horas" no tocan
+            // a nadie que no esté viendo en pantalla en ese momento.
+            function filaEstaVisible(elemento) {
+                const fila = elemento.closest("tr");
+                return fila && fila.style.display !== "none";
+            }
+
+            // Sincroniza TODO lo visual de una fila (insignia, fondo
+            // resaltado, y si el campo de horas se puede editar) con
+            // el estado actual de su switch. Se llama cada vez que
+            // alguien mueve un switch a mano, y también cuando
+            // "Seleccionar todos" los mueve por todos lados a la vez.
+            function actualizarEstadoFila(casilla) {
+                const fila = casilla.closest("tr");
+                if (!fila) {
+                    return;
+                }
+
+                const asistio = casilla.checked;
+                const insignia = fila.querySelector(".estado-asistio");
+                const inputHoras = fila.querySelector(".checklist-horas");
+
+                fila.classList.toggle("fila-asistio-activa", asistio);
+
+                if (insignia) {
+                    insignia.textContent = asistio ? "Asistió" : "Pendiente";
+                    insignia.classList.toggle("bg-success", asistio);
+                    insignia.classList.toggle("text-bg-light", !asistio);
+                    insignia.classList.toggle("border", !asistio);
+                    insignia.classList.toggle("text-muted", !asistio);
+                }
+
+                // Si no asistió, no tiene sentido dejar editable el
+                // campo de horas -- además, un input disabled no se
+                // envía en el formulario, así que la vista ni siquiera
+                // recibe un valor de horas para alguien no marcado.
+                if (inputHoras) {
+                    inputHoras.disabled = !asistio;
+                }
+            }
+
+            // Cuenta cuántos switches marcados hay AHORA MISMO y
+            // actualiza el número del resumen de arriba. Se llama
+            // después de cualquier cosa que pueda cambiar un switch:
+            // un clic individual, "seleccionar todos", o cargar la
+            // página con asistencias ya guardadas de antes.
+            function actualizarResumen() {
+                const numeroAsistieron = document.getElementById("resumen-asistieron");
+                if (!numeroAsistieron) {
+                    return;
+                }
+                const total = document.querySelectorAll(".checklist-asistio:checked").length;
+                numeroAsistieron.textContent = total;
+            }
+
+            document.querySelectorAll(".checklist-asistio").forEach(function (casilla) {
+                casilla.addEventListener("change", function () {
+                    actualizarEstadoFila(casilla);
+                    actualizarResumen();
+                });
+            });
+
+            const seleccionarTodos = document.getElementById("seleccionar-todos");
+            if (seleccionarTodos) {
+                seleccionarTodos.addEventListener("change", function () {
+                    document.querySelectorAll(".checklist-asistio").forEach(function (casilla) {
+                        if (filaEstaVisible(casilla)) {
+                            casilla.checked = seleccionarTodos.checked;
+                            actualizarEstadoFila(casilla);
+                        }
+                    });
+                    actualizarResumen();
+                });
+            }
+
+            const botonAplicar = document.getElementById("aplicar-horas-todos");
+            if (botonAplicar) {
+                botonAplicar.addEventListener("click", function () {
+                    const valor = document.getElementById("horas-para-todos").value;
+                    document.querySelectorAll(".checklist-horas").forEach(function (input) {
+                        if (filaEstaVisible(input) && !input.disabled) {
+                            input.value = valor;
+                        }
+                    });
+                });
+            }
+
+            // Al cargar la página, cuenta lo que ya viene marcado de
+            // antes (asistencias que ya se habían guardado antes).
+            actualizarResumen();
+        });
+    </script>
+{% endblock %}

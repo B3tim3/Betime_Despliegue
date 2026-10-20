@@ -1,0 +1,29 @@
+/* ---------- Mostrar/ocultar contraseña ---------- */
+
+.mostrar-contrasena-wrapper {
+    position: relative;
+}
+
+.mostrar-contrasena-wrapper input {
+    padding-right: 2.75rem;
+}
+
+.mostrar-contrasena-boton {
+    position: absolute;
+    top: 50%;
+    right: 0.75rem;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    color: var(--bt-tinta);
+    opacity: 0.6;
+    cursor: pointer;
+}
+
+.mostrar-contrasena-boton:hover {
+    opacity: 1;
+    color: var(--bt-verde-oscuro);
+}

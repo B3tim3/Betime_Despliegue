@@ -1,0 +1,55 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Escanear QR | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h1 class="h3 fw-bold mb-1">Escanear QR de asistencia</h1>
+<p class="text-muted mb-4">
+    Apunta la cámara al código QR que te muestre el aprendiz. También
+    puedes usar la app de cámara normal de tu celular en vez de esto
+    -- las dos formas llevan al mismo lugar.
+</p>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <div id="lector-qr" style="max-width: 420px; margin: 0 auto;"></div>
+        <p id="lector-qr-estado" class="text-muted text-center small mt-3 mb-0"></p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            if (typeof Html5QrcodeScanner === "undefined") {
+                document.getElementById("lector-qr-estado").textContent =
+                    "No se pudo cargar el lector de QR (revisa tu conexión a internet).";
+                return;
+            }
+
+            const estado = document.getElementById("lector-qr-estado");
+
+            function alEscanearConExito(textoDecodificado) {
+                // El QR trae la URL completa de confirmación -- solo
+                // hay que llevar al navegador hasta ahí.
+                estado.textContent = "Código detectado, abriendo...";
+                window.location.href = textoDecodificado;
+            }
+
+            const escaner = new Html5QrcodeScanner(
+                "lector-qr",
+                { fps: 10, qrbox: 250 },
+                /* verbose= */ false
+            );
+
+            escaner.render(alEscanearConExito);
+        });
+    </script>
+{% endblock %}

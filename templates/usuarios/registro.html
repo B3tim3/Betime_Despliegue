@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Crear cuenta | Be Time
+{% endblock %}
+
+{% block content %}
+
+<section class="container py-5">
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-7 col-lg-6">
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+
+                    <h1 class="h3 fw-bold text-center mb-1">
+                        Crear cuenta de aprendiz
+                    </h1>
+
+                    <p class="text-muted text-center mb-4">
+                        Regístrate con tu documento y tu ficha de formación
+                    </p>
+
+                    {% if not form.fields.programa_formacion.queryset.exists %}
+                        <div class="alert alert-warning">
+                            Todavía no hay programas de formación registrados en el sistema. Contacta al área de Bienestar antes de registrarte.
+                        </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger py-2">
+                                {% for error in form.non_field_errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-12 col-sm-6 mb-3">
+                                <label for="{{ form.nombres.id_for_label }}" class="form-label">
+                                    {{ form.nombres.label }}
+                                </label>
+                                {{ form.nombres }}
+                                {% for error in form.nombres.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-12 col-sm-6 mb-3">
+                                <label for="{{ form.apellidos.id_for_label }}" class="form-label">
+                                    {{ form.apellidos.label }}
+                                </label>
+                                {{ form.apellidos }}
+                                {% for error in form.apellidos.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-sm-6 mb-3">
+                                <label for="{{ form.tipo_documento.id_for_label }}" class="form-label">
+                                    {{ form.tipo_documento.label }}
+                                </label>
+                                {{ form.tipo_documento }}
+                                {% for error in form.tipo_documento.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-12 col-sm-6 mb-3">
+                                <label for="{{ form.numero_documento.id_for_label }}" class="form-label">
+                                    {{ form.numero_documento.label }}
+                                </label>
+                                {{ form.numero_documento }}
+                                {% for error in form.numero_documento.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                {{ form.email.label }}
+                            </label>
+                            {{ form.email }}
+                            {% for error in form.email.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.programa_formacion.id_for_label }}" class="form-label">
+                                {{ form.programa_formacion.label }}
+                            </label>
+                            {{ form.programa_formacion }}
+                            {% for error in form.programa_formacion.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.ficha.id_for_label }}" class="form-label">
+                                {{ form.ficha.label }}
+                            </label>
+                            {{ form.ficha }}
+                            {% for error in form.ficha.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-sm-6 mb-3">
+                                <label for="{{ form.password.id_for_label }}" class="form-label">
+                                    {{ form.password.label }}
+                                </label>
+                                {{ form.password }}
+                                {% for error in form.password.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-12 col-sm-6 mb-4">
+                                <label for="{{ form.password_confirm.id_for_label }}" class="form-label">
+                                    {{ form.password_confirm.label }}
+                                </label>
+                                {{ form.password_confirm }}
+                                {% for error in form.password_confirm.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            Crear cuenta
+                        </button>
+
+                    </form>
+
+                    <p class="text-center text-muted mt-4 mb-0">
+                        ¿Ya tienes cuenta?
+                        <a href="{% url 'usuarios:login' %}">Inicia sesión</a>
+                    </p>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const programaSelect = document.getElementById('id_programa_formacion');
+    const fichaSelect = document.getElementById('id_ficha');
+
+    function establecerOpcionUnica(texto) {
+        fichaSelect.innerHTML = '';
+        const opcion = document.createElement('option');
+        opcion.value = '';
+        opcion.textContent = texto;
+        fichaSelect.appendChild(opcion);
+    }
+
+    function cargarFichas(programaId) {
+
+        if (!programaId) {
+            establecerOpcionUnica('Selecciona primero tu programa de formación');
+            return;
+        }
+
+        fetch(`{% url 'usuarios:fichas_por_programa' %}?programa_formacion=${programaId}`)
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (fichas) {
+
+                if (fichas.length === 0) {
+                    establecerOpcionUnica('No hay fichas activas para este programa');
+                    return;
+                }
+
+                fichaSelect.innerHTML = '';
+
+                const opcionVacia = document.createElement('option');
+                opcionVacia.value = '';
+                opcionVacia.textContent = 'Selecciona tu ficha';
+                fichaSelect.appendChild(opcionVacia);
+
+                fichas.forEach(function (ficha) {
+                    const opcion = document.createElement('option');
+                    opcion.value = ficha.id;
+                    opcion.textContent = `${ficha.numero_ficha} - ${ficha.jornada_nombre}`;
+                    fichaSelect.appendChild(opcion);
+                });
+            })
+            .catch(function () {
+                establecerOpcionUnica('No se pudieron cargar las fichas. Intenta de nuevo.');
+            });
+    }
+
+    if (programaSelect && fichaSelect) {
+        programaSelect.addEventListener('change', function () {
+            cargarFichas(this.value);
+        });
+    }
+
+});
+</script>
+{% endblock %}

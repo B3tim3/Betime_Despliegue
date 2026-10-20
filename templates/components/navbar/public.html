@@ -1,0 +1,55 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <div class="container">
+
+        <!-- Logo -->
+        <a class="navbar-brand" href="/">
+            <img src="{% static 'img/logo.png' %}" alt="Be Time" height="87">
+        </a>
+
+        <!-- Botón para móviles -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarPublic">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Menú -->
+        <div class="collapse navbar-collapse" id="navbarPublic">
+
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Inicio</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'publicaciones:lista' %}">Publicaciones</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'eventos:lista' %}">Eventos</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'bienestar:nosotros' %}">Nosotros</a>
+                </li>
+
+            </ul>
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'usuarios:dashboard' %}" class="btn btn-outline-success ms-lg-2">
+                    Mi panel
+                </a>
+                <a href="{% url 'usuarios:logout' %}" class="btn btn-success ms-lg-2">
+                    Cerrar sesión
+                </a>
+            {% else %}
+                <a href="{% url 'usuarios:login' %}" class="btn btn-success ms-lg-3">
+                    Iniciar sesión
+                </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+</nav>

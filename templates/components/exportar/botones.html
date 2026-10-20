@@ -1,0 +1,24 @@
+<!-- Botones de exportar reutilizables.
+     Uso: incluir con base_url (nombre de la URL de exportación) y,
+     opcionalmente, tabla_id (el mismo id que usa el buscador de esa
+     tabla) — así, si buscas o filtras por estado, el archivo
+     exportado trae lo mismo que ves filtrado en pantalla.
+     Si la página viene filtrada por drill-down (ej. fichas de un
+     programa), la vista agrega 'export_extra_params' al contexto y
+     aquí se anexa también a la URL. -->
+<div class="btn-group">
+    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="bi bi-download"></i> Exportar
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" data-export-para="{{ tabla_id }}" href="{% url base_url %}?formato=excel{% if export_extra_params %}&{{ export_extra_params }}{% endif %}">
+            <i class="bi bi-file-earmark-excel text-success"></i> Excel (.xlsx)
+        </a></li>
+        <li><a class="dropdown-item" data-export-para="{{ tabla_id }}" href="{% url base_url %}?formato=word{% if export_extra_params %}&{{ export_extra_params }}{% endif %}">
+            <i class="bi bi-file-earmark-word text-primary"></i> Word (.docx)
+        </a></li>
+        <li><a class="dropdown-item" data-export-para="{{ tabla_id }}" href="{% url base_url %}?formato=pdf{% if export_extra_params %}&{{ export_extra_params }}{% endif %}">
+            <i class="bi bi-file-earmark-pdf text-danger"></i> PDF
+        </a></li>
+    </ul>
+</div>

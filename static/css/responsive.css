@@ -1,0 +1,9 @@
+/* Flechita del botón "Menú del panel" (sidebar en móvil): gira al
+   abrirse, para que quede claro que es un desplegable. */
+[data-bs-toggle="collapse"][aria-expanded="true"] .bi-chevron-down {
+    transform: rotate(180deg);
+}
+
+[data-bs-toggle="collapse"] .bi-chevron-down {
+    transition: transform 0.2s ease;
+}

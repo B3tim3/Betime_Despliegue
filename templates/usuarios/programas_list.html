@@ -1,0 +1,76 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Programas de formación | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h1 class="h3 fw-bold mb-0">Programas de formación</h1>
+    <div class="d-flex gap-2">
+        {% include 'components/exportar/botones.html' with base_url='usuarios:programas_exportar' tabla_id='tabla-programas' %}
+        <a href="{% url 'usuarios:programas_crear' %}" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Nuevo programa
+        </a>
+    </div>
+</div>
+
+{% if programas %}
+    <div class="row g-2 mb-1">
+        <div class="col-12 col-md-6">
+            {% include 'components/tabla/buscador.html' with tabla_id='tabla-programas' placeholder='Buscar por nombre o código...' %}
+        </div>
+        <div class="col-12 col-md-4">
+            <select class="form-select" data-tabla-filtro-estado="tabla-programas">
+                <option value="">Todos los estados</option>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle bg-white" id="tabla-programas" data-tabla-ordenable>
+            <thead>
+                <tr>
+                    <th data-ordenar-columna="0">Nombre</th>
+                    <th data-ordenar-columna="1">Código</th>
+                    <th data-ordenar-columna="2">Nivel</th>
+                    <th data-ordenar-columna="3" data-ordenar-tipo="numero">Duración (meses)</th>
+                    <th data-ordenar-columna="4">Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for programa in programas %}
+                    <tr data-estado="{{ programa.estado }}">
+                        <td>{{ programa.nombre }}</td>
+                        <td>{{ programa.codigo }}</td>
+                        <td>{{ programa.nivel_formacion }}</td>
+                        <td>{{ programa.duracion_meses }}</td>
+                        <td><span class="badge text-bg-light border">{{ programa.get_estado_display }}</span></td>
+                        <td class="text-end">
+                            <a href="{% url 'usuarios:fichas_de_programa' programa.id %}" class="btn btn-sm btn-outline-primary">Ver fichas</a>
+                            <a href="{% url 'usuarios:programas_editar' programa.id %}" class="btn btn-sm btn-outline-success">Editar</a>
+                            <form method="post" action="{% url 'usuarios:programas_eliminar' programa.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar el programa {{ programa.nombre }}? Esta acción no se puede deshacer.">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% include 'components/tabla/paginacion.html' %}
+{% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center text-muted py-5">
+            Todavía no hay programas de formación registrados.
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

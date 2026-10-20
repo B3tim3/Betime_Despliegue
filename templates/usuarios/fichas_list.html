@@ -1,0 +1,90 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Fichas | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+{% if programa %}
+    <nav class="mb-2">
+        <a href="{% url 'usuarios:programas_lista' %}" class="text-decoration-none">&larr; Programas de formación</a>
+    </nav>
+    <p class="text-muted mb-3">Fichas de <strong>{{ programa.nombre }}</strong></p>
+{% elif jornada %}
+    <nav class="mb-2">
+        <a href="{% url 'usuarios:jornadas_lista' %}" class="text-decoration-none">&larr; Jornadas</a>
+    </nav>
+    <p class="text-muted mb-3">Fichas de la jornada <strong>{{ jornada.nombre }}</strong></p>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h1 class="h3 fw-bold mb-0">Fichas</h1>
+    <div class="d-flex gap-2">
+        {% include 'components/exportar/botones.html' with base_url='usuarios:fichas_exportar' tabla_id='tabla-fichas' %}
+        <a href="{% url 'usuarios:fichas_crear' %}" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Nueva ficha
+        </a>
+    </div>
+</div>
+
+{% if fichas %}
+    <div class="row g-2 mb-1">
+        <div class="col-12 col-md-6">
+            {% include 'components/tabla/buscador.html' with tabla_id='tabla-fichas' placeholder='Buscar por número, programa o jornada...' %}
+        </div>
+        <div class="col-12 col-md-4">
+            <select class="form-select" data-tabla-filtro-estado="tabla-fichas">
+                <option value="">Todos los estados</option>
+                <option value="activa">Activa</option>
+                <option value="cerrada">Cerrada</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle bg-white" id="tabla-fichas" data-tabla-ordenable>
+            <thead>
+                <tr>
+                    <th data-ordenar-columna="0">Número</th>
+                    <th data-ordenar-columna="1">Programa</th>
+                    <th data-ordenar-columna="2">Jornada</th>
+                    <th data-ordenar-columna="3" data-ordenar-tipo="fecha">Fecha inicio</th>
+                    <th data-ordenar-columna="4" data-ordenar-tipo="fecha">Fecha fin</th>
+                    <th data-ordenar-columna="5">Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ficha in fichas %}
+                    <tr data-estado="{{ ficha.estado }}">
+                        <td>{{ ficha.numero_ficha }}</td>
+                        <td>{{ ficha.programa_formacion.nombre }}</td>
+                        <td>{{ ficha.jornada.nombre }}</td>
+                        <td>{{ ficha.fecha_inicio|date:"d/m/Y" }}</td>
+                        <td>{{ ficha.fecha_fin|date:"d/m/Y" }}</td>
+                        <td><span class="badge text-bg-light border">{{ ficha.get_estado_display }}</span></td>
+                        <td class="text-end">
+                            <a href="{% url 'usuarios:aprendices_de_ficha' ficha.id %}" class="btn btn-sm btn-outline-primary">Ver aprendices</a>
+                            <a href="{% url 'usuarios:fichas_editar' ficha.id %}" class="btn btn-sm btn-outline-success">Editar</a>
+                            <form method="post" action="{% url 'usuarios:fichas_eliminar' ficha.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar la ficha {{ ficha.numero_ficha }}? Esta acción no se puede deshacer.">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% include 'components/tabla/paginacion.html' %}
+{% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center text-muted py-5">
+            Todavía no hay fichas registradas.
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

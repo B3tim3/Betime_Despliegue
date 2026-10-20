@@ -1,0 +1,150 @@
+==========================================================
+ BE TIME - COMANDOS PARA INICIALIZAR EL PROYECTO EN UN PC NUEVO
+==========================================================
+
+Sigue estos pasos EN ORDEN. Copia y pega cada bloque en la
+terminal (PowerShell, CMD o Git Bash en Windows / Terminal en Mac-Linux).
+
+
+----------------------------------------------------------
+1) CLONAR EL REPOSITORIO
+----------------------------------------------------------
+
+git clone https://github.com/chokoramow-pixel/B3Time.git
+cd B3Time
+
+Para trabajar directamente en tu rama personal:
+
+git checkout main
+git pull origin main
+
+
+----------------------------------------------------------
+2) CREAR EL ENTORNO VIRTUAL DE PYTHON
+----------------------------------------------------------
+
+python -m venv entorno
+
+Si "python" no funciona, prueba con "python3".
+
+
+----------------------------------------------------------
+3) ACTIVAR EL ENTORNO VIRTUAL
+----------------------------------------------------------
+
+Windows (PowerShell):
+entorno\Scripts\activate
+
+Si PowerShell bloquea la activacion, corre esto UNA sola vez
+(como administrador) y vuelve a intentar:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+Windows (CMD):
+entorno\Scripts\activate.bat
+
+Linux / Mac:
+source entorno/bin/activate
+
+(Vas a ver "(entorno)" al inicio de la linea de comandos
+cuando este activo correctamente).
+
+
+----------------------------------------------------------
+4) INSTALAR LAS DEPENDENCIAS DEL PROYECTO
+----------------------------------------------------------
+
+pip install -r requirements.txt
+
+
+----------------------------------------------------------
+5) CREAR LA BASE DE DATOS (PostgreSQL)
+----------------------------------------------------------
+
+Asegurate de tener PostgreSQL instalado y corriendo.
+Luego:
+
+createdb betime
+
+Si ya existia y quieres empezar limpio:
+dropdb betime
+createdb betime
+
+Revisa que los datos de conexion en betime/settings.py
+(usuario, password, host, puerto) coincidan con tu Postgres local.
+
+
+----------------------------------------------------------
+6) APLICAR LAS MIGRACIONES
+----------------------------------------------------------
+
+python manage.py migrate
+
+
+----------------------------------------------------------
+7) CREAR UN SUPERUSUARIO (para entrar al /admin/)
+----------------------------------------------------------
+
+python manage.py createsuperuser
+
+Va a pedir, en este orden:
+- numero_documento
+- tipo_documento (ej: CC)
+- nombres
+- apellidos
+- password (dos veces)
+
+
+----------------------------------------------------------
+8) LEVANTAR EL SERVIDOR
+----------------------------------------------------------
+
+python manage.py runserver
+
+Abre en el navegador:
+http://127.0.0.1:8000/          -> pagina de inicio
+http://127.0.0.1:8000/admin/    -> panel de administracion
+
+
+==========================================================
+ DIA A DIA (una vez ya configurado todo lo anterior)
+==========================================================
+
+Cada vez que vuelvas a trabajar en el proyecto:
+
+cd B3Time
+entorno\Scripts\activate          (o source entorno/bin/activate)
+git pull origin jandres
+python manage.py runserver
+
+Si alguien (o tu mismo desde otro PC) agrego cambios a los
+modelos, corre tambien esto antes de runserver:
+
+python manage.py migrate
+
+
+==========================================================
+ GIT: GUARDAR Y SUBIR TUS CAMBIOS
+==========================================================
+
+git status                         (revisa que cambio)
+git add .
+git commit -m "mensaje describiendo el cambio"
+git pull origin jandres            (trae lo nuevo antes de subir)
+git push
+
+
+==========================================================
+ SI ALGO SALE MAL
+==========================================================
+
+Ver que archivos estan sin trackear / modificados:
+git status
+
+Descartar archivos sueltos que no sirven (__pycache__, etc):
+git clean -nd     (simula, no borra nada)
+git clean -fd     (borra de verdad)
+
+Guardar cambios temporalmente sin commitear (para cambiar de rama):
+git stash -u
+git checkout nombre-rama
+git stash pop     (para recuperarlos despues)

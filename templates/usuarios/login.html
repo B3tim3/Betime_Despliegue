@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Iniciar sesión | Be Time
+{% endblock %}
+
+{% block content %}
+
+<section class="container py-5">
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-6 col-lg-5">
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+
+                    <h1 class="h3 fw-bold text-center mb-1">
+                        Iniciar sesión
+                    </h1>
+
+                    <p class="text-muted text-center mb-4">
+                        {% if es_acceso_personal %}
+                            Acceso para Personal de Bienestar y Administración
+                        {% else %}
+                            Accede con tu documento de identidad
+                        {% endif %}
+                    </p>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger py-2">
+                                {% for error in form.non_field_errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.tipo_documento.id_for_label }}" class="form-label">
+                                {{ form.tipo_documento.label }}
+                            </label>
+                            {{ form.tipo_documento }}
+                            {% for error in form.tipo_documento.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.numero_documento.id_for_label }}" class="form-label">
+                                {{ form.numero_documento.label }}
+                            </label>
+                            {{ form.numero_documento }}
+                            {% for error in form.numero_documento.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.password.id_for_label }}" class="form-label">
+                                {{ form.password.label }}
+                            </label>
+                            {{ form.password }}
+                            {% for error in form.password.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            Iniciar sesión
+                        </button>
+
+                    </form>
+
+                    {% if not es_acceso_personal %}
+                        <p class="text-center mt-3 mb-0">
+                            <a href="{% url 'usuarios:password_reset' %}">¿Olvidaste tu contraseña?</a>
+                        </p>
+
+                        <p class="text-center text-muted mt-2 mb-0">
+                            ¿Eres nuevo?
+                            <a href="{% url 'usuarios:registro' %}">Crea tu cuenta de aprendiz</a>
+                        </p>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

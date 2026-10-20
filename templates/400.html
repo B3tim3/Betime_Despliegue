@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Solicitud inválida | Be Time
+{% endblock %}
+
+{% block content %}
+
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 text-center">
+
+            <div class="mb-4" style="font-size: 5rem; font-weight: 800; color: var(--bt-tinta, #16241A); line-height: 1;">
+                400
+            </div>
+
+            <i class="bi bi-exclamation-triangle display-4 mb-3" style="color: var(--bt-tinta, #16241A);"></i>
+
+            <h1 class="h3 fw-bold mb-2">Solicitud inválida</h1>
+            <p class="text-muted mb-4">
+                Algo en la petición que se hizo no se pudo procesar correctamente.
+                Intenta de nuevo desde el inicio.
+            </p>
+
+            <a href="{% url 'index' %}" class="btn btn-success">
+                <i class="bi bi-house-door"></i> Volver al inicio
+            </a>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}

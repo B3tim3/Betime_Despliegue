@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Eventos | Be Time
+{% endblock %}
+
+{% block content %}
+
+<section class="home-section">
+    <div class="container">
+
+        <div class="mb-4">
+            <a href="/" class="text-muted small text-decoration-none d-inline-block mb-3">
+                <i class="bi bi-arrow-left"></i> Volver al inicio
+            </a>
+            <div class="home-section__eyebrow mb-1">Agenda</div>
+            <h1 class="home-section__title mb-0">Próximos eventos</h1>
+        </div>
+
+        {% if eventos %}
+            <div class="row g-4">
+                {% for evento in eventos %}
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <a href="{% url 'eventos:detalle' evento.id %}" class="home-evento-card">
+
+                            <div class="home-evento-card__media">
+                                {% if evento.imagen %}
+                                    <img src="{{ evento.imagen.url }}" alt="{{ evento.titulo }}">
+                                {% else %}
+                                    <i class="bi bi-calendar-event"></i>
+                                {% endif %}
+
+                                <div class="home-evento-card__fecha">
+                                    <span class="dia">{{ evento.fecha_inicio|date:"d" }}</span>
+                                    <span class="mes">{{ evento.fecha_inicio|date:"M" }}</span>
+                                </div>
+                            </div>
+
+                            <div class="home-evento-card__body">
+                                <h2 class="h6 fw-bold mb-2">
+                                    {{ evento.titulo }}
+                                </h2>
+                                <div class="text-muted small">
+                                    <i class="bi bi-geo-alt"></i> {{ evento.lugar }}
+                                </div>
+                                <span class="home-evento-card__horas">
+                                    {{ evento.horas_otorgadas }} horas de bienestar
+                                </span>
+                            </div>
+
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="home-card p-4 text-center text-muted">
+                No hay eventos programados por el momento.
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+<!-- Buscador en vivo para una tabla (usa static/js/tabla-filtro.js).
+     Uso: incluir con tabla_id (el id de la tabla a filtrar) y,
+     opcionalmente, placeholder. -->
+<div class="mb-3">
+    <div class="input-group" style="max-width: 420px;">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input
+            type="text"
+            class="form-control"
+            placeholder="{{ placeholder|default:'Buscar...' }}"
+            data-tabla-filtro="{{ tabla_id }}"
+        >
+    </div>
+</div>

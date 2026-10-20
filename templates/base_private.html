@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block navbar %}
+    {% include 'components/navbar/navbar_private.html' %}
+{% endblock %}
+
+{% block footer %}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/tabla-filtro.js' %}"></script>
+
+    <!-- Flatpickr: selector de fecha/hora consistente entre navegadores -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+    <script src="{% static 'js/flatpickr-init.js' %}"></script>
+
+    <!-- SweetAlert2: modales de confirmación -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/confirmar-eliminar.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <div class="row">
+
+        <div class="col-12 col-lg-3 col-xl-2 mb-3 mb-lg-0">
+
+            <button
+                class="btn btn-outline-secondary w-100 d-lg-none mb-2 d-flex justify-content-between align-items-center"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#sidebarPanel"
+                aria-expanded="false"
+                aria-controls="sidebarPanel"
+            >
+                <span><i class="bi bi-list"></i> Menú del panel</span>
+                <i class="bi bi-chevron-down"></i>
+            </button>
+
+            <div class="collapse d-lg-block" id="sidebarPanel">
+                {% include 'components/sidebar/sidebar.html' %}
+            </div>
+
+        </div>
+
+        <div class="col-12 col-lg-9 col-xl-10">
+            {% block dashboard_content %}
+            {% endblock %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

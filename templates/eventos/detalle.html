@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ evento.titulo }} | Be Time
+{% endblock %}
+
+{% block content %}
+
+<section class="home-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8">
+
+                <a href="{% url 'eventos:lista' %}" class="text-muted small text-decoration-none d-inline-block mb-3">
+                    <i class="bi bi-arrow-left"></i> Volver a eventos
+                </a>
+
+                {% if evento.imagen %}
+                    <div class="mb-4" style="aspect-ratio: 16/7; border-radius: 14px; overflow: hidden;">
+                        <img src="{{ evento.imagen.url }}" alt="{{ evento.titulo }}" style="width:100%; height:100%; object-fit: cover;">
+                    </div>
+                {% endif %}
+
+                <div class="home-section__eyebrow mb-2">
+                    {{ evento.fecha_inicio|date:"d \d\e F \d\e Y, h:i A" }}
+                </div>
+
+                <h1 class="home-section__title mb-3">
+                    {{ evento.titulo }}
+                </h1>
+
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <span class="home-evento__horas">
+                        <i class="bi bi-clock"></i> {{ evento.horas_otorgadas }} horas de bienestar
+                    </span>
+                    <span class="home-evento__horas">
+                        <i class="bi bi-geo-alt"></i> {{ evento.lugar }}
+                    </span>
+                </div>
+
+                <p class="fs-5 mb-4" style="white-space: pre-line;">
+                    {{ evento.descripcion }}
+                </p>
+
+                {% if user.is_authenticated %}
+                    {% if not user.aprendiz %}
+                        <button class="btn btn-secondary btn-lg" disabled>
+                            Solo los aprendices pueden inscribirse
+                        </button>
+                    {% elif ya_inscrito %}
+                        <button class="btn btn-outline-success btn-lg" disabled>
+                            <i class="bi bi-check-circle"></i> Ya estás inscrito
+                        </button>
+                    {% elif evento.estado != "programado" %}
+                        <button class="btn btn-secondary btn-lg" disabled>
+                            Inscripciones cerradas
+                        </button>
+                    {% else %}
+                        <form method="post" action="{% url 'eventos:inscribirse' evento.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success btn-lg">
+                                Inscribirme
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'usuarios:login' %}" class="btn btn-success btn-lg">
+                        Inicia sesión para inscribirte
+                    </a>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

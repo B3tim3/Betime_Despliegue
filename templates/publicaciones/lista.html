@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Publicaciones | Be Time
+{% endblock %}
+
+{% block content %}
+
+<section class="home-section">
+    <div class="container">
+
+        <div class="mb-4">
+            <a href="/" class="text-muted small text-decoration-none d-inline-block mb-3">
+                <i class="bi bi-arrow-left"></i> Volver al inicio
+            </a>
+            <div class="home-section__eyebrow mb-1">Novedades</div>
+            <h1 class="home-section__title mb-0">Publicaciones</h1>
+        </div>
+
+        {% if publicaciones %}
+            <div class="row g-4">
+                {% for publicacion in publicaciones %}
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="home-card">
+
+                            <div class="home-card__media">
+                                {% if publicacion.imagen %}
+                                    <img src="{{ publicacion.imagen.url }}" alt="{{ publicacion.titulo }}">
+                                {% else %}
+                                    <i class="bi bi-image"></i>
+                                {% endif %}
+                            </div>
+
+                            <div class="home-card__body">
+                                <h2 class="h6 fw-bold mb-2">
+                                    {{ publicacion.titulo }}
+                                </h2>
+                                <p class="text-muted small mb-3">
+                                    {{ publicacion.contenido|truncatewords:18 }}
+                                </p>
+                                <a href="{% url 'publicaciones:detalle' publicacion.id %}"
+                                   class="text-bt-verde fw-semibold text-decoration-none small">
+                                    Leer más <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="home-card p-4 text-center text-muted">
+                Todavía no hay publicaciones.
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}
