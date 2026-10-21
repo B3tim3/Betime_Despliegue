@@ -26,6 +26,7 @@ urlpatterns = [
     path('publicaciones/', include('publicaciones.urls')),
     path('eventos/', include('eventos.urls')),
     path('bienestar/', include('bienestar.urls')),
+    path('notificaciones/', include('notificaciones.urls')),
 ]
 
 if settings.DEBUG:

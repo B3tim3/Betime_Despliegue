@@ -4,6 +4,28 @@
 Inscritos - {{ evento.titulo }} | Be Time
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Tabla ancha de asistencia: el nombre queda fijo a la izquierda
+       mientras se desliza hacia los demás datos del aprendiz. */
+    #tabla-checklist { font-size: .875rem; }
+    #tabla-checklist th { white-space: nowrap; }
+    #tabla-checklist .col-aprendiz {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: #fff;
+        min-width: 230px;
+        box-shadow: 1px 0 0 var(--bt-borde, #E1E9DC);
+    }
+    #tabla-checklist thead .col-aprendiz { background: var(--bt-fondo-alt, #F3F8F0); }
+    #tabla-checklist tr.fila-asistio-activa .col-aprendiz { background: #f3faf1; }
+    #tabla-checklist .col-programa { min-width: 190px; }
+    #tabla-checklist .col-correo { min-width: 190px; word-break: break-all; }
+    #tabla-checklist .dato-vacio { color: #9aa79d; }
+</style>
+{% endblock %}
+
 {% block dashboard_content %}
 
 <nav class="mb-2">
@@ -13,8 +35,8 @@ Inscritos - {{ evento.titulo }} | Be Time
 <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
     <h1 class="h3 fw-bold mb-0">Inscritos: {{ evento.titulo }}</h1>
     <div class="d-flex gap-2">
-        {% include 'components/exportar/botones.html' with base_url='eventos:panel_exportar_inscritos' %}
-        <a href="{% url 'eventos:escanear_qr' %}" class="btn btn-outline-success btn-sm">
+        {% include 'components/exportar/botones.html' with base_url='eventos:panel_inscritos_exportar' tabla_id='tabla-checklist' %}
+        <a href="{% url 'eventos:escanear_qr' %}" class="btn btn-outline-success">
             <i class="bi bi-qr-code-scan"></i> Escanear QR
         </a>
     </div>
@@ -65,29 +87,36 @@ Inscritos - {{ evento.titulo }} | Be Time
         {% csrf_token %}
 
         <div class="table-responsive">
-            <table class="table align-middle bg-white" id="tabla-checklist">
+            <table class="table table-sm align-middle bg-white" id="tabla-checklist">
                 <thead>
                     <tr>
-                        <th>Aprendiz</th>
-                        <th>Documento</th>
-                        <th>Grupo</th>
+                        <th class="col-aprendiz">Aprendiz</th>
                         <th class="text-center">Asistió</th>
-                        <th style="width: 140px;">Horas</th>
+                        <th style="width: 110px;">Horas</th>
+                        <th>Grupo</th>
+                        <th class="col-programa">Programa de formación</th>
+                        <th>Jornada</th>
+                        <th>Nivel</th>
+                        <th>Género</th>
+                        <th class="col-correo">Correo electrónico</th>
+                        <th>Teléfono</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for inscripcion in inscripciones %}
+                        {% with datos=inscripcion.datos %}
                         <tr class="{% if inscripcion.asistencia.asistio %}fila-asistio-activa{% endif %}">
-                            <td>
+                            <td class="col-aprendiz">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="avatar-iniciales">
                                         {{ inscripcion.aprendiz.usuario.nombres|first|upper }}{{ inscripcion.aprendiz.usuario.apellidos|first|upper }}
                                     </div>
-                                    <div class="fw-semibold">{{ inscripcion.aprendiz.usuario.get_full_name }}</div>
+                                    <div>
+                                        <div class="fw-semibold">{{ datos.nombre }}</div>
+                                        <div class="text-muted small">{{ datos.tipo_documento }} {{ datos.numero_documento }}</div>
+                                    </div>
                                 </div>
                             </td>
-                            <td>{{ inscripcion.aprendiz.usuario.tipo_documento }} {{ inscripcion.aprendiz.usuario.numero_documento }}</td>
-                            <td>{{ inscripcion.aprendiz.ficha.numero_grupo }}</td>
                             <td class="text-center">
                                 <div class="form-check form-switch d-inline-flex mb-1">
                                     <input
@@ -110,11 +139,19 @@ Inscritos - {{ evento.titulo }} | Be Time
                                     class="form-control form-control-sm checklist-horas"
                                     name="horas_{{ inscripcion.id }}"
                                     min="0"
-                                    value="{{ evento.horas_otorgadas }}"
+                                    value="{% if inscripcion.horas_guardadas is not None %}{{ inscripcion.horas_guardadas }}{% else %}{{ evento.horas_otorgadas }}{% endif %}"
                                     {% if not inscripcion.asistencia.asistio %}disabled{% endif %}
                                 >
                             </td>
+                            <td class="text-nowrap fw-semibold">{{ datos.grupo }}</td>
+                            <td class="col-programa">{{ datos.programa }}</td>
+                            <td class="text-nowrap">{{ datos.jornada }}</td>
+                            <td class="text-nowrap">{{ datos.nivel }}</td>
+                            <td class="text-nowrap">{% if datos.genero %}{{ datos.genero }}{% else %}<span class="dato-vacio">—</span>{% endif %}</td>
+                            <td class="col-correo">{% if datos.correo %}{{ datos.correo }}{% else %}<span class="dato-vacio">—</span>{% endif %}</td>
+                            <td class="text-nowrap">{% if datos.telefono %}{{ datos.telefono }}{% else %}<span class="dato-vacio">—</span>{% endif %}</td>
                         </tr>
+                        {% endwith %}
                     {% endfor %}
                 </tbody>
             </table>
@@ -142,7 +179,7 @@ Inscritos - {{ evento.titulo }} | Be Time
             // Una fila está "visible" si no tiene display:none -- que es
             // justo lo que tabla-filtro.js le pone a las filas que no
             // coinciden con la búsqueda. Así, si Bienestar filtró por
-            // una ficha, "seleccionar todos" y "aplicar horas" no tocan
+            // una grupo, "seleccionar todos" y "aplicar horas" no tocan
             // a nadie que no esté viendo en pantalla en ese momento.
             function filaEstaVisible(elemento) {
                 const fila = elemento.closest("tr");

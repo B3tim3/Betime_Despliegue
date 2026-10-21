@@ -108,3 +108,16 @@ class AprendizEstadoForm(forms.ModelForm):
                 ("egresado", "Egresado"),
             ]),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Solo Bienestar / el administrador cambian el grupo de un aprendiz
+        # (el aprendiz no puede). Para no equivocarse, cada opción muestra el
+        # número de grupo junto con su programa y su jornada.
+        self.fields["grupo"].queryset = Grupo.objects.select_related(
+            "programa_formacion", "jornada"
+        ).order_by("numero_grupo")
+        self.fields["grupo"].label_from_instance = lambda g: (
+            f"{g.numero_grupo} — {g.programa_formacion.nombre} · {g.jornada.nombre}"
+            + ("" if g.estado == "activa" else f" ({g.get_estado_display()})")
+        )

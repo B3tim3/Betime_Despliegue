@@ -7,3 +7,205 @@
 [data-bs-toggle="collapse"] .bi-chevron-down {
     transition: transform 0.2s ease;
 }
+
+/* =====================================================================
+   MÓVIL (menos de 768 px)
+   ---------------------------------------------------------------------
+   1) Tablas -> tarjetas. static/js/tabla-movil.js marca las tablas con
+      la clase .tabla-cards y copia el nombre de cada columna en el
+      atributo data-label de cada celda; aquí se muestra ese nombre
+      como etiqueta. Así se ven TODOS los datos y los botones de
+      Editar / Eliminar, que antes quedaban escondidos a la derecha.
+   2) Barras de botones del encabezado (Exportar + Nuevo ...) a lo ancho.
+   3) Paginación que no se desborda.
+   ===================================================================== */
+
+@media (max-width: 767.98px) {
+
+    .table-responsive:has(.tabla-cards) {
+        overflow: visible;
+    }
+
+    table.tabla-cards,
+    table.tabla-cards tbody,
+    table.tabla-cards tr,
+    table.tabla-cards td {
+        display: block;
+        width: 100%;
+    }
+
+    table.tabla-cards {
+        background: transparent !important;
+        border: 0;
+    }
+
+    table.tabla-cards thead {
+        display: none;  /* los nombres de columna pasan a ser etiquetas de cada dato */
+    }
+
+    /* Cada fila = una tarjeta. OJO: sin !important en "display" de tr,
+       porque tabla-filtro.js oculta filas con style="display:none". */
+    table.tabla-cards tr {
+        background: #fff;
+        border: 1px solid var(--bt-borde, #E1E9DC);
+        border-radius: 0.75rem;
+        padding: 0.35rem 0.9rem 0.6rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 1px 2px rgba(22, 36, 26, 0.05);
+    }
+
+    table.tabla-cards td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.4rem 0;
+        border: 0;
+        text-align: right !important;
+        background: transparent !important;
+        min-width: 0;
+        word-break: break-word;
+    }
+
+    table.tabla-cards td + td:not(.celda-acciones) {
+        border-top: 1px dashed var(--bt-borde, #E1E9DC);
+    }
+
+    table.tabla-cards td::before {
+        content: attr(data-label);
+        flex: 0 0 38%;
+        max-width: 38%;
+        text-align: left;
+        word-break: normal;
+        overflow-wrap: normal;
+        hyphens: none;
+        line-height: 1.2;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: #6c757d;
+    }
+
+    table.tabla-cards td:empty {
+        display: none;
+    }
+
+    /* Primera celda: es el "título" de la tarjeta (nombre, número...). */
+    table.tabla-cards td:first-child {
+        display: block;
+        text-align: left !important;
+        font-weight: 600;
+        font-size: 1.02rem;
+        padding-top: 0.55rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--bt-borde, #E1E9DC);
+    }
+
+    table.tabla-cards td:first-child::before {
+        display: none;
+    }
+
+    /* Celda de botones: ocupa todo el ancho, botones grandes y cómodos de tocar. */
+    table.tabla-cards td.celda-acciones {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: stretch;
+        gap: 0.5rem;
+        padding-top: 0.7rem;
+        margin-top: 0.3rem;
+        border-top: 1px solid var(--bt-borde, #E1E9DC);
+    }
+
+    table.tabla-cards td.celda-acciones::before {
+        display: none;
+    }
+
+    table.tabla-cards td.celda-acciones > .btn,
+    table.tabla-cards td.celda-acciones > form,
+    table.tabla-cards td.celda-acciones > a {
+        flex: 1 1 auto;
+        margin: 0 !important;
+    }
+
+    table.tabla-cards td.celda-acciones form .btn {
+        width: 100%;
+    }
+
+    table.tabla-cards .btn-sm {
+        padding: 0.45rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    table.tabla-cards td input.form-control {
+        max-width: 110px;
+    }
+
+    table.tabla-cards td img {
+        max-width: 72px;
+        height: auto;
+    }
+
+    /* Checklist de asistencia: sin la columna "pegada" del escritorio. */
+    #tabla-checklist .col-aprendiz,
+    #tabla-checklist .col-programa,
+    #tabla-checklist .col-correo {
+        position: static !important;
+        min-width: 0 !important;
+        box-shadow: none !important;
+    }
+
+    #tabla-checklist.tabla-cards td {
+        white-space: normal !important;
+    }
+
+    #tabla-checklist.tabla-cards tr.fila-asistio-activa {
+        border-color: var(--bt-verde, #2E8B3D);
+        background: #f3faf1;
+    }
+
+    /* Aprendices (django-tables2): quita el rojo de los enlaces de orden en las celdas. */
+    table.tabla-cards td a:not(.btn) {
+        text-decoration: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+
+    /* Encabezado de cada listado: título arriba, botones debajo y a lo ancho. */
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .d-flex.gap-2,
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .btn-group {
+        width: 100%;
+    }
+
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .d-flex.gap-2 > .btn,
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .d-flex.gap-2 > .btn-group {
+        flex: 1 1 0;
+    }
+
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .btn-group > .btn,
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .d-flex.gap-2 > .btn-group > .btn {
+        width: 100%;
+    }
+
+    /* Botones de formularios (Guardar / Cancelar): uno junto al otro a lo ancho. */
+    form .d-flex.gap-2 > .btn {
+        flex: 1 1 0;
+    }
+
+    /* Buscador a todo el ancho (tenía un máximo de 420 px). */
+    .input-group[style*="max-width"] {
+        max-width: 100% !important;
+    }
+
+    /* Paginación: se parte en renglones en vez de salirse de la pantalla. */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.25rem 0;
+    }
+
+    /* Bloque "Horas para todos" del checklist. */
+    #aplicar-horas-todos {
+        width: 100%;
+    }
+}

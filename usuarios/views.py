@@ -1,20 +1,25 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, F, Q, Sum
 from django.db.models.deletion import ProtectedError
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 
 from bienestar.models import HorasBienestar
-from eventos.models import Inscripcion
+from bienestar.services.progreso import calcular_progreso, horas_de
+from eventos.models import Evento, Inscripcion
 from usuarios.forms import (
     LoginForm,
     RegistroAprendizForm,
+    PerfilAprendizForm,
+    CambiarContrasenaForm,
     CrearUsuarioAdminForm,
     ProgramaFormacionForm,
     NivelFormacionForm,
@@ -27,6 +32,8 @@ from usuarios.filters import AprendizFilter
 from usuarios.mixins import AdministradorRequeridoMixin, PersonalBienestarRequeridoMixin
 from usuarios.models import Aprendiz, Grupo, Jornada, NivelFormacion, ProgramaFormacion
 from usuarios.services import registrar_aprendiz, crear_usuario_administrativo
+from usuarios.services.perfil import actualizar_perfil_aprendiz
+from usuarios.services.datos_aprendiz import DatosAprendiz, SELECT_RELATED_APRENDIZ
 from usuarios.tables import AprendizTable
 from core.services.exportar import responder_export
 
@@ -228,9 +235,9 @@ def dashboard_aprendiz(request):
 
     aprendiz = request.user.aprendiz
 
-    horas = HorasBienestar.objects.filter(
-        asistencia__inscripcion__aprendiz=aprendiz
-    ).select_related(
+    # Solo cuentan las horas de eventos con asistencia marcada como "asistió"
+    # (misma regla que el historial y la constancia en PDF).
+    horas = horas_de(aprendiz).select_related(
         "asistencia__inscripcion__evento"
     ).order_by("-fecha")
 
@@ -240,10 +247,22 @@ def dashboard_aprendiz(request):
         aprendiz=aprendiz
     ).select_related("evento").order_by("-fecha_inscripcion")
 
+    # Eventos abiertos a los que todavía no está inscrito (una inscripción
+    # cancelada no cuenta: puede volver a inscribirse).
+    proximos_eventos = Evento.objects.filter(
+        estado="programado", fecha_inicio__gt=timezone.now()
+    ).exclude(
+        id__in=Inscripcion.objects.filter(aprendiz=aprendiz).exclude(
+            estado="cancelada"
+        ).values("evento_id")
+    ).order_by("fecha_inicio")[:6]
+
     return render(request, "dashboard/aprendiz.html", {
+        "proximos_eventos": proximos_eventos,
         "aprendiz": aprendiz,
         "horas": horas,
         "total_horas": total_horas,
+        "progreso": calcular_progreso(total_horas),
         "inscripciones": inscripciones,
     })
 
@@ -639,6 +658,12 @@ class AprendizUpdateView(PersonalBienestarRequeridoMixin, UpdateView):
         "url_cancelar": reverse_lazy("usuarios:aprendices_lista"),
     }
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Que quede claro a QUIÉN se está editando (sobre todo al cambiar de grupo).
+        context["titulo_pagina"] = f"Editar aprendiz: {self.object.usuario.get_full_name()}"
+        return context
+
     def form_valid(self, form):
         messages.success(self.request, "Aprendiz actualizado correctamente.")
         return super().form_valid(form)
@@ -768,7 +793,7 @@ def exportar_grupos(request):
 @personal_bienestar_requerido
 def exportar_aprendices(request):
     queryset = Aprendiz.objects.select_related(
-        "usuario", "grupo", "grupo__programa_formacion"
+        *SELECT_RELATED_APRENDIZ
     ).order_by("usuario__apellidos", "usuario__nombres")
 
     grupo_id = request.GET.get("grupo_id")
@@ -779,17 +804,57 @@ def exportar_aprendices(request):
     # así "Exportar" nunca se puede desalinear de lo que se ve filtrado.
     aprendices = AprendizFilter(request.GET, queryset=queryset).qs
 
-    encabezados = ["Nombres", "Apellidos", "Documento", "Grupo", "Programa", "Estado"]
+    # Los mismos datos que el listado de asistencia de los eventos
+    # (usuarios/services/datos_aprendiz.py): una sola definición.
+    encabezados = [*DatosAprendiz.ENCABEZADOS, "Estado"]
     filas = [
-        [
-            a.usuario.nombres,
-            a.usuario.apellidos,
-            a.usuario.numero_documento,
-            a.grupo.numero_grupo,
-            a.grupo.programa_formacion.nombre,
-            a.estado,
-        ]
+        [*DatosAprendiz.de(a).como_fila(), a.get_estado_display()]
         for a in aprendices
     ]
 
     return responder_export(request, "aprendices", "Aprendices", encabezados, filas, "usuarios:dashboard")
+
+
+# ---------------------------------------------------------------------------
+# Mi perfil (aprendiz)
+# ---------------------------------------------------------------------------
+
+@login_required(login_url="usuarios:login")
+def perfil_aprendiz(request):
+    """
+    "Mi perfil": el aprendiz ve y actualiza sus propios datos de contacto. El
+    documento, el programa, la jornada y el grupo se muestran pero solo los
+    cambia el personal de Bienestar. Cada persona solo llega a SU perfil: el
+    aprendiz se toma de request.user, nunca de la URL.
+    """
+
+    if not hasattr(request.user, "aprendiz"):
+        return redirect("usuarios:dashboard")
+
+    aprendiz = Aprendiz.objects.select_related(
+        "usuario", "grupo__jornada", "grupo__programa_formacion__nivel_formacion"
+    ).get(usuario=request.user)
+
+    form = PerfilAprendizForm(request.POST or None, aprendiz=aprendiz)
+
+    if request.method == "POST" and form.is_valid():
+        actualizar_perfil_aprendiz(aprendiz, form.cleaned_data)
+        messages.success(request, "Tus datos se actualizaron correctamente.")
+        return redirect("usuarios:perfil")
+
+    return render(request, "usuarios/perfil.html", {
+        "form": form,
+        "aprendiz": aprendiz,
+    })
+
+
+class CambiarContrasenaView(auth_views.PasswordChangeView):
+    """Cambio de contraseña de cualquier usuario con sesión iniciada."""
+
+    form_class = CambiarContrasenaForm
+    template_name = "usuarios/cambiar_contrasena.html"
+    success_url = reverse_lazy("usuarios:dashboard")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Tu contraseña se cambió correctamente.")
+        return super().form_valid(form)

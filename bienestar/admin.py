@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from bienestar.models import HorasBienestar, Asesoria, MiembroBienestar
+from bienestar.models import HorasBienestar, Asesoria, MiembroBienestar, ConfiguracionBienestar, ConstanciaHoras
 
 
 @admin.register(HorasBienestar)
@@ -15,5 +15,16 @@ class AsesoriaAdmin(admin.ModelAdmin):
 
 @admin.register(MiembroBienestar)
 class MiembroBienestarAdmin(admin.ModelAdmin):
-    list_display = ("id", "nombre", "cargo", "categoria", "correo_asesorias", "estado")
-    list_filter = ("categoria", "estado")
+    list_display = ("id", "nombre", "cargo", "correo_asesorias", "estado")
+
+
+@admin.register(ConfiguracionBienestar)
+class ConfiguracionBienestarAdmin(admin.ModelAdmin):
+    list_display = ("id", "meta_horas", "fecha_actualizacion")
+
+
+@admin.register(ConstanciaHoras)
+class ConstanciaHorasAdmin(admin.ModelAdmin):
+    list_display = ("codigo", "nombre", "total_horas", "fecha_emision")
+    search_fields = ("codigo", "nombre", "numero_documento")
+    readonly_fields = ("codigo",)

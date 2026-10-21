@@ -14,6 +14,9 @@ urlpatterns = [
     path("acceso-personal/", views.login_view, name="login_personal"),
     path("logout/", views.logout_view, name="logout"),
 
+    path("perfil/", views.perfil_aprendiz, name="perfil"),
+    path("perfil/contrasena/", views.CambiarContrasenaView.as_view(), name="cambiar_contrasena"),
+
     path("dashboard/", views.dashboard_redirect, name="dashboard"),
     path("dashboard/aprendiz/", views.dashboard_aprendiz, name="dashboard_aprendiz"),
     path("dashboard/bienestar/", views.dashboard_bienestar, name="dashboard_bienestar"),
