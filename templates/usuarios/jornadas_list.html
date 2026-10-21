@@ -32,7 +32,7 @@ Jornadas | Be Time
                     <tr>
                         <td>{{ jornada.nombre }}</td>
                         <td class="text-end">
-                            <a href="{% url 'usuarios:fichas_de_jornada' jornada.id %}" class="btn btn-sm btn-outline-primary">Ver fichas</a>
+                            <a href="{% url 'usuarios:grupos_de_jornada' jornada.id %}" class="btn btn-sm btn-outline-primary">Ver grupos</a>
                             <a href="{% url 'usuarios:jornadas_editar' jornada.id %}" class="btn btn-sm btn-outline-success">Editar</a>
                             <form method="post" action="{% url 'usuarios:jornadas_eliminar' jornada.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar la jornada {{ jornada.nombre }}? Esta acción no se puede deshacer.">
                                 {% csrf_token %}

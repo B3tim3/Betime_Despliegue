@@ -1,0 +1,104 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Mi historial | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<nav class="mb-2">
+    <a href="{% url 'usuarios:dashboard' %}" class="text-decoration-none">&larr; Mi panel</a>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h1 class="h3 fw-bold mb-0">Mi historial de asistencia</h1>
+    <div class="d-flex gap-2">
+        {% include 'components/exportar/botones.html' with base_url='bienestar:mi_historial_exportar' tabla_id='tabla-historial' %}
+        {% if resumen.horas > 0 %}
+            <a href="{% url 'bienestar:constancia' %}" class="btn btn-success">
+                <i class="bi bi-file-earmark-pdf"></i> Constancia
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body py-3">
+            <div class="text-muted small">Eventos inscritos</div>
+            <div class="fs-3 fw-bold">{{ resumen.inscritos }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body py-3">
+            <div class="text-muted small">Asististe</div>
+            <div class="fs-3 fw-bold text-success">{{ resumen.asistidos }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body py-3">
+            <div class="text-muted small">No asististe</div>
+            <div class="fs-3 fw-bold">{{ resumen.no_asistidos }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body py-3">
+            <div class="text-muted small">Horas de bienestar</div>
+            <div class="fs-3 fw-bold">{{ progreso.total }} <span class="fs-6 fw-normal text-muted">/ {{ progreso.meta }}</span></div>
+        </div></div>
+    </div>
+</div>
+
+{% if filas %}
+    <div class="row g-2 mb-1">
+        <div class="col-12 col-md-6">
+            {% include 'components/tabla/buscador.html' with tabla_id='tabla-historial' placeholder='Buscar por evento o lugar...' %}
+        </div>
+        <div class="col-12 col-md-4">
+            <select class="form-select" data-tabla-filtro-estado="tabla-historial">
+                <option value="">Todos los estados</option>
+                <option value="asistio">Asistió</option>
+                <option value="no_asistio">No asistió</option>
+                <option value="inscrito">Inscrito (pendiente)</option>
+                <option value="cancelada">Inscripción cancelada</option>
+                <option value="evento_cancelado">Evento cancelado</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle bg-white" id="tabla-historial">
+            <thead>
+                <tr>
+                    <th>Evento</th>
+                    <th>Lugar</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th class="text-end">Horas</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in filas %}
+                    <tr data-estado="{{ fila.estado_codigo }}">
+                        <td>{{ fila.evento }}</td>
+                        <td>{{ fila.lugar }}</td>
+                        <td>{{ fila.fecha|date:"d/m/Y h:i A" }}</td>
+                        <td>
+                            <span class="badge {% if fila.estado_codigo == 'asistio' %}bg-success{% else %}text-bg-light border{% endif %}">{{ fila.estado }}</span>
+                        </td>
+                        <td class="text-end">{% if fila.horas %}{{ fila.horas }}{% else %}—{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center text-muted py-5">
+            Todavía no te has inscrito a ningún evento.
+            <a href="{% url 'eventos:lista' %}">Ver eventos disponibles</a>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

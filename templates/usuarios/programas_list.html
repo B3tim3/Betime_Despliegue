@@ -51,7 +51,7 @@ Programas de formación | Be Time
                         <td>{{ programa.duracion_meses }}</td>
                         <td><span class="badge text-bg-light border">{{ programa.get_estado_display }}</span></td>
                         <td class="text-end">
-                            <a href="{% url 'usuarios:fichas_de_programa' programa.id %}" class="btn btn-sm btn-outline-primary">Ver fichas</a>
+                            <a href="{% url 'usuarios:grupos_de_programa' programa.id %}" class="btn btn-sm btn-outline-primary">Ver grupos</a>
                             <a href="{% url 'usuarios:programas_editar' programa.id %}" class="btn btn-sm btn-outline-success">Editar</a>
                             <form method="post" action="{% url 'usuarios:programas_eliminar' programa.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar el programa {{ programa.nombre }}? Esta acción no se puede deshacer.">
                                 {% csrf_token %}
