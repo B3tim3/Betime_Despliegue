@@ -10,6 +10,4 @@ TIPO_DOCUMENTO_CHOICES = [
 GENERO_CHOICES = [
     ("M", "Masculino"),
     ("F", "Femenino"),
-    ("O", "Otro"),
-    ("N", "Prefiero no decirlo"),
 ]

@@ -1,17 +1,17 @@
 {% extends 'base_private.html' %}
 
 {% block title %}
-Mi panel Aprendiz | Be Time
+Mi panel | Be Time
 {% endblock %}
 
 {% block dashboard_content %}
 
 <h1 class="h3 fw-bold mb-1">
-    Hola👋, {{ request.user.get_full_name }}
+    Hola, {{ request.user.get_full_name }}
 </h1>
 
 <p class="text-muted mb-4">
-    Panel del aprendiz. Ficha {{ aprendiz.ficha.numero_ficha }}.
+    Panel del aprendiz. Grupo {{ aprendiz.grupo.numero_grupo }}.
 </p>
 
 <div class="card border-0 shadow-sm mb-4">

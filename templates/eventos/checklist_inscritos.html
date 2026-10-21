@@ -33,7 +33,7 @@ Inscritos - {{ evento.titulo }} | Be Time
 
     <div class="row g-2 mb-3">
         <div class="col-12 col-md-5">
-            {% include 'components/tabla/buscador.html' with tabla_id='tabla-checklist' placeholder='Buscar por nombre, documento o ficha...' %}
+            {% include 'components/tabla/buscador.html' with tabla_id='tabla-checklist' placeholder='Buscar por nombre, documento o grupo...' %}
         </div>
     </div>
 
@@ -70,7 +70,7 @@ Inscritos - {{ evento.titulo }} | Be Time
                     <tr>
                         <th>Aprendiz</th>
                         <th>Documento</th>
-                        <th>Ficha</th>
+                        <th>Grupo</th>
                         <th class="text-center">Asistió</th>
                         <th style="width: 140px;">Horas</th>
                     </tr>
@@ -87,7 +87,7 @@ Inscritos - {{ evento.titulo }} | Be Time
                                 </div>
                             </td>
                             <td>{{ inscripcion.aprendiz.usuario.tipo_documento }} {{ inscripcion.aprendiz.usuario.numero_documento }}</td>
-                            <td>{{ inscripcion.aprendiz.ficha.numero_ficha }}</td>
+                            <td>{{ inscripcion.aprendiz.ficha.numero_grupo }}</td>
                             <td class="text-center">
                                 <div class="form-check form-switch d-inline-flex mb-1">
                                     <input

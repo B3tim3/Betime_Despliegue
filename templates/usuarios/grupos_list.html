@@ -1,7 +1,7 @@
 {% extends 'base_private.html' %}
 
 {% block title %}
-Fichas | Be Time
+Grupos | Be Time
 {% endblock %}
 
 {% block dashboard_content %}
@@ -10,40 +10,40 @@ Fichas | Be Time
     <nav class="mb-2">
         <a href="{% url 'usuarios:programas_lista' %}" class="text-decoration-none">&larr; Programas de formación</a>
     </nav>
-    <p class="text-muted mb-3">Fichas de <strong>{{ programa.nombre }}</strong></p>
+    <p class="text-muted mb-3">Grupos de <strong>{{ programa.nombre }}</strong></p>
 {% elif jornada %}
     <nav class="mb-2">
         <a href="{% url 'usuarios:jornadas_lista' %}" class="text-decoration-none">&larr; Jornadas</a>
     </nav>
-    <p class="text-muted mb-3">Fichas de la jornada <strong>{{ jornada.nombre }}</strong></p>
+    <p class="text-muted mb-3">Grupos de la jornada <strong>{{ jornada.nombre }}</strong></p>
 {% endif %}
 
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-    <h1 class="h3 fw-bold mb-0">Fichas</h1>
+    <h1 class="h3 fw-bold mb-0">Grupos</h1>
     <div class="d-flex gap-2">
-        {% include 'components/exportar/botones.html' with base_url='usuarios:fichas_exportar' tabla_id='tabla-fichas' %}
-        <a href="{% url 'usuarios:fichas_crear' %}" class="btn btn-success">
-            <i class="bi bi-plus-lg"></i> Nueva ficha
+        {% include 'components/exportar/botones.html' with base_url='usuarios:grupos_exportar' tabla_id='tabla-grupos' %}
+        <a href="{% url 'usuarios:grupos_crear' %}" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Nuevo grupo
         </a>
     </div>
 </div>
 
-{% if fichas %}
+{% if grupos %}
     <div class="row g-2 mb-1">
         <div class="col-12 col-md-6">
-            {% include 'components/tabla/buscador.html' with tabla_id='tabla-fichas' placeholder='Buscar por número, programa o jornada...' %}
+            {% include 'components/tabla/buscador.html' with tabla_id='tabla-grupos' placeholder='Buscar por número, programa o jornada...' %}
         </div>
         <div class="col-12 col-md-4">
-            <select class="form-select" data-tabla-filtro-estado="tabla-fichas">
+            <select class="form-select" data-tabla-filtro-estado="tabla-grupos">
                 <option value="">Todos los estados</option>
-                <option value="activa">Activa</option>
-                <option value="cerrada">Cerrada</option>
+                <option value="activa">Activo</option>
+                <option value="cerrada">Cerrado</option>
             </select>
         </div>
     </div>
 
     <div class="table-responsive">
-        <table class="table align-middle bg-white" id="tabla-fichas" data-tabla-ordenable>
+        <table class="table align-middle bg-white" id="tabla-grupos" data-tabla-ordenable>
             <thead>
                 <tr>
                     <th data-ordenar-columna="0">Número</th>
@@ -56,18 +56,18 @@ Fichas | Be Time
                 </tr>
             </thead>
             <tbody>
-                {% for ficha in fichas %}
-                    <tr data-estado="{{ ficha.estado }}">
-                        <td>{{ ficha.numero_ficha }}</td>
-                        <td>{{ ficha.programa_formacion.nombre }}</td>
-                        <td>{{ ficha.jornada.nombre }}</td>
-                        <td>{{ ficha.fecha_inicio|date:"d/m/Y" }}</td>
-                        <td>{{ ficha.fecha_fin|date:"d/m/Y" }}</td>
-                        <td><span class="badge text-bg-light border">{{ ficha.get_estado_display }}</span></td>
+                {% for grupo in grupos %}
+                    <tr data-estado="{{ grupo.estado }}">
+                        <td>{{ grupo.numero_grupo }}</td>
+                        <td>{{ grupo.programa_formacion.nombre }}</td>
+                        <td>{{ grupo.jornada.nombre }}</td>
+                        <td>{{ grupo.fecha_inicio|date:"d/m/Y" }}</td>
+                        <td>{{ grupo.fecha_fin|date:"d/m/Y" }}</td>
+                        <td><span class="badge text-bg-light border">{{ grupo.get_estado_display }}</span></td>
                         <td class="text-end">
-                            <a href="{% url 'usuarios:aprendices_de_ficha' ficha.id %}" class="btn btn-sm btn-outline-primary">Ver aprendices</a>
-                            <a href="{% url 'usuarios:fichas_editar' ficha.id %}" class="btn btn-sm btn-outline-success">Editar</a>
-                            <form method="post" action="{% url 'usuarios:fichas_eliminar' ficha.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar la ficha {{ ficha.numero_ficha }}? Esta acción no se puede deshacer.">
+                            <a href="{% url 'usuarios:aprendices_de_grupo' grupo.id %}" class="btn btn-sm btn-outline-primary">Ver aprendices</a>
+                            <a href="{% url 'usuarios:grupos_editar' grupo.id %}" class="btn btn-sm btn-outline-success">Editar</a>
+                            <form method="post" action="{% url 'usuarios:grupos_eliminar' grupo.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar el grupo {{ grupo.numero_grupo }}? Esta acción no se puede deshacer.">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
                             </form>
@@ -82,7 +82,7 @@ Fichas | Be Time
 {% else %}
     <div class="card border-0 shadow-sm">
         <div class="card-body text-center text-muted py-5">
-            Todavía no hay fichas registradas.
+            Todavía no hay grupos registrados.
         </div>
     </div>
 {% endif %}

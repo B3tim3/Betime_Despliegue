@@ -159,7 +159,7 @@ def exportar_inscritos(request):
     ).exclude(
         estado="cancelada"
     ).select_related(
-        "aprendiz__usuario", "aprendiz__ficha", "asistencia"
+        "aprendiz__usuario", "aprendiz__grupo", "asistencia"
     ).order_by("aprendiz__usuario__apellidos", "aprendiz__usuario__nombres")
 
     def horas_de(inscripcion):
@@ -314,7 +314,7 @@ def confirmar_asistencia_qr(request, token):
 
     inscripcion = get_object_or_404(
         Inscripcion.objects.select_related(
-            "aprendiz__usuario", "aprendiz__ficha", "evento"
+            "aprendiz__usuario", "aprendiz__grupo", "evento"
         ),
         token=token,
     )

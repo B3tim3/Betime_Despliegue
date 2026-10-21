@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import F, Q, Sum
+from django.db.models import Count, F, Q, Sum
 from django.db.models.deletion import ProtectedError
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -17,14 +17,15 @@ from usuarios.forms import (
     RegistroAprendizForm,
     CrearUsuarioAdminForm,
     ProgramaFormacionForm,
+    NivelFormacionForm,
     JornadaForm,
-    FichaForm,
+    GrupoForm,
     AprendizEstadoForm,
 )
 from usuarios.decorators import administrador_requerido, personal_bienestar_requerido
 from usuarios.filters import AprendizFilter
 from usuarios.mixins import AdministradorRequeridoMixin, PersonalBienestarRequeridoMixin
-from usuarios.models import Aprendiz, Ficha, Jornada, ProgramaFormacion
+from usuarios.models import Aprendiz, Grupo, Jornada, NivelFormacion, ProgramaFormacion
 from usuarios.services import registrar_aprendiz, crear_usuario_administrativo
 from usuarios.tables import AprendizTable
 from core.services.exportar import responder_export
@@ -43,25 +44,27 @@ def jornadas_por_programa(request):
     if not programa_id or not programa_id.isdigit():
         return JsonResponse({"nivel": "", "jornadas": []})
 
-    programa = ProgramaFormacion.objects.filter(pk=programa_id, estado="activo").first()
+    programa = ProgramaFormacion.objects.select_related("nivel_formacion").filter(
+        pk=programa_id, estado="activo"
+    ).first()
 
     if programa is None:
         return JsonResponse({"nivel": "", "jornadas": []})
 
     jornadas = Jornada.objects.filter(
-        fichas__programa_formacion=programa,
-        fichas__estado="activa",
+        grupos__programa_formacion=programa,
+        grupos__estado="activa",
     ).distinct().order_by("nombre").values("id", "nombre")
 
     return JsonResponse({
-        "nivel": programa.nivel_formacion,
+        "nivel": programa.nivel_formacion.nombre,
         "jornadas": list(jornadas),
     })
 
 
-def fichas_por_programa(request):
+def grupos_por_programa(request):
     """
-    Devuelve en JSON los grupos (fichas) activos de un programa de
+    Devuelve en JSON los grupos activos de un programa de
     formación. Si además llega ?jornada=<id>, solo los de esa jornada.
     Es el último escalón de la cascada del registro. El parámetro
     jornada es opcional para no romper el formulario de creación de
@@ -74,19 +77,19 @@ def fichas_por_programa(request):
     if not programa_id or not programa_id.isdigit():
         return JsonResponse([], safe=False)
 
-    fichas = Ficha.objects.filter(
+    grupos = Grupo.objects.filter(
         programa_formacion_id=programa_id,
         estado="activa"
     )
 
     if jornada_id and jornada_id.isdigit():
-        fichas = fichas.filter(jornada_id=jornada_id)
+        grupos = grupos.filter(jornada_id=jornada_id)
 
-    fichas = fichas.order_by("numero_ficha").values(
-        "id", "numero_ficha", jornada_nombre=F("jornada__nombre")
+    grupos = grupos.order_by("numero_grupo").values(
+        "id", "numero_grupo", jornada_nombre=F("jornada__nombre")
     )
 
-    return JsonResponse(list(fichas), safe=False)
+    return JsonResponse(list(grupos), safe=False)
 
 
 def registro_aprendiz(request):
@@ -105,7 +108,7 @@ def registro_aprendiz(request):
             apellidos=form.cleaned_data["apellidos"],
             email=form.cleaned_data["email"],
             password=form.cleaned_data["password"],
-            ficha=form.cleaned_data["ficha"],
+            grupo=form.cleaned_data["grupo"],
             genero=form.cleaned_data["genero"],
             telefono=form.cleaned_data["telefono"],
         )
@@ -139,7 +142,7 @@ def crear_usuario_admin(request):
             email=form.cleaned_data["email"],
             password=form.cleaned_data["password"],
             tipo_perfil=form.cleaned_data["tipo_perfil"],
-            ficha=form.cleaned_data.get("ficha"),
+            grupo=form.cleaned_data.get("grupo"),
             cargo=form.cleaned_data.get("cargo"),
         )
 
@@ -269,13 +272,37 @@ def dashboard_admin(request):
 
 # ==========================================================
 # Panel de catálogos: Programas de Formación, Jornadas,
-# Fichas y Aprendices.
+# Grupos y Aprendices.
 # ==========================================================
+
+class EliminarProtegidoMixin:
+    """
+    Para las vistas de eliminar de los catálogos. Las relaciones entre
+    catálogos son PROTECT a propósito (no se puede borrar un programa
+    que tiene grupos, ni un grupo que tiene aprendices, etc.). Sin este
+    mixin, intentarlo hacía fallar la página con un error 500; ahora se
+    avisa con un mensaje y se vuelve al listado.
+    """
+
+    mensaje_eliminado = "Eliminado correctamente."
+    mensaje_protegido = "No se puede eliminar: todavía tiene registros asociados."
+
+    def form_valid(self, form):
+        try:
+            self.object.delete()
+        except ProtectedError:
+            messages.error(self.request, self.mensaje_protegido)
+        else:
+            messages.success(self.request, self.mensaje_eliminado)
+
+        return redirect(self.get_success_url())
+
 
 # ---------- Programas de Formación (solo Administrador) ----------
 
 class ProgramaFormacionListView(AdministradorRequeridoMixin, ListView):
     model = ProgramaFormacion
+    queryset = ProgramaFormacion.objects.select_related("nivel_formacion")
     template_name = "usuarios/programas_list.html"
     context_object_name = "programas"
     ordering = ["nombre"]
@@ -312,7 +339,7 @@ class ProgramaFormacionUpdateView(AdministradorRequeridoMixin, UpdateView):
         return super().form_valid(form)
 
 
-class ProgramaFormacionDeleteView(AdministradorRequeridoMixin, DeleteView):
+class ProgramaFormacionDeleteView(EliminarProtegidoMixin, AdministradorRequeridoMixin, DeleteView):
     model = ProgramaFormacion
     template_name = "usuarios/panel_confirmar_eliminar.html"
     success_url = reverse_lazy("usuarios:programas_lista")
@@ -320,10 +347,75 @@ class ProgramaFormacionDeleteView(AdministradorRequeridoMixin, DeleteView):
         "titulo_pagina": "Eliminar programa de formación",
         "url_cancelar": reverse_lazy("usuarios:programas_lista"),
     }
+    mensaje_eliminado = "Programa de formación eliminado."
+    mensaje_protegido = (
+        "No se puede eliminar: el programa tiene grupos registrados. Elimina o reasigna esos grupos primero."
+    )
+
+
+# ---------- Niveles de formación (solo Administrador) ----------
+# Catálogo editable: el Administrador agrega, edita y quita niveles
+# (Técnico, Tecnólogo, ...) y los programas eligen uno de ellos.
+
+class NivelFormacionListView(AdministradorRequeridoMixin, ListView):
+    model = NivelFormacion
+    template_name = "usuarios/niveles_list.html"
+    context_object_name = "niveles"
+    paginate_by = 15
+
+    def get_queryset(self):
+        return NivelFormacion.objects.annotate(
+            total_programas=Count("programas")
+        ).order_by("nombre")
+
+
+class NivelFormacionCreateView(AdministradorRequeridoMixin, CreateView):
+    model = NivelFormacion
+    form_class = NivelFormacionForm
+    template_name = "usuarios/panel_form.html"
+    success_url = reverse_lazy("usuarios:niveles_lista")
+    extra_context = {
+        "titulo_pagina": "Crear nivel de formación",
+        "url_cancelar": reverse_lazy("usuarios:niveles_lista"),
+    }
 
     def form_valid(self, form):
-        messages.success(self.request, "Programa de formación eliminado.")
+        messages.success(self.request, "Nivel de formación creado correctamente.")
         return super().form_valid(form)
+
+
+class NivelFormacionUpdateView(AdministradorRequeridoMixin, UpdateView):
+    model = NivelFormacion
+    form_class = NivelFormacionForm
+    template_name = "usuarios/panel_form.html"
+    success_url = reverse_lazy("usuarios:niveles_lista")
+    extra_context = {
+        "titulo_pagina": "Editar nivel de formación",
+        "url_cancelar": reverse_lazy("usuarios:niveles_lista"),
+    }
+
+    def form_valid(self, form):
+        messages.success(self.request, "Nivel de formación actualizado correctamente.")
+        return super().form_valid(form)
+
+
+class NivelFormacionDeleteView(EliminarProtegidoMixin, AdministradorRequeridoMixin, DeleteView):
+    """
+    Un nivel que todavía tiene programas no se puede eliminar (la
+    relación es PROTECT): se avisa con un mensaje en vez de dejar que
+    la página falle con un error 500.
+    """
+    model = NivelFormacion
+    template_name = "usuarios/panel_confirmar_eliminar.html"
+    success_url = reverse_lazy("usuarios:niveles_lista")
+    extra_context = {
+        "titulo_pagina": "Eliminar nivel de formación",
+        "url_cancelar": reverse_lazy("usuarios:niveles_lista"),
+    }
+    mensaje_eliminado = "Nivel de formación eliminado."
+    mensaje_protegido = (
+        "No se puede eliminar: hay programas de formación que usan este nivel. Cambia el nivel de esos programas primero."
+    )
 
 
 # ---------- Jornadas (solo Administrador) ----------
@@ -366,7 +458,7 @@ class JornadaUpdateView(AdministradorRequeridoMixin, UpdateView):
         return super().form_valid(form)
 
 
-class JornadaDeleteView(AdministradorRequeridoMixin, DeleteView):
+class JornadaDeleteView(EliminarProtegidoMixin, AdministradorRequeridoMixin, DeleteView):
     model = Jornada
     template_name = "usuarios/panel_confirmar_eliminar.html"
     success_url = reverse_lazy("usuarios:jornadas_lista")
@@ -374,27 +466,27 @@ class JornadaDeleteView(AdministradorRequeridoMixin, DeleteView):
         "titulo_pagina": "Eliminar jornada",
         "url_cancelar": reverse_lazy("usuarios:jornadas_lista"),
     }
+    mensaje_eliminado = "Jornada eliminada."
+    mensaje_protegido = (
+        "No se puede eliminar: hay grupos que usan esta jornada. Elimina o reasigna esos grupos primero."
+    )
 
-    def form_valid(self, form):
-        messages.success(self.request, "Jornada eliminada.")
-        return super().form_valid(form)
 
-
-# ---------- Fichas (Personal de Bienestar o Administrador) ----------
-# La misma vista sirve para "todas las fichas" (panel/fichas/), para
-# "las fichas de un programa" (panel/programas/<id>/fichas/) y para
-# "las fichas de una jornada" (panel/jornadas/<id>/fichas/) — ver
+# ---------- Grupos (Personal de Bienestar o Administrador) ----------
+# La misma vista sirve para "todos los grupos" (panel/grupos/), para
+# "los grupos de un programa" (panel/programas/<id>/grupos/) y para
+# "los grupos de una jornada" (panel/jornadas/<id>/grupos/) — ver
 # usuarios/urls.py. Si llega programa_id o jornada_id en la URL, se
 # filtra y se agrega al contexto para la miga de pan y la exportación.
 
-class FichaListView(PersonalBienestarRequeridoMixin, ListView):
-    model = Ficha
-    template_name = "usuarios/fichas_list.html"
-    context_object_name = "fichas"
+class GrupoListView(PersonalBienestarRequeridoMixin, ListView):
+    model = Grupo
+    template_name = "usuarios/grupos_list.html"
+    context_object_name = "grupos"
     paginate_by = 15
 
     def get_queryset(self):
-        queryset = Ficha.objects.select_related(
+        queryset = Grupo.objects.select_related(
             "programa_formacion", "jornada"
         ).order_by("-fecha_creacion")
 
@@ -424,58 +516,58 @@ class FichaListView(PersonalBienestarRequeridoMixin, ListView):
         return context
 
 
-class FichaCreateView(PersonalBienestarRequeridoMixin, CreateView):
-    model = Ficha
-    form_class = FichaForm
+class GrupoCreateView(PersonalBienestarRequeridoMixin, CreateView):
+    model = Grupo
+    form_class = GrupoForm
     template_name = "usuarios/panel_form.html"
-    success_url = reverse_lazy("usuarios:fichas_lista")
+    success_url = reverse_lazy("usuarios:grupos_lista")
     extra_context = {
-        "titulo_pagina": "Crear ficha",
-        "url_cancelar": reverse_lazy("usuarios:fichas_lista"),
+        "titulo_pagina": "Crear grupo",
+        "url_cancelar": reverse_lazy("usuarios:grupos_lista"),
     }
 
     def form_valid(self, form):
-        messages.success(self.request, "Ficha creada correctamente.")
+        messages.success(self.request, "Grupo creado correctamente.")
         return super().form_valid(form)
 
 
-class FichaUpdateView(PersonalBienestarRequeridoMixin, UpdateView):
-    model = Ficha
-    form_class = FichaForm
+class GrupoUpdateView(PersonalBienestarRequeridoMixin, UpdateView):
+    model = Grupo
+    form_class = GrupoForm
     template_name = "usuarios/panel_form.html"
-    success_url = reverse_lazy("usuarios:fichas_lista")
+    success_url = reverse_lazy("usuarios:grupos_lista")
     extra_context = {
-        "titulo_pagina": "Editar ficha",
-        "url_cancelar": reverse_lazy("usuarios:fichas_lista"),
+        "titulo_pagina": "Editar grupo",
+        "url_cancelar": reverse_lazy("usuarios:grupos_lista"),
     }
 
     def form_valid(self, form):
-        messages.success(self.request, "Ficha actualizada correctamente.")
+        messages.success(self.request, "Grupo actualizado correctamente.")
         return super().form_valid(form)
 
 
-class FichaDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
-    model = Ficha
+class GrupoDeleteView(EliminarProtegidoMixin, PersonalBienestarRequeridoMixin, DeleteView):
+    model = Grupo
     template_name = "usuarios/panel_confirmar_eliminar.html"
-    success_url = reverse_lazy("usuarios:fichas_lista")
+    success_url = reverse_lazy("usuarios:grupos_lista")
     extra_context = {
-        "titulo_pagina": "Eliminar ficha",
-        "url_cancelar": reverse_lazy("usuarios:fichas_lista"),
+        "titulo_pagina": "Eliminar grupo",
+        "url_cancelar": reverse_lazy("usuarios:grupos_lista"),
     }
-
-    def form_valid(self, form):
-        messages.success(self.request, "Ficha eliminada.")
-        return super().form_valid(form)
+    mensaje_eliminado = "Grupo eliminado."
+    mensaje_protegido = (
+        "No se puede eliminar: el grupo tiene aprendices registrados. Reasigna a los aprendices a otro grupo primero."
+    )
 
 
 # ---------- Aprendices (Personal de Bienestar o Administrador) ----------
 # Se crean por auto-registro; aquí solo se consultan y se reasigna
-# su ficha/estado (activo, retirado, egresado). No se crean ni se
+# su grupo/estado (activo, retirado, egresado). No se crean ni se
 # eliminan desde este panel.
 #
-# Igual que FichaListView: la misma vista sirve para "todos los
+# Igual que GrupoListView: la misma vista sirve para "todos los
 # aprendices" (panel/aprendices/) y para "los aprendices de una
-# ficha" (panel/fichas/<id>/aprendices/).
+# grupo" (panel/grupos/<id>/aprendices/).
 
 class AprendizListView(PersonalBienestarRequeridoMixin, SingleTableMixin, FilterView):
     """
@@ -498,29 +590,29 @@ class AprendizListView(PersonalBienestarRequeridoMixin, SingleTableMixin, Filter
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related(
-            "usuario", "ficha", "ficha__programa_formacion"
+            "usuario", "grupo", "grupo__programa_formacion"
         )
 
-        ficha_id = self.kwargs.get("ficha_id")
-        if ficha_id:
-            queryset = queryset.filter(ficha_id=ficha_id)
+        grupo_id = self.kwargs.get("grupo_id")
+        if grupo_id:
+            queryset = queryset.filter(grupo_id=grupo_id)
 
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        ficha_id = self.kwargs.get("ficha_id")
-        if ficha_id:
-            context["ficha"] = get_object_or_404(
-                Ficha.objects.select_related("programa_formacion"), pk=ficha_id
+        grupo_id = self.kwargs.get("grupo_id")
+        if grupo_id:
+            context["grupo"] = get_object_or_404(
+                Grupo.objects.select_related("programa_formacion"), pk=grupo_id
             )
 
         # Para que "Exportar" traiga lo mismo que se ve filtrado en
         # pantalla: como la búsqueda ahora es un <form method="get">
         # de verdad, la URL actual ya tiene ?q=...&estado=... — solo
         # hay que copiarlo (menos "page") al link de exportar. Además
-        # de eso, si venimos filtrados por ficha (que es parte de la
+        # de eso, si venimos filtrados por grupo (que es parte de la
         # URL, no un ?parametro=), lo agregamos aparte.
         parametros = self.request.GET.copy()
         parametros.pop("page", None)
@@ -528,8 +620,8 @@ class AprendizListView(PersonalBienestarRequeridoMixin, SingleTableMixin, Filter
         partes_extra = []
         if parametros:
             partes_extra.append(parametros.urlencode())
-        if ficha_id:
-            partes_extra.append(f"ficha_id={ficha_id}")
+        if grupo_id:
+            partes_extra.append(f"grupo_id={grupo_id}")
 
         if partes_extra:
             context["export_extra_params"] = "&".join(partes_extra)
@@ -593,7 +685,7 @@ class AprendizDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
 
 @administrador_requerido
 def exportar_programas(request):
-    programas = ProgramaFormacion.objects.order_by("nombre")
+    programas = ProgramaFormacion.objects.select_related("nivel_formacion").order_by("nombre")
 
     q = request.GET.get("q", "").strip()
     if q:
@@ -605,11 +697,25 @@ def exportar_programas(request):
 
     encabezados = ["Nombre", "Código", "Nivel", "Duración (meses)", "Estado"]
     filas = [
-        [p.nombre, p.codigo, p.nivel_formacion, p.duracion_meses, p.estado]
+        [p.nombre, p.codigo, p.nivel_formacion.nombre, p.duracion_meses, p.estado]
         for p in programas
     ]
 
     return responder_export(request, "programas_formacion", "Programas de formación", encabezados, filas, "usuarios:dashboard")
+
+
+@administrador_requerido
+def exportar_niveles(request):
+    niveles = NivelFormacion.objects.annotate(total_programas=Count("programas")).order_by("nombre")
+
+    q = request.GET.get("q", "").strip()
+    if q:
+        niveles = niveles.filter(nombre__icontains=q)
+
+    encabezados = ["Nivel de formación", "Programas"]
+    filas = [[n.nombre, n.total_programas] for n in niveles]
+
+    return responder_export(request, "niveles_formacion", "Niveles de formación", encabezados, filas, "usuarios:dashboard")
 
 
 @administrador_requerido
@@ -627,60 +733,60 @@ def exportar_jornadas(request):
 
 
 @personal_bienestar_requerido
-def exportar_fichas(request):
-    fichas = Ficha.objects.select_related("programa_formacion", "jornada").order_by("-fecha_creacion")
+def exportar_grupos(request):
+    grupos = Grupo.objects.select_related("programa_formacion", "jornada").order_by("-fecha_creacion")
 
     programa_id = request.GET.get("programa_id")
     if programa_id:
-        fichas = fichas.filter(programa_formacion_id=programa_id)
+        grupos = grupos.filter(programa_formacion_id=programa_id)
 
     jornada_id = request.GET.get("jornada_id")
     if jornada_id:
-        fichas = fichas.filter(jornada_id=jornada_id)
+        grupos = grupos.filter(jornada_id=jornada_id)
 
     q = request.GET.get("q", "").strip()
     if q:
-        fichas = fichas.filter(
-            Q(numero_ficha__icontains=q) |
+        grupos = grupos.filter(
+            Q(numero_grupo__icontains=q) |
             Q(programa_formacion__nombre__icontains=q) |
             Q(jornada__nombre__icontains=q)
         )
 
     estado = request.GET.get("estado", "").strip()
     if estado:
-        fichas = fichas.filter(estado=estado)
+        grupos = grupos.filter(estado=estado)
 
-    encabezados = ["Número de ficha", "Programa", "Jornada", "Fecha inicio", "Fecha fin", "Estado"]
+    encabezados = ["Número de grupo", "Programa", "Jornada", "Fecha inicio", "Fecha fin", "Estado"]
     filas = [
-        [f.numero_ficha, f.programa_formacion.nombre, f.jornada.nombre, f.fecha_inicio, f.fecha_fin, f.estado]
-        for f in fichas
+        [f.numero_grupo, f.programa_formacion.nombre, f.jornada.nombre, f.fecha_inicio, f.fecha_fin, f.estado]
+        for f in grupos
     ]
 
-    return responder_export(request, "fichas", "Fichas", encabezados, filas, "usuarios:dashboard")
+    return responder_export(request, "grupos", "Grupos", encabezados, filas, "usuarios:dashboard")
 
 
 @personal_bienestar_requerido
 def exportar_aprendices(request):
     queryset = Aprendiz.objects.select_related(
-        "usuario", "ficha", "ficha__programa_formacion"
+        "usuario", "grupo", "grupo__programa_formacion"
     ).order_by("usuario__apellidos", "usuario__nombres")
 
-    ficha_id = request.GET.get("ficha_id")
-    if ficha_id:
-        queryset = queryset.filter(ficha_id=ficha_id)
+    grupo_id = request.GET.get("grupo_id")
+    if grupo_id:
+        queryset = queryset.filter(grupo_id=grupo_id)
 
     # Mismo filtro que usa la tabla en pantalla (usuarios/filters.py) --
     # así "Exportar" nunca se puede desalinear de lo que se ve filtrado.
     aprendices = AprendizFilter(request.GET, queryset=queryset).qs
 
-    encabezados = ["Nombres", "Apellidos", "Documento", "Ficha", "Programa", "Estado"]
+    encabezados = ["Nombres", "Apellidos", "Documento", "Grupo", "Programa", "Estado"]
     filas = [
         [
             a.usuario.nombres,
             a.usuario.apellidos,
             a.usuario.numero_documento,
-            a.ficha.numero_ficha,
-            a.ficha.programa_formacion.nombre,
+            a.grupo.numero_grupo,
+            a.grupo.programa_formacion.nombre,
             a.estado,
         ]
         for a in aprendices

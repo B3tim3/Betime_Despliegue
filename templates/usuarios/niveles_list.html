@@ -1,0 +1,58 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Niveles de formación | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h1 class="h3 fw-bold mb-0">Niveles de formación</h1>
+    <div class="d-flex gap-2">
+        {% include 'components/exportar/botones.html' with base_url='usuarios:niveles_exportar' tabla_id='tabla-niveles' %}
+        <a href="{% url 'usuarios:niveles_crear' %}" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Nuevo nivel
+        </a>
+    </div>
+</div>
+
+{% if niveles %}
+    {% include 'components/tabla/buscador.html' with tabla_id='tabla-niveles' placeholder='Buscar por nombre...' %}
+
+    <div class="table-responsive">
+        <table class="table align-middle bg-white" id="tabla-niveles" data-tabla-ordenable>
+            <thead>
+                <tr>
+                    <th data-ordenar-columna="0">Nombre</th>
+                    <th data-ordenar-columna="1">Programas</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for nivel in niveles %}
+                    <tr>
+                        <td>{{ nivel.nombre }}</td>
+                        <td>{{ nivel.total_programas }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'usuarios:niveles_editar' nivel.id %}" class="btn btn-sm btn-outline-success">Editar</a>
+                            <form method="post" action="{% url 'usuarios:niveles_eliminar' nivel.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar el nivel {{ nivel.nombre }}? Esta acción no se puede deshacer.">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% include 'components/tabla/paginacion.html' %}
+{% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center text-muted py-5">
+            Todavía no hay niveles de formación registrados.
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

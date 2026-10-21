@@ -19,7 +19,7 @@ class AdministradorRequeridoMixin(LoginRequiredMixin, UserPassesTestMixin):
 
 
 class PersonalBienestarRequeridoMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Personal de Bienestar o Administrador (fichas, aprendices)."""
+    """Personal de Bienestar o Administrador (grupos, aprendices)."""
 
     login_url = "usuarios:login"
 

@@ -1,12 +1,12 @@
 from django.db import models
 
 ESTADO_CHOICES = [
-    ("activa", "Activa"),
-    ("cerrada", "Cerrada"),
+    ("activa", "Activo"),
+    ("cerrada", "Cerrado"),
 ]
 
 
-class Ficha(models.Model):
+class Grupo(models.Model):
 
     id = models.BigAutoField(primary_key=True)
 
@@ -15,12 +15,12 @@ class Ficha(models.Model):
     programa_formacion = models.ForeignKey(
         "usuarios.ProgramaFormacion",
         on_delete=models.PROTECT,
-        related_name="fichas"
+        related_name="grupos"
     )
 
     # ---------- Información general ----------
 
-    numero_ficha = models.CharField(
+    numero_grupo = models.CharField(
         "número de grupo",
         max_length=20,
         unique=True
@@ -29,7 +29,7 @@ class Ficha(models.Model):
     jornada = models.ForeignKey(
         "usuarios.Jornada",
         on_delete=models.PROTECT,
-        related_name="fichas"
+        related_name="grupos"
     )
 
     # ---------- Fechas ----------
@@ -55,4 +55,4 @@ class Ficha(models.Model):
         verbose_name_plural = "Grupos"
 
     def __str__(self):
-        return self.numero_ficha
+        return self.numero_grupo

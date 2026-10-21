@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
 from usuarios.choices import GENERO_CHOICES, TIPO_DOCUMENTO_CHOICES
-from usuarios.models import Ficha, Jornada, ProgramaFormacion
+from usuarios.models import Grupo, Jornada, ProgramaFormacion
 
 
 class RegistroAprendizForm(forms.Form):
@@ -105,12 +105,12 @@ class RegistroAprendizForm(forms.Form):
         empty_label="Selecciona primero tu programa de formación"
     )
 
-    ficha = forms.ModelChoiceField(
-        queryset=Ficha.objects.none(),
+    grupo = forms.ModelChoiceField(
+        queryset=Grupo.objects.none(),
         label="Número de grupo",
         widget=forms.Select(attrs={
             "class": "form-select",
-            "id": "id_ficha",
+            "id": "id_grupo",
         }),
         empty_label="Selecciona primero tu jornada"
     )
@@ -137,7 +137,7 @@ class RegistroAprendizForm(forms.Form):
     PASOS = {
         1: ["nombres", "apellidos", "tipo_documento", "numero_documento",
             "genero", "email", "telefono"],
-        2: ["programa_formacion", "jornada", "ficha"],
+        2: ["programa_formacion", "jornada", "grupo"],
         3: ["password", "password_confirm"],
     }
 
@@ -154,16 +154,16 @@ class RegistroAprendizForm(forms.Form):
 
         if programa_id and str(programa_id).isdigit():
             self.fields["jornada"].queryset = Jornada.objects.filter(
-                fichas__programa_formacion_id=programa_id,
-                fichas__estado="activa",
+                grupos__programa_formacion_id=programa_id,
+                grupos__estado="activa",
             ).distinct().order_by("nombre")
 
             if jornada_id and str(jornada_id).isdigit():
-                self.fields["ficha"].queryset = Ficha.objects.filter(
+                self.fields["grupo"].queryset = Grupo.objects.filter(
                     programa_formacion_id=programa_id,
                     jornada_id=jornada_id,
                     estado="activa",
-                ).order_by("numero_ficha")
+                ).order_by("numero_grupo")
 
     # ---------- Validaciones de campo ----------
 
@@ -229,16 +229,16 @@ class RegistroAprendizForm(forms.Form):
         # jornada elegidos, y que siga activo.
         programa = cleaned_data.get("programa_formacion")
         jornada = cleaned_data.get("jornada")
-        ficha = cleaned_data.get("ficha")
+        grupo = cleaned_data.get("grupo")
 
-        if programa and jornada and ficha:
+        if programa and jornada and grupo:
             if (
-                ficha.programa_formacion_id != programa.id
-                or ficha.jornada_id != jornada.id
-                or ficha.estado != "activa"
+                grupo.programa_formacion_id != programa.id
+                or grupo.jornada_id != jornada.id
+                or grupo.estado != "activa"
             ):
                 self.add_error(
-                    "ficha",
+                    "grupo",
                     "El grupo seleccionado no corresponde al programa y la jornada elegidos."
                 )
 

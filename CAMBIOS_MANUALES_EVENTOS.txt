@@ -1,0 +1,25 @@
+CAMBIOS MANUALES (3 archivos). Son edits pequenos; no te envio los archivos
+completos para no pisar cambios tuyos (horas AM/PM, etc.).
+Usa Ctrl+F en VS Code para encontrar cada texto.
+
+1) eventos/views.py   (1 cambio, cerca de la linea 269)
+   BUSCAR:      "aprendiz__ficha"
+   REEMPLAZAR:  "aprendiz__grupo"
+
+2) templates/eventos/confirmar_asistencia_qr.html   (2 cambios)
+   a) BUSCAR:      <p class="text-muted small mb-1">Ficha</p>
+      REEMPLAZAR:  <p class="text-muted small mb-1">Grupo</p>
+   b) BUSCAR:      inscripcion.aprendiz.ficha.numero_ficha
+      REEMPLAZAR:  inscripcion.aprendiz.grupo.numero_grupo
+
+3) templates/eventos/checklist_inscritos.html   (4 cambios)
+   a) BUSCAR:      placeholder='Buscar por nombre, documento o ficha...'
+      REEMPLAZAR:  placeholder='Buscar por nombre, documento o grupo...'
+   b) BUSCAR:      <th>Ficha</th>
+      REEMPLAZAR:  <th>Grupo</th>
+   c) BUSCAR:      inscripcion.aprendiz.ficha.numero_ficha
+      REEMPLAZAR:  inscripcion.aprendiz.grupo.numero_grupo
+   d) (solo un comentario) BUSCAR: "una ficha,"  REEMPLAZAR: "un grupo,"
+
+IMPORTANTE: los cambios 1, 2b y 3c son obligatorios. Sin ellos, el checklist de
+asistencia y la confirmacion por QR fallan, porque el campo ya no se llama "ficha".

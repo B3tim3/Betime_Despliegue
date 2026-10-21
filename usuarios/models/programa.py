@@ -21,8 +21,11 @@ class ProgramaFormacion(models.Model):
         unique=True
     )
 
-    nivel_formacion = models.CharField(
-        max_length=50
+    nivel_formacion = models.ForeignKey(
+        "usuarios.NivelFormacion",
+        on_delete=models.PROTECT,
+        related_name="programas",
+        verbose_name="nivel de formación"
     )
 
     duracion_meses = models.PositiveIntegerField()

@@ -239,9 +239,9 @@ Crear cuenta | Be Time
                             </div>
 
                             <div class="mb-3">
-                                <label for="{{ form.ficha.id_for_label }}" class="form-label">{{ form.ficha.label }}</label>
-                                {{ form.ficha }}
-                                {% for error in form.ficha.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                                <label for="{{ form.grupo.id_for_label }}" class="form-label">{{ form.grupo.label }}</label>
+                                {{ form.grupo }}
+                                {% for error in form.grupo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                             </div>
 
                             <div class="registro-acciones" data-solo-js>
@@ -358,11 +358,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const programaSelect = document.getElementById('id_programa_formacion');
     const jornadaSelect = document.getElementById('id_jornada');
-    const fichaSelect = document.getElementById('id_ficha');
+    const grupoSelect = document.getElementById('id_grupo');
     const nivelCaja = document.getElementById('nivel-formacion');
 
     const URL_JORNADAS = "{% url 'usuarios:jornadas_por_programa' %}";
-    const URL_FICHAS = "{% url 'usuarios:fichas_por_programa' %}";
+    const URL_GRUPOS = "{% url 'usuarios:grupos_por_programa' %}";
 
     function llenarSelect(select, opciones, textoVacio) {
         select.innerHTML = '';
@@ -392,8 +392,8 @@ document.addEventListener('DOMContentLoaded', function () {
         llenarSelect(jornadaSelect, [], texto);
     }
 
-    function reiniciarFicha(texto) {
-        llenarSelect(fichaSelect, [], texto);
+    function reiniciarGrupo(texto) {
+        llenarSelect(grupoSelect, [], texto);
     }
 
     function cargarJornadas(programaId, soloNivel) {
@@ -418,30 +418,30 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    function cargarFichas(programaId, jornadaId) {
-        const url = URL_FICHAS + '?programa_formacion=' + encodeURIComponent(programaId)
+    function cargarGrupos(programaId, jornadaId) {
+        const url = URL_GRUPOS + '?programa_formacion=' + encodeURIComponent(programaId)
                   + '&jornada=' + encodeURIComponent(jornadaId);
 
         fetch(url)
             .then(function (r) { return r.json(); })
-            .then(function (fichas) {
-                if (fichas.length === 0) {
-                    reiniciarFicha('No hay grupos activos en esta jornada');
+            .then(function (grupos) {
+                if (grupos.length === 0) {
+                    reiniciarGrupo('No hay grupos activos en esta jornada');
                     return;
                 }
                 llenarSelect(
-                    fichaSelect,
-                    fichas.map(function (f) { return { valor: f.id, texto: f.numero_ficha }; }),
+                    grupoSelect,
+                    grupos.map(function (f) { return { valor: f.id, texto: f.numero_grupo }; }),
                     'Selecciona tu número de grupo'
                 );
             })
             .catch(function () {
-                reiniciarFicha('No se pudieron cargar los grupos. Intenta de nuevo.');
+                reiniciarGrupo('No se pudieron cargar los grupos. Intenta de nuevo.');
             });
     }
 
     programaSelect.addEventListener('change', function () {
-        reiniciarFicha('Selecciona primero tu jornada');
+        reiniciarGrupo('Selecciona primero tu jornada');
         if (!this.value) {
             mostrarNivel('');
             reiniciarJornada('Selecciona primero tu programa de formación');
@@ -453,11 +453,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     jornadaSelect.addEventListener('change', function () {
         if (!this.value) {
-            reiniciarFicha('Selecciona primero tu jornada');
+            reiniciarGrupo('Selecciona primero tu jornada');
             return;
         }
-        reiniciarFicha('Cargando grupos...');
-        cargarFichas(programaSelect.value, this.value);
+        reiniciarGrupo('Cargando grupos...');
+        cargarGrupos(programaSelect.value, this.value);
     });
 
     // Estado inicial. Si el formulario volvió con errores, los <select> ya
@@ -466,7 +466,7 @@ document.addEventListener('DOMContentLoaded', function () {
         cargarJornadas(programaSelect.value, true);
     } else {
         reiniciarJornada('Selecciona primero tu programa de formación');
-        reiniciarFicha('Selecciona primero tu jornada');
+        reiniciarGrupo('Selecciona primero tu jornada');
     }
 
 });
