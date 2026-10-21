@@ -8,6 +8,7 @@ app_name = "usuarios"
 
 urlpatterns = [
     path("registro/", views.registro_aprendiz, name="registro"),
+    path("ajax/jornadas/", views.jornadas_por_programa, name="jornadas_por_programa"),
     path("ajax/fichas/", views.fichas_por_programa, name="fichas_por_programa"),
     path("login/", views.login_view, name="login"),
     path("acceso-personal/", views.login_view, name="login_personal"),

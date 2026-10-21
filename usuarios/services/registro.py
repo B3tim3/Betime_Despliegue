@@ -5,7 +5,8 @@ from usuarios.models import Administrador, Aprendiz, PersonalBienestar, Usuario
 
 
 @transaction.atomic
-def registrar_aprendiz(*, tipo_documento, numero_documento, nombres, apellidos, email, password, ficha):
+def registrar_aprendiz(*, tipo_documento, numero_documento, nombres, apellidos, email, password,
+                       ficha, genero="", telefono=""):
     """
     Crea el Usuario y su perfil de Aprendiz de forma atómica.
     Si algo falla, no queda ningún registro a medias.
@@ -18,6 +19,8 @@ def registrar_aprendiz(*, tipo_documento, numero_documento, nombres, apellidos, 
         nombres=nombres,
         apellidos=apellidos,
         email=email,
+        genero=genero,
+        telefono=telefono,
     )
 
     aprendiz = Aprendiz.objects.create(

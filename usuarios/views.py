@@ -30,22 +30,59 @@ from usuarios.tables import AprendizTable
 from core.services.exportar import responder_export
 
 
-def fichas_por_programa(request):
+def jornadas_por_programa(request):
     """
-    Devuelve en JSON las fichas activas de un programa de formación.
-    La usa el <select> de fichas del formulario de registro para
-    filtrarse dinámicamente según el programa elegido.
+    Devuelve en JSON las jornadas en las que el programa elegido tiene
+    grupos activos, junto con el nivel de formación del programa.
+    Es el segundo escalón de la cascada del registro:
+    programa -> jornada -> grupo.
     """
 
     programa_id = request.GET.get("programa_formacion")
 
-    if not programa_id:
+    if not programa_id or not programa_id.isdigit():
+        return JsonResponse({"nivel": "", "jornadas": []})
+
+    programa = ProgramaFormacion.objects.filter(pk=programa_id, estado="activo").first()
+
+    if programa is None:
+        return JsonResponse({"nivel": "", "jornadas": []})
+
+    jornadas = Jornada.objects.filter(
+        fichas__programa_formacion=programa,
+        fichas__estado="activa",
+    ).distinct().order_by("nombre").values("id", "nombre")
+
+    return JsonResponse({
+        "nivel": programa.nivel_formacion,
+        "jornadas": list(jornadas),
+    })
+
+
+def fichas_por_programa(request):
+    """
+    Devuelve en JSON los grupos (fichas) activos de un programa de
+    formación. Si además llega ?jornada=<id>, solo los de esa jornada.
+    Es el último escalón de la cascada del registro. El parámetro
+    jornada es opcional para no romper el formulario de creación de
+    usuarios del panel, que solo filtra por programa.
+    """
+
+    programa_id = request.GET.get("programa_formacion")
+    jornada_id = request.GET.get("jornada")
+
+    if not programa_id or not programa_id.isdigit():
         return JsonResponse([], safe=False)
 
     fichas = Ficha.objects.filter(
         programa_formacion_id=programa_id,
         estado="activa"
-    ).order_by("numero_ficha").values(
+    )
+
+    if jornada_id and jornada_id.isdigit():
+        fichas = fichas.filter(jornada_id=jornada_id)
+
+    fichas = fichas.order_by("numero_ficha").values(
         "id", "numero_ficha", jornada_nombre=F("jornada__nombre")
     )
 
@@ -69,6 +106,8 @@ def registro_aprendiz(request):
             email=form.cleaned_data["email"],
             password=form.cleaned_data["password"],
             ficha=form.cleaned_data["ficha"],
+            genero=form.cleaned_data["genero"],
+            telefono=form.cleaned_data["telefono"],
         )
 
         login(request, usuario)
@@ -634,12 +673,11 @@ def exportar_aprendices(request):
     # así "Exportar" nunca se puede desalinear de lo que se ve filtrado.
     aprendices = AprendizFilter(request.GET, queryset=queryset).qs
 
-    encabezados = ["Nombres", "Apellidos", "Tipo Documento", "Documento", "Ficha", "Programa", "Estado"]
+    encabezados = ["Nombres", "Apellidos", "Documento", "Ficha", "Programa", "Estado"]
     filas = [
         [
             a.usuario.nombres,
             a.usuario.apellidos,
-            a.usuario.tipo_documento,
             a.usuario.numero_documento,
             a.ficha.numero_ficha,
             a.ficha.programa_formacion.nombre,

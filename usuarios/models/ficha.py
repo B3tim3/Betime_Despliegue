@@ -21,6 +21,7 @@ class Ficha(models.Model):
     # ---------- Información general ----------
 
     numero_ficha = models.CharField(
+        "número de grupo",
         max_length=20,
         unique=True
     )
@@ -50,8 +51,8 @@ class Ficha(models.Model):
     )
 
     class Meta:
-        verbose_name = "Ficha"
-        verbose_name_plural = "Fichas"
+        verbose_name = "Grupo"
+        verbose_name_plural = "Grupos"
 
     def __str__(self):
         return self.numero_ficha
