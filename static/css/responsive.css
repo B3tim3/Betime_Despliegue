@@ -222,7 +222,7 @@
 }
 .nav-betime .navbar-brand { margin-right: 1rem; }
 /* TAMAÑO DEL LOGO: cambia solo este número (en px) */
-.nav-betime .navbar-brand img { height: 80px; width: auto; max-width: none; flex-shrink: 0; }
+.nav-betime .navbar-brand img { height: 81px; width: auto; max-width: none; flex-shrink: 0; }
 
 .nav-betime .navbar-toggler {
     border: 1px solid #d9e2dc;
