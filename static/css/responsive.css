@@ -209,3 +209,94 @@
         width: 100%;
     }
 }
+
+/* ==========================================================
+   Barra de navegación (pública y privada)
+   ========================================================== */
+.nav-betime {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    padding-block: .55rem;
+    border-bottom: 1px solid #edf1ee;
+}
+.nav-betime .navbar-brand { margin-right: 1rem; }
+/* TAMAÑO DEL LOGO: cambia solo este número (en px) */
+.nav-betime .navbar-brand img { height: 80px; width: auto; max-width: none; flex-shrink: 0; }
+
+.nav-betime .navbar-toggler {
+    border: 1px solid #d9e2dc;
+    border-radius: .65rem;
+    padding: .35rem .5rem;
+    transition: background-color .15s, border-color .15s;
+}
+.nav-betime .navbar-toggler:hover { background: #f3f8f4; border-color: #b9d3be; }
+.nav-betime .navbar-toggler:focus { box-shadow: 0 0 0 .2rem rgba(46, 125, 50, .2); }
+
+.nav-betime .nav-link { color: #4b5750; font-weight: 500; }
+.nav-betime .nav-link:hover,
+.nav-betime .nav-link.active { color: #2e7d32; }
+
+.nav-betime .nav-acciones form { margin: 0; }
+.nav-betime .nav-acciones .btn { border-radius: 999px; font-weight: 500; white-space: nowrap; }
+
+.nav-usuario {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .3rem .6rem;
+    color: #6c757d;
+}
+.nav-usuario__nombre { font-weight: 600; color: #26332b; }
+
+/* Celular y tablet */
+@media (max-width: 991.98px) {
+    .nav-betime .navbar-collapse {
+        margin-top: .6rem;
+        padding-top: .25rem;
+        border-top: 1px solid #edf1ee;
+    }
+    .nav-betime .navbar-nav { padding-block: .25rem; }
+    .nav-betime .navbar-nav .nav-link {
+        padding: .8rem .5rem;
+        border-radius: .6rem;
+    }
+    .nav-betime .navbar-nav .nav-link.active { background: #eef6ef; }
+    .nav-betime .navbar-nav .nav-link:active { background: #e3f0e5; }
+
+    /* Botones lado a lado, mismo tamaño */
+    .nav-betime .nav-acciones {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .6rem;
+        padding: .6rem 0 .5rem;
+    }
+    .nav-betime .nav-acciones > :only-child { grid-column: 1 / -1; }
+    .nav-betime .nav-acciones .btn { padding: .65rem .75rem; }
+
+    /* Tarjeta con el nombre y el rol (panel privado) */
+    .nav-usuario {
+        background: #f5f8f6;
+        border-radius: .8rem;
+        padding: .7rem .9rem;
+        margin: .4rem 0 .6rem;
+    }
+    .nav-betime .nav-item form .btn {
+        border-radius: 999px;
+        padding: .6rem .75rem;
+        font-size: 1rem;
+    }
+    .nav-betime .nav-item:last-child { padding-bottom: .5rem; }
+}
+
+/* Escritorio */
+@media (min-width: 992px) {
+    .nav-betime .navbar-nav { gap: .25rem; }
+    .nav-betime .navbar-nav .nav-link { padding: .5rem .8rem; border-radius: .6rem; }
+    .nav-betime .navbar-nav .nav-link:hover { background: #f3f8f4; }
+    .nav-betime .navbar-nav .nav-link.active { background: #eef6ef; }
+    .nav-betime .nav-acciones { display: flex; align-items: center; gap: .5rem; }
+    .nav-betime .nav-acciones .btn { padding: .45rem 1.1rem; }
+    .nav-usuario { padding: 0 .25rem; }
+    .nav-betime .nav-item form .btn { border-radius: 999px; padding: .4rem 1rem; }
+}

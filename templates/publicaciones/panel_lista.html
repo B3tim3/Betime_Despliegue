@@ -19,7 +19,7 @@ Gestionar publicaciones | Be Time
 {% if publicaciones %}
     <div class="row g-2 mb-1">
         <div class="col-12 col-md-6">
-            {% include 'components/tabla/buscador.html' with tabla_id='tabla-publicaciones' placeholder='Buscar por título o autor...' %}
+            {% include 'components/tabla/buscador.html' with tabla_id='tabla-publicaciones' placeholder='Buscar por título o creador...' %}
         </div>
         <div class="col-12 col-md-4">
             <select class="form-select" data-tabla-filtro-estado="tabla-publicaciones">
@@ -35,7 +35,7 @@ Gestionar publicaciones | Be Time
             <thead>
                 <tr>
                     <th data-ordenar-columna="0">Título</th>
-                    <th data-ordenar-columna="1">Autor</th>
+                    <th data-ordenar-columna="1">Creado por</th>
                     <th data-ordenar-columna="2">Estado</th>
                     <th data-ordenar-columna="3" data-ordenar-tipo="fecha">Fecha publicación</th>
                     <th class="text-end">Acciones</th>
@@ -45,11 +45,14 @@ Gestionar publicaciones | Be Time
                 {% for publicacion in publicaciones %}
                     <tr data-estado="{{ publicacion.estado }}">
                         <td>{{ publicacion.titulo }}</td>
-                        <td>{{ publicacion.autor.get_full_name }}</td>
+                        <td>
+                            {{ publicacion.autor.get_full_name }}
+                            <span class="d-block small text-muted">{{ publicacion.fecha_creacion|date:"d/m/Y" }}</span>
+                        </td>
                         <td>
                             <span class="badge text-bg-light border">{{ publicacion.get_estado_display|default:publicacion.estado }}</span>
                         </td>
-                        <td>{{ publicacion.fecha_publicacion|date:"d/m/Y h:i A"|default:"—" }}</td>
+                        <td>{{ publicacion.fecha_publicacion|date:"d/m/Y H:i"|default:"—" }}</td>
                         <td class="text-end">
                             <a href="{% url 'publicaciones:editar' publicacion.id %}" class="btn btn-sm btn-outline-success">
                                 Editar

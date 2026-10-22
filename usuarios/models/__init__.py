@@ -6,6 +6,7 @@ from .usuario import Usuario
 from .aprendiz import Aprendiz
 from .personal_bienestar import PersonalBienestar
 from .administrador import Administrador
+from .intento_login import IntentoFallido
 
 __all__ = [
     "NivelFormacion",
@@ -16,4 +17,5 @@ __all__ = [
     "Aprendiz",
     "PersonalBienestar",
     "Administrador",
+    "IntentoFallido",
 ]
