@@ -5,3 +5,9 @@ TIPO_DOCUMENTO_CHOICES = [
     ("PEP", "Permiso Especial de Permanencia"),
     ("PPT", "Permiso por Protección Temporal"),
 ]
+
+
+GENERO_CHOICES = [
+    ("M", "Masculino"),
+    ("F", "Femenino"),
+]

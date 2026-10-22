@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Verificar constancia | Be Time
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 640px;">
+
+    <h1 class="h3 fw-bold mb-4 text-center">Verificación de constancia</h1>
+
+    {% if constancia %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="alert alert-success d-flex align-items-center gap-2 py-2">
+                    <i class="bi bi-patch-check-fill fs-4"></i>
+                    <div><strong>Constancia auténtica.</strong> Fue expedida por Be Time.</div>
+                </div>
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Código</dt>
+                    <dd class="col-sm-8">{{ constancia.codigo }}</dd>
+
+                    <dt class="col-sm-4">Aprendiz</dt>
+                    <dd class="col-sm-8">{{ constancia.nombre }}</dd>
+
+                    <dt class="col-sm-4">Documento</dt>
+                    <dd class="col-sm-8">{{ constancia.tipo_documento }} {{ constancia.documento_oculto }}</dd>
+
+                    <dt class="col-sm-4">Programa</dt>
+                    <dd class="col-sm-8">{{ constancia.programa }}</dd>
+
+                    <dt class="col-sm-4">Grupo</dt>
+                    <dd class="col-sm-8">{{ constancia.grupo }}</dd>
+
+                    <dt class="col-sm-4">Horas certificadas</dt>
+                    <dd class="col-sm-8">{{ constancia.total_horas }} de {{ constancia.meta_horas }}</dd>
+
+                    <dt class="col-sm-4">Fecha de expedición</dt>
+                    <dd class="col-sm-8">{{ constancia.fecha_emision|date:"d/m/Y h:i A" }}</dd>
+                </dl>
+
+                <p class="text-muted small mt-3 mb-0">
+                    Estos datos corresponden al momento en que se expidió la constancia.
+                    Compáralos con los del documento que recibiste: si no coinciden, no es válido.
+                </p>
+            </div>
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 text-center">
+                <i class="bi bi-x-octagon-fill text-danger fs-1"></i>
+                <h2 class="h5 fw-bold mt-2">No encontramos esa constancia</h2>
+                <p class="text-muted mb-0">
+                    El código <strong>{{ codigo }}</strong> no existe en Be Time.
+                    Revisa que esté bien escrito; si el documento tiene un código distinto, no es auténtico.
+                </p>
+            </div>
+        </div>
+    {% endif %}
+
+    <p class="text-center mt-4"><a href="/" class="text-decoration-none">&larr; Ir a Be Time</a></p>
+</div>
+{% endblock %}

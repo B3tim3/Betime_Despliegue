@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.utils import timezone
 
 ESTADO_CHOICES = [
     ("inscrito", "Inscrito"),
@@ -48,6 +49,15 @@ class Inscripcion(models.Model):
         default="inscrito"
     )
 
+    # ---------- Recordatorio ----------
+    # True cuando ya se le avisó (campanita + correo) que el evento está
+    # cerca. Evita avisar dos veces; se reinicia si el evento cambia de
+    # fecha o si la persona cancela y se vuelve a inscribir.
+
+    recordatorio_enviado = models.BooleanField(
+        default=False
+    )
+
     # ---------- Fechas ----------
 
     fecha_inscripcion = models.DateTimeField(
@@ -58,6 +68,20 @@ class Inscripcion(models.Model):
         verbose_name = "Inscripción"
         verbose_name_plural = "Inscripciones"
         unique_together = ("evento", "aprendiz")
+
+    @property
+    def puede_cancelarse(self):
+        """
+        El aprendiz solo puede cancelar mientras la inscripción siga
+        activa y el evento esté programado y no haya empezado. Después,
+        la asistencia ya la maneja Bienestar. (Usar select_related("evento")
+        en los listados para no hacer una consulta por fila.)
+        """
+        return (
+            self.estado == "inscrito"
+            and self.evento.estado == "programado"
+            and self.evento.fecha_inicio > timezone.now()
+        )
 
     def __str__(self):
         return f"{self.aprendiz} - {self.evento}"

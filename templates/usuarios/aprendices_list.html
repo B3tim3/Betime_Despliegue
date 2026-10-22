@@ -7,13 +7,13 @@ Aprendices | Be Time
 
 {% block dashboard_content %}
 
-{% if ficha %}
+{% if grupo %}
     <nav class="mb-2">
-        <a href="{% url 'usuarios:fichas_lista' %}" class="text-decoration-none">&larr; Fichas</a>
+        <a href="{% url 'usuarios:grupos_lista' %}" class="text-decoration-none">&larr; Grupos</a>
     </nav>
     <p class="text-muted mb-3">
-        Aprendices de la ficha <strong>{{ ficha.numero_ficha }}</strong>
-        ({{ ficha.programa_formacion.nombre }})
+        Aprendices del grupo <strong>{{ grupo.numero_grupo }}</strong>
+        ({{ grupo.programa_formacion.nombre }})
     </p>
 {% endif %}
 
@@ -31,10 +31,10 @@ Aprendices | Be Time
     <div class="col-12 col-md-4">
         {{ filter.form.q }}
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-12 col-sm-6 col-md-3">
         {{ filter.form.tipo_documento }}
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-12 col-sm-6 col-md-3">
         {{ filter.form.estado }}
     </div>
     <div class="col-12 col-md-2">
