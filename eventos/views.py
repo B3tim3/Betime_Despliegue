@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from bienestar.services import registrar_asistencia_y_horas
+from core.services.auditoria import registrar as auditar
 from core.services.exportar import responder_export
 from eventos.forms import EventoForm
 from eventos.models import Evento, Inscripcion
@@ -121,6 +122,7 @@ class EventoListView(PersonalBienestarRequeridoMixin, ListView):
     model = Evento
     template_name = "eventos/panel_lista.html"
     context_object_name = "eventos"
+    queryset = Evento.objects.select_related("creado_por")
     ordering = ["-fecha_inicio"]
     paginate_by = 15
 
@@ -154,6 +156,11 @@ class EventoUpdateView(PersonalBienestarRequeridoMixin, UpdateView):
         messages.success(self.request, "Evento actualizado correctamente.")
         respuesta = super().form_valid(form)
         avisar_cambios_evento(anterior, self.object)
+        if anterior.estado != "cancelado" and self.object.estado == "cancelado":
+            auditar(
+                "evento_cancelado", f"Se canceló el evento «{self.object.titulo}».",
+                request=self.request, detalles={"evento_id": self.object.pk},
+            )
         return respuesta
 
 
@@ -165,13 +172,18 @@ class EventoDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
 
     def form_valid(self, form):
         avisar_evento_eliminado(self.object)
+        auditar(
+            "evento_eliminado",
+            f"Se eliminó el evento «{self.object.titulo}» ({self.object.inscripciones.count()} inscripciones).",
+            request=self.request, detalles={"evento_id": self.object.pk},
+        )
         messages.success(self.request, "Evento eliminado.")
         return super().form_valid(form)
 
 
 @personal_bienestar_requerido
 def exportar_eventos(request):
-    eventos = Evento.objects.order_by("-fecha_inicio")
+    eventos = Evento.objects.select_related("creado_por").order_by("-fecha_inicio")
 
     q = request.GET.get("q", "").strip()
     if q:
@@ -425,6 +437,7 @@ def confirmar_asistencia_qr(request, token):
             cantidad_horas=inscripcion.evento.horas_otorgadas,
             motivo=f"Asistencia a: {inscripcion.evento.titulo} (QR)",
             asignado_por=request.user.personal_bienestar,
+            metodo="QR",
         )
         messages.success(
             request,

@@ -70,7 +70,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'core.middleware.NoCacheParaAutenticadosMiddleware',  # descomentar si existe en tu proyecto
+    "usuarios.middleware.CierreSesionPorInactividadMiddleware"
 ]
+
 
 ROOT_URLCONF = 'betime.urls'
 

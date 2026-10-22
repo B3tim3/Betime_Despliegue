@@ -11,24 +11,24 @@ Be Time | Bienestar al Aprendiz - SENA
     <div class="container">
         <div class="row align-items-center g-5">
 
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-lg-6 justify-content-center">
 
                 <span class="home-hero__eyebrow">
                     <i class="bi bi-patch-check-fill"></i>
                     Plataforma Del Centro de Diseño y Metrologia
                 </span>
 
-                <h1 class="home-hero__title mb-4">
-                    Bienvenido a <span class="text-bt-verde underline">Be Time</span>
+                <h1 class="home-hero__title mb-4 justify-content-center">
+                    Bienvenido a <span class="text-bt-verde underline"><strong>Be time</strong></span>
                 </h1>
 
-                <p class="home-hero__lead mb-4">
-                    La plataforma para gestionar el Bienestar al Aprendiz del Servicio Nacional
+                <p class="home-hero__lead mb-4 ">
+                    La plataforma de <span class="text-bt-verde underline"><strong>Bienestar al aprendiz</strong></span> del Servicio Nacional
                     de Aprendizaje: consulta publicaciones, inscríbete a eventos y lleva el
                     control de tus horas de bienestar en un solo lugar.
                 </p>
 
-                <div class="d-flex flex-wrap gap-3">
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
                     {% if user.is_authenticated %}
                         <a href="{% url 'usuarios:dashboard' %}" class="btn btn-success btn-lg px-4">
                             Ir a mi panel
@@ -47,28 +47,27 @@ Be Time | Bienestar al Aprendiz - SENA
             </div>
 
             <div class="col-12 col-lg-6">
-                <div class="home-hero__art">
+                <div class="home-hero__art" role="img" aria-label="Engranajes que representan los servicios de Bienestar funcionando juntos">
                     <div class="home-hero__ring"></div>
-
+                    <svg class="home-hero__svg" viewBox="0 0 360 360" aria-hidden="true" focusable="false">
+                      <g transform="translate(180,180)"><g class="gear gear--centro"><path d="M63.6,-7.2 L78.9,-3.0 L78.9,3.0 L63.6,7.2 L61.5,17.7 L74.1,27.4 L71.8,33.0 L56.0,31.0 L50.0,39.9 L57.9,53.7 L53.7,57.9 L39.9,50.0 L31.0,56.0 L33.0,71.8 L27.4,74.1 L17.7,61.5 L7.2,63.6 L3.0,78.9 L-3.0,78.9 L-7.2,63.6 L-17.7,61.5 L-27.4,74.1 L-33.0,71.8 L-31.0,56.0 L-39.9,50.0 L-53.7,57.9 L-57.9,53.7 L-50.0,39.9 L-56.0,31.0 L-71.8,33.0 L-74.1,27.4 L-61.5,17.7 L-63.6,7.2 L-78.9,3.0 L-78.9,-3.0 L-63.6,-7.2 L-61.5,-17.7 L-74.1,-27.4 L-71.8,-33.0 L-56.0,-31.0 L-50.0,-39.9 L-57.9,-53.7 L-53.7,-57.9 L-39.9,-50.0 L-31.0,-56.0 L-33.0,-71.8 L-27.4,-74.1 L-17.7,-61.5 L-7.2,-63.6 L-3.0,-78.9 L3.0,-78.9 L7.2,-63.6 L17.7,-61.5 L27.4,-74.1 L33.0,-71.8 L31.0,-56.0 L39.9,-50.0 L53.7,-57.9 L57.9,-53.7 L50.0,-39.9 L56.0,-31.0 L71.8,-33.0 L74.1,-27.4 L61.5,-17.7Z"/><circle cx="57.0" cy="0.0" r="4.5" class="gear__hole"/><circle cx="40.3" cy="40.3" r="4.5" class="gear__hole"/><circle cx="0.0" cy="57.0" r="4.5" class="gear__hole"/><circle cx="-40.3" cy="40.3" r="4.5" class="gear__hole"/><circle cx="-57.0" cy="0.0" r="4.5" class="gear__hole"/><circle cx="-40.3" cy="-40.3" r="4.5" class="gear__hole"/><circle cx="-0.0" cy="-57.0" r="4.5" class="gear__hole"/><circle cx="40.3" cy="-40.3" r="4.5" class="gear__hole"/></g></g>
+                      <g transform="translate(97.3,97.3)"><g class="gear gear--sat gear--salud"><path d="M35.6,10.1 L47.6,20.9 L44.9,26.2 L29.1,22.9 L22.9,29.1 L26.2,44.9 L20.9,47.6 L10.1,35.6 L1.4,37.0 L-5.2,51.7 L-11.1,50.8 L-12.7,34.7 L-20.6,30.7 L-34.6,38.8 L-38.8,34.6 L-30.7,20.6 L-34.7,12.7 L-50.8,11.1 L-51.7,5.2 L-37.0,-1.4 L-35.6,-10.1 L-47.6,-20.9 L-44.9,-26.2 L-29.1,-22.9 L-22.9,-29.1 L-26.2,-44.9 L-20.9,-47.6 L-10.1,-35.6 L-1.4,-37.0 L5.2,-51.7 L11.1,-50.8 L12.7,-34.7 L20.6,-30.7 L34.6,-38.8 L38.8,-34.6 L30.7,-20.6 L34.7,-12.7 L50.8,-11.1 L51.7,-5.2 L37.0,1.4Z"/><circle cx="26.0" cy="0.0" r="3" class="gear__hole"/><circle cx="8.0" cy="24.7" r="3" class="gear__hole"/><circle cx="-21.0" cy="15.3" r="3" class="gear__hole"/><circle cx="-21.0" cy="-15.3" r="3" class="gear__hole"/><circle cx="8.0" cy="-24.7" r="3" class="gear__hole"/></g></g>
+                      <g transform="translate(262.7,97.3)"><g class="gear gear--sat gear--asesorias"><path d="M37.0,-1.4 L51.7,5.2 L50.8,11.1 L34.7,12.7 L30.7,20.6 L38.8,34.6 L34.6,38.8 L20.6,30.7 L12.7,34.7 L11.1,50.8 L5.2,51.7 L-1.4,37.0 L-10.1,35.6 L-20.9,47.6 L-26.2,44.9 L-22.9,29.1 L-29.1,22.9 L-44.9,26.2 L-47.6,20.9 L-35.6,10.1 L-37.0,1.4 L-51.7,-5.2 L-50.8,-11.1 L-34.7,-12.7 L-30.7,-20.6 L-38.8,-34.6 L-34.6,-38.8 L-20.6,-30.7 L-12.7,-34.7 L-11.1,-50.8 L-5.2,-51.7 L1.4,-37.0 L10.1,-35.6 L20.9,-47.6 L26.2,-44.9 L22.9,-29.1 L29.1,-22.9 L44.9,-26.2 L47.6,-20.9 L35.6,-10.1Z"/><circle cx="26.0" cy="0.0" r="3" class="gear__hole"/><circle cx="8.0" cy="24.7" r="3" class="gear__hole"/><circle cx="-21.0" cy="15.3" r="3" class="gear__hole"/><circle cx="-21.0" cy="-15.3" r="3" class="gear__hole"/><circle cx="8.0" cy="-24.7" r="3" class="gear__hole"/></g></g>
+                      <g transform="translate(97.3,262.7)"><g class="gear gear--sat gear--deportes"><path d="M37.0,-1.4 L51.7,5.2 L50.8,11.1 L34.7,12.7 L30.7,20.6 L38.8,34.6 L34.6,38.8 L20.6,30.7 L12.7,34.7 L11.1,50.8 L5.2,51.7 L-1.4,37.0 L-10.1,35.6 L-20.9,47.6 L-26.2,44.9 L-22.9,29.1 L-29.1,22.9 L-44.9,26.2 L-47.6,20.9 L-35.6,10.1 L-37.0,1.4 L-51.7,-5.2 L-50.8,-11.1 L-34.7,-12.7 L-30.7,-20.6 L-38.8,-34.6 L-34.6,-38.8 L-20.6,-30.7 L-12.7,-34.7 L-11.1,-50.8 L-5.2,-51.7 L1.4,-37.0 L10.1,-35.6 L20.9,-47.6 L26.2,-44.9 L22.9,-29.1 L29.1,-22.9 L44.9,-26.2 L47.6,-20.9 L35.6,-10.1Z"/><circle cx="26.0" cy="0.0" r="3" class="gear__hole"/><circle cx="8.0" cy="24.7" r="3" class="gear__hole"/><circle cx="-21.0" cy="15.3" r="3" class="gear__hole"/><circle cx="-21.0" cy="-15.3" r="3" class="gear__hole"/><circle cx="8.0" cy="-24.7" r="3" class="gear__hole"/></g></g>
+                      <g transform="translate(262.7,262.7)"><g class="gear gear--sat gear--cultura"><path d="M35.6,10.1 L47.6,20.9 L44.9,26.2 L29.1,22.9 L22.9,29.1 L26.2,44.9 L20.9,47.6 L10.1,35.6 L1.4,37.0 L-5.2,51.7 L-11.1,50.8 L-12.7,34.7 L-20.6,30.7 L-34.6,38.8 L-38.8,34.6 L-30.7,20.6 L-34.7,12.7 L-50.8,11.1 L-51.7,5.2 L-37.0,-1.4 L-35.6,-10.1 L-47.6,-20.9 L-44.9,-26.2 L-29.1,-22.9 L-22.9,-29.1 L-26.2,-44.9 L-20.9,-47.6 L-10.1,-35.6 L-1.4,-37.0 L5.2,-51.7 L11.1,-50.8 L12.7,-34.7 L20.6,-30.7 L34.6,-38.8 L38.8,-34.6 L30.7,-20.6 L34.7,-12.7 L50.8,-11.1 L51.7,-5.2 L37.0,1.4Z"/><circle cx="26.0" cy="0.0" r="3" class="gear__hole"/><circle cx="8.0" cy="24.7" r="3" class="gear__hole"/><circle cx="-21.0" cy="15.3" r="3" class="gear__hole"/><circle cx="-21.0" cy="-15.3" r="3" class="gear__hole"/><circle cx="8.0" cy="-24.7" r="3" class="gear__hole"/></g></g>
+                    </svg>
                     <div class="home-hero__badge">
                         <i class="bi bi-award-fill"></i>
                         <span>Horas de<br>Bienestar</span>
                     </div>
-
-                    <div class="home-hero__orbita">
-                        <div class="home-hero__chip home-hero__chip--salud">
-                            <i class="bi bi-heart-pulse-fill"></i> Salud
-                        </div>
-                        <div class="home-hero__chip home-hero__chip--asesorias">
-                            <i class="bi bi-mortarboard-fill"></i> Asesorías
-                        </div>
-                        <div class="home-hero__chip home-hero__chip--deportes">
-                            <i class="bi bi-trophy-fill"></i> Deportes
-                        </div>
-                        <div class="home-hero__chip home-hero__chip--cultura">
-                            <i class="bi bi-palette-fill"></i> Cultura
-                        </div>
-                    </div>
+                    <div class="home-hero__nodo" style="left:27.02%;top:27.02%"><i class="bi bi-heart-pulse-fill"></i></div>
+                    <div class="home-hero__chip" style="left:27.02%;top:7.85%">Salud</div>
+                    <div class="home-hero__nodo" style="left:72.98%;top:27.02%"><i class="bi bi-mortarboard-fill"></i></div>
+                    <div class="home-hero__chip" style="left:72.98%;top:7.85%">Asesorías</div>
+                    <div class="home-hero__nodo" style="left:27.02%;top:72.98%"><i class="bi bi-trophy-fill"></i></div>
+                    <div class="home-hero__chip" style="left:27.02%;top:92.15%">Deportes</div>
+                    <div class="home-hero__nodo" style="left:72.98%;top:72.98%"><i class="bi bi-palette-fill"></i></div>
+                    <div class="home-hero__chip" style="left:72.98%;top:92.15%">Cultura</div>
                 </div>
             </div>
 
@@ -91,8 +90,7 @@ Be Time | Bienestar al Aprendiz - SENA
                 </h2>
 
                 <p class="lead text-muted">
-                    Be Time centraliza la gestión de los servicios ofrecidos por Bienestar
-                    al Aprendiz, permitiendo consultar publicaciones, eventos y asesorías, y
+                    Be Time centraliza la gestión de los servicios ofrecidos por <span class="text-bt-verde underline"><strong>Bienestar al aprendiz</strong></span>, permitiendo consultar publicaciones, eventos y asesorías, y
                     administrar las horas de bienestar de manera organizada, trazable y segura.
                 </p>
 
@@ -163,37 +161,30 @@ Be Time | Bienestar al Aprendiz - SENA
         </div>
 
         {% if eventos %}
-            <div class="row g-4 mb-4">
+            <div class="mb-4">
                 {% for evento in eventos %}
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <a href="{% url 'eventos:detalle' evento.id %}" class="home-evento-card">
+                    <div class="home-evento">
 
-                            <div class="home-evento-card__media">
-                                {% if evento.imagen %}
-                                    <img src="{{ evento.imagen.url }}" alt="{{ evento.titulo }}">
-                                {% else %}
-                                    <i class="bi bi-calendar-event"></i>
-                                {% endif %}
+                        {% if evento.imagen %}
+                            <img src="{{ evento.imagen.url }}" alt="" class="home-evento__img">
+                        {% endif %}
 
-                                <div class="home-evento-card__fecha">
-                                    <span class="dia">{{ evento.fecha_inicio|date:"d" }}</span>
-                                    <span class="mes">{{ evento.fecha_inicio|date:"M" }}</span>
-                                </div>
+                        <div class="home-evento__fecha">
+                            <span class="dia">{{ evento.fecha_inicio|date:"d" }}</span>
+                            <span class="mes">{{ evento.fecha_inicio|date:"M" }}</span>
+                        </div>
+
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">{{ evento.titulo }}</div>
+                            <div class="text-muted small">
+                                <i class="bi bi-geo-alt"></i> {{ evento.lugar }}
                             </div>
+                        </div>
 
-                            <div class="home-evento-card__body">
-                                <h3 class="h6 fw-bold mb-2">
-                                    {{ evento.titulo }}
-                                </h3>
-                                <div class="text-muted small">
-                                    <i class="bi bi-geo-alt"></i> {{ evento.lugar }}
-                                </div>
-                                <span class="home-evento-card__horas">
-                                    {{ evento.horas_otorgadas }} horas de bienestar
-                                </span>
-                            </div>
+                        <div class="home-evento__horas">
+                            {{ evento.horas_otorgadas }} horas
+                        </div>
 
-                        </a>
                     </div>
                 {% endfor %}
             </div>
@@ -224,39 +215,39 @@ Be Time | Bienestar al Aprendiz - SENA
         <div class="row g-4">
 
             <div class="col-6 col-lg-3">
-                <a href="{% url 'bienestar:nosotros' %}?categoria=salud" class="home-servicio home-servicio--salud">
+                <div class="home-servicio">
                     <div class="home-servicio__icono">
                         <i class="bi bi-heart-pulse-fill"></i>
                     </div>
                     <div class="fw-semibold">Salud</div>
-                </a>
+                </div>
             </div>
 
             <div class="col-6 col-lg-3">
-                <a href="{% url 'bienestar:nosotros' %}?categoria=psicosocial" class="home-servicio home-servicio--psicosocial">
+                <div class="home-servicio">
                     <div class="home-servicio__icono">
                         <i class="bi bi-mortarboard-fill"></i>
                     </div>
-                    <div class="fw-semibold">Equipo Psicosocial</div>
-                </a>
+                    <div class="fw-semibold">Asesorías</div>
+                </div>
             </div>
 
             <div class="col-6 col-lg-3">
-                <a href="{% url 'bienestar:nosotros' %}?categoria=deporte" class="home-servicio home-servicio--deporte">
+                <div class="home-servicio">
                     <div class="home-servicio__icono">
                         <i class="bi bi-trophy-fill"></i>
                     </div>
-                    <div class="fw-semibold">Deporte</div>
-                </a>
+                    <div class="fw-semibold">Deportes</div>
+                </div>
             </div>
 
             <div class="col-6 col-lg-3">
-                <a href="{% url 'bienestar:nosotros' %}?categoria=cultura" class="home-servicio home-servicio--cultura">
+                <div class="home-servicio">
                     <div class="home-servicio__icono">
                         <i class="bi bi-palette-fill"></i>
                     </div>
-                    <div class="fw-semibold">Arte y Cultura</div>
-                </a>
+                    <div class="fw-semibold">Cultura</div>
+                </div>
             </div>
 
         </div>

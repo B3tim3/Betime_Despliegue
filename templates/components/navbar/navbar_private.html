@@ -1,11 +1,11 @@
 {% load static notificaciones_tags %}
 {% notificaciones_no_leidas as n_noti %}
 {# Navbar para usuarios autenticados: aprendices, personal de bienestar y administradores #}
-<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+<nav class="navbar navbar-expand-lg bg-white shadow-sm nav-betime">
     <div class="container-fluid px-3 px-lg-4">
 
-        <a class="navbar-brand flex-shrink-0" href="/">
-        <img src="{% static 'img/logo.png' %}" alt="Be Time" height="70" style="width:auto; max-width:none;">
+        <a class="navbar-brand" href="/">
+            <img src="{% static 'img/logo.png' %}" alt="Be Time" height="80">
         </a>
 
         {# Campanita en celular: fuera del menú colapsable para que siempre se vea #}
@@ -18,7 +18,8 @@
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarPrivate">
+            data-bs-target="#navbarPrivate"
+            aria-controls="navbarPrivate" aria-expanded="false" aria-label="Abrir menú">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -38,22 +39,23 @@
                 </li>
 
                 <li class="nav-item me-lg-3">
-                    <span class="nav-link text-muted">
-                        {{ request.user.get_full_name }}
+                    <div class="nav-usuario">
+                        <span class="nav-usuario__nombre">{{ request.user.get_full_name }}</span>
                         {% if request.user.administrador %}
-                            <span class="badge text-bg-light border ms-1">Administrador</span>
+                            <span class="badge text-bg-light border">Administrador</span>
                         {% elif request.user.personal_bienestar %}
-                            <span class="badge text-bg-light border ms-1">Personal de Bienestar</span>
+                            <span class="badge text-bg-light border">Personal de Bienestar</span>
                         {% elif request.user.aprendiz %}
-                            <span class="badge text-bg-light border ms-1">Aprendiz</span>
+                            <span class="badge text-bg-light border">Aprendiz</span>
                         {% endif %}
-                    </span>
+                    </div>
                 </li>
 
                 <li class="nav-item">
-                    <a href="{% url 'usuarios:logout' %}" class="btn btn-outline-success btn-sm">
-                        Cerrar sesión
-                    </a>
+                    <form method="post" action="{% url 'usuarios:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-success btn-sm w-100">Cerrar sesión</button>
+                    </form>
                 </li>
 
             </ul>

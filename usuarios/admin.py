@@ -9,6 +9,7 @@ from usuarios.models import (
     Aprendiz,
     PersonalBienestar,
     Administrador,
+    IntentoFallido,
 )
 
 
@@ -52,3 +53,17 @@ class AdministradorAdmin(admin.ModelAdmin):
 @admin.register(NivelFormacion)
 class NivelFormacionAdmin(admin.ModelAdmin):
     list_display = ("id", "nombre")
+
+
+@admin.register(IntentoFallido)
+class IntentoFallidoAdmin(admin.ModelAdmin):
+    """Solo lectura: sirve para revisar quién está probando contraseñas."""
+    list_display = ("numero_documento", "ip", "fecha")
+    search_fields = ("numero_documento", "ip")
+    date_hierarchy = "fecha"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

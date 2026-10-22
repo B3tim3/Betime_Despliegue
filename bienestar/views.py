@@ -10,6 +10,7 @@ from bienestar.services.constancia import SinHorasError, emitir_constancia, gene
 from bienestar.services.historial import historial_de, resumen_historial
 from bienestar.services.progreso import calcular_progreso
 from core.services.exportar import exportar_excel, exportar_word, exportar_pdf, responder_export
+from core.services.auditoria import registrar as auditar
 from usuarios.decorators import administrador_requerido, personal_bienestar_requerido
 
 
@@ -116,10 +117,19 @@ def configuracion(request):
     Solo el administrador puede cambiarla.
     """
 
-    form = ConfiguracionBienestarForm(request.POST or None, instance=ConfiguracionBienestar.obtener())
+    configuracion_actual = ConfiguracionBienestar.obtener()
+    meta_anterior = configuracion_actual.meta_horas
+    form = ConfiguracionBienestarForm(request.POST or None, instance=configuracion_actual)
 
     if request.method == "POST" and form.is_valid():
         form.save()
+        if configuracion_actual.meta_horas != meta_anterior:
+            auditar(
+                "meta_horas",
+                f"Se cambió la meta de horas de bienestar de {meta_anterior} a {configuracion_actual.meta_horas}.",
+                request=request,
+                detalles={"antes": meta_anterior, "despues": configuracion_actual.meta_horas},
+            )
         messages.success(request, "La configuración se guardó correctamente.")
         return redirect("bienestar:configuracion")
 

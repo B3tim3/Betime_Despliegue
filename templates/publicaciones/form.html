@@ -6,7 +6,12 @@
 
 {% block dashboard_content %}
 
-<h1 class="h3 fw-bold mb-4">{{ titulo_pagina }}</h1>
+<h1 class="h3 fw-bold {% if object %}mb-1{% else %}mb-4{% endif %}">{{ titulo_pagina }}</h1>
+{% if object %}
+    <p class="text-muted small mb-4">
+        Creado por {{ object.autor.get_full_name }} el {{ object.fecha_creacion|date:"d/m/Y h:i A" }}
+    </p>
+{% endif %}
 
 <div class="card border-0 shadow-sm">
     <div class="card-body p-4">
