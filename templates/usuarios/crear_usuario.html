@@ -79,9 +79,9 @@ Crear usuario | Be Time
                 </div>
 
                 <div class="mb-3">
-                    <label for="{{ form.ficha.id_for_label }}" class="form-label">{{ form.ficha.label }}</label>
-                    {{ form.ficha }}
-                    {% for error in form.ficha.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    <label for="{{ form.grupo.id_for_label }}" class="form-label">{{ form.grupo.label }}</label>
+                    {{ form.grupo }}
+                    {% for error in form.grupo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                 </div>
             </div>
 
@@ -139,58 +139,58 @@ Crear usuario | Be Time
         tipoPerfilSelect.addEventListener('change', actualizarBloques);
         actualizarBloques();  // por si el formulario se recarga con un tipo ya elegido (tras un error)
 
-        // ---------- Cascade Programa -> Ficha (igual que en el registro de aprendices) ----------
+        // ---------- Cascade Programa -> Grupo (igual que en el registro de aprendices) ----------
         const programaSelect = document.getElementById('id_programa_formacion');
-        const fichaSelect = document.getElementById('id_ficha');
+        const grupoSelect = document.getElementById('id_grupo');
 
         function establecerOpcionUnica(texto) {
-            fichaSelect.innerHTML = '';
+            grupoSelect.innerHTML = '';
             const opcion = document.createElement('option');
             opcion.value = '';
             opcion.textContent = texto;
-            fichaSelect.appendChild(opcion);
+            grupoSelect.appendChild(opcion);
         }
 
-        function cargarFichas(programaId) {
+        function cargarGrupos(programaId) {
 
             if (!programaId) {
                 establecerOpcionUnica('Selecciona primero el programa');
                 return;
             }
 
-            fetch(`{% url 'usuarios:fichas_por_programa' %}?programa_formacion=${programaId}`)
+            fetch(`{% url 'usuarios:grupos_por_programa' %}?programa_formacion=${programaId}`)
                 .then(function (response) {
                     return response.json();
                 })
-                .then(function (fichas) {
+                .then(function (grupos) {
 
-                    if (fichas.length === 0) {
-                        establecerOpcionUnica('No hay fichas activas para este programa');
+                    if (grupos.length === 0) {
+                        establecerOpcionUnica('No hay grupos activos para este programa');
                         return;
                     }
 
-                    fichaSelect.innerHTML = '';
+                    grupoSelect.innerHTML = '';
 
                     const opcionVacia = document.createElement('option');
                     opcionVacia.value = '';
-                    opcionVacia.textContent = 'Selecciona la ficha';
-                    fichaSelect.appendChild(opcionVacia);
+                    opcionVacia.textContent = 'Selecciona el grupo';
+                    grupoSelect.appendChild(opcionVacia);
 
-                    fichas.forEach(function (ficha) {
+                    grupos.forEach(function (grupo) {
                         const opcion = document.createElement('option');
-                        opcion.value = ficha.id;
-                        opcion.textContent = `${ficha.numero_ficha} - ${ficha.jornada_nombre}`;
-                        fichaSelect.appendChild(opcion);
+                        opcion.value = grupo.id;
+                        opcion.textContent = `${grupo.numero_grupo} - ${grupo.jornada_nombre}`;
+                        grupoSelect.appendChild(opcion);
                     });
                 })
                 .catch(function () {
-                    establecerOpcionUnica('No se pudieron cargar las fichas. Intenta de nuevo.');
+                    establecerOpcionUnica('No se pudieron cargar los grupos. Intenta de nuevo.');
                 });
         }
 
-        if (programaSelect && fichaSelect) {
+        if (programaSelect && grupoSelect) {
             programaSelect.addEventListener('change', function () {
-                cargarFichas(this.value);
+                cargarGrupos(this.value);
             });
         }
 

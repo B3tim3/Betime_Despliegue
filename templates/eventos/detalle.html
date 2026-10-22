@@ -22,7 +22,7 @@
                 {% endif %}
 
                 <div class="home-section__eyebrow mb-2">
-                    {{ evento.fecha_inicio|date:"d \d\e F \d\e Y, h:i A" }}
+                    {{ evento.fecha_inicio|date:"d \d\e F \d\e Y, H:i" }}
                 </div>
 
                 <h1 class="home-section__title mb-3">
@@ -48,9 +48,30 @@
                             Solo los aprendices pueden inscribirse
                         </button>
                     {% elif ya_inscrito %}
-                        <button class="btn btn-outline-success btn-lg" disabled>
-                            <i class="bi bi-check-circle"></i> Ya estás inscrito
-                        </button>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <button class="btn btn-outline-success btn-lg" disabled>
+                                <i class="bi bi-check-circle"></i> Ya estás inscrito
+                            </button>
+
+                            {% if inscripcion.estado == "inscrito" %}
+                                <a href="{% url 'eventos:mi_qr' inscripcion.id %}" class="btn btn-outline-success btn-lg">
+                                    <i class="bi bi-qr-code"></i> Mi QR
+                                </a>
+                            {% endif %}
+
+                            {% if inscripcion.puede_cancelarse %}
+                                <form method="post" action="{% url 'eventos:cancelar_inscripcion' inscripcion.id %}"
+                                      data-confirmar-eliminar="Dejarás de estar inscrito en «{{ evento.titulo }}». Podrás volver a inscribirte mientras el evento siga abierto."
+                                      data-confirmar-titulo="¿Cancelar tu inscripción?"
+                                      data-confirmar-boton="Sí, cancelar inscripción"
+                                      data-confirmar-volver="No, mantenerla">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-lg">
+                                        Cancelar inscripción
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
                     {% elif evento.estado != "programado" %}
                         <button class="btn btn-secondary btn-lg" disabled>
                             Inscripciones cerradas

@@ -4,6 +4,9 @@
  *
  * Uso: envolver el botón "Eliminar" en un <form method="post"> con
  * data-confirmar-eliminar="mensaje a mostrar" en el propio <form>.
+ * Opcionales en el mismo <form>: data-confirmar-titulo, data-confirmar-boton
+ * y data-confirmar-volver para cambiar los textos del modal (por ejemplo
+ * al cancelar una inscripción, donde "Sí, eliminar" no tiene sentido).
  * Este script intercepta el envío, muestra el modal, y solo si la
  * persona confirma, deja que el formulario se envíe de verdad.
  */
@@ -21,12 +24,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const mensaje = form.getAttribute("data-confirmar-eliminar");
 
             Swal.fire({
-                title: "¿Estás seguro?",
+                title: form.getAttribute("data-confirmar-titulo") || "¿Estás seguro?",
                 text: mensaje,
                 icon: "warning",
                 showCancelButton: true,
-                confirmButtonText: "Sí, eliminar",
-                cancelButtonText: "Cancelar",
+                confirmButtonText: form.getAttribute("data-confirmar-boton") || "Sí, eliminar",
+                cancelButtonText: form.getAttribute("data-confirmar-volver") || "Cancelar",
                 confirmButtonColor: "#dc3545",
                 cancelButtonColor: "#6c757d",
             }).then(function (resultado) {

@@ -3,7 +3,8 @@ from django.contrib import admin
 from usuarios.models import (
     ProgramaFormacion,
     Jornada,
-    Ficha,
+    Grupo,
+    NivelFormacion,
     Usuario,
     Aprendiz,
     PersonalBienestar,
@@ -28,14 +29,14 @@ class JornadaAdmin(admin.ModelAdmin):
     list_display = ("id", "nombre")
 
 
-@admin.register(Ficha)
-class FichaAdmin(admin.ModelAdmin):
-    list_display = ("id", "numero_ficha", "programa_formacion", "jornada", "estado")
+@admin.register(Grupo)
+class GrupoAdmin(admin.ModelAdmin):
+    list_display = ("id", "numero_grupo", "programa_formacion", "jornada", "estado")
 
 
 @admin.register(Aprendiz)
 class AprendizAdmin(admin.ModelAdmin):
-    list_display = ("id", "usuario", "ficha", "estado")
+    list_display = ("id", "usuario", "grupo", "estado")
 
 
 @admin.register(PersonalBienestar)
@@ -46,3 +47,8 @@ class PersonalBienestarAdmin(admin.ModelAdmin):
 @admin.register(Administrador)
 class AdministradorAdmin(admin.ModelAdmin):
     list_display = ("id", "usuario")
+
+
+@admin.register(NivelFormacion)
+class NivelFormacionAdmin(admin.ModelAdmin):
+    list_display = ("id", "nombre")
