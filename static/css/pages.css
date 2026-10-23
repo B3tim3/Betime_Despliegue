@@ -6,31 +6,8 @@
 /* ---------- Hero ---------- */
 
 .home-hero {
-    position: relative;
     padding: 5rem 0 6rem;
     overflow: hidden;
-}
-
-.home-hero::before {
-    content: "";
-    position: absolute;
-    inset: -10% -10% auto auto;
-    width: 55%;
-    aspect-ratio: 1 / 1;
-    background: radial-gradient(circle, rgba(46, 139, 61, 0.10), transparent 70%);
-    pointer-events: none;
-    z-index: -1;
-}
-
-.home-hero::after {
-    content: "";
-    position: absolute;
-    inset: auto auto -15% -10%;
-    width: 45%;
-    aspect-ratio: 1 / 1;
-    background: radial-gradient(circle, rgba(232, 162, 51, 0.10), transparent 70%);
-    pointer-events: none;
-    z-index: -1;
 }
 
 .home-hero__eyebrow {
@@ -78,12 +55,12 @@
     max-width: 34rem;
 }
 
-/* Ilustración: insignia central + categorías orbitando */
+/* Ilustración: engranajes que giran entre sí (sistema funcionando) */
 
 .home-hero__art {
     position: relative;
     width: 100%;
-    max-width: 360px;
+    max-width: 380px;
     aspect-ratio: 1 / 1;
     margin: 0 auto;
 }
@@ -96,110 +73,84 @@
     border: 1px solid var(--bt-borde);
 }
 
+.home-hero__svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Cada engranaje gira sobre su propio centro. Los dientes encajan: el grande
+   (16 dientes) da una vuelta en 16 s y los chicos (10 dientes) en 10 s, en
+   sentido contrario, como en un mecanismo real. */
+.gear {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: gear-giro 16s linear infinite;
+}
+.gear--sat { animation-duration: 10s; animation-direction: reverse; }
+
+.gear--centro { fill: var(--bt-verde); }
+.gear--salud     { fill: #66bb6a; }
+.gear--asesorias { fill: #81c784; }
+.gear--deportes  { fill: #81c784; }
+.gear--cultura   { fill: #66bb6a; }
+.gear path { stroke: rgba(22, 36, 26, 0.12); stroke-width: 1; stroke-linejoin: round; }
+.gear__hole { fill: rgba(255, 255, 255, 0.55); }
+.gear--centro .gear__hole { fill: rgba(255, 255, 255, 0.28); }
+
+@keyframes gear-giro { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .gear { animation: none; }
+}
+
 .home-hero__badge {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 44%;
-    aspect-ratio: 1 / 1;
-    border-radius: 50%;
-    background-color: var(--bt-verde);
+    width: 24%;
     color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    box-shadow: 0 18px 30px -12px rgba(30, 94, 42, 0.45);
+    pointer-events: none;
 }
 
-.home-hero__badge i {
-    font-size: 1.8rem;
-    margin-bottom: 0.15rem;
-}
+.home-hero__badge i { font-size: 1.7rem; line-height: 1; margin-bottom: 0.2rem; }
+.home-hero__badge span { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em; line-height: 1.2; }
 
-.home-hero__badge span {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
+.home-hero__nodo {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 15%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--bt-verde-oscuro);
+    font-size: 1.15rem;
+    box-shadow: 0 4px 10px -4px rgba(22, 36, 26, 0.35);
 }
 
 .home-hero__chip {
     position: absolute;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
+    transform: translate(-50%, -50%);
     background-color: #fff;
     border: 1px solid var(--bt-borde);
     border-radius: 999px;
-    padding: 0.4rem 0.75rem;
-    font-size: 0.78rem;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--bt-tinta);
+    white-space: nowrap;
     box-shadow: 0 10px 20px -14px rgba(22, 36, 26, 0.35);
-}
-
-.home-hero__chip i {
-    color: var(--bt-verde-oscuro);
-}
-
-.home-hero__chip--salud     { top: 4%;  left: 2%; }
-.home-hero__chip--asesorias { top: 8%;  right: -2%; }
-.home-hero__chip--deportes  { bottom: 6%; left: -4%; }
-.home-hero__chip--cultura   { bottom: 2%; right: 4%; }
-
-/* En pantallas angostas, los chips que sobresalían un poco del
-   círculo (offsets negativos) quedaban recortados por el borde de
-   la sección -- aquí se quedan dentro del propio círculo, y más
-   chicos, para que quepan sin desbordarse. */
-@media (max-width: 576px) {
-    .home-hero__art {
-        max-width: 280px;
-    }
-
-    .home-hero__chip {
-        font-size: 0.68rem;
-        padding: 0.3rem 0.55rem;
-        gap: 0.3rem;
-    }
-
-    .home-hero__chip--salud     { top: 6%;  left: 6%; }
-    .home-hero__chip--asesorias { top: 10%; right: 2%; }
-    .home-hero__chip--deportes  { bottom: 8%; left: 2%; }
-    .home-hero__chip--cultura   { bottom: 4%; right: 6%; }
-}
-
-/* Contenedor que gira con los 4 chips adentro; cada chip gira en
-   sentido contrario a la misma velocidad para que el texto se
-   mantenga siempre derecho mientras da la vuelta alrededor de la
-   insignia central. */
-
-.home-hero__orbita {
-    position: absolute;
-    inset: 0;
-    animation: bt-girar 22s linear infinite;
-}
-
-.home-hero__chip {
-    animation: bt-contra-girar 22s linear infinite;
-}
-
-@keyframes bt-girar {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-}
-
-@keyframes bt-contra-girar {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(-360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .home-hero__orbita,
-    .home-hero__chip {
-        animation: none;
-    }
 }
 
 /* ---------- Secciones generales ---------- */
@@ -224,19 +175,17 @@
 /* ---------- Publicaciones ---------- */
 
 .home-card {
-    position: relative;
     border: 1px solid var(--bt-borde);
-    border-radius: 16px;
+    border-radius: 14px;
     overflow: hidden;
     height: 100%;
     background-color: #fff;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .home-card:hover {
     transform: translateY(-4px);
-    border-color: var(--bt-verde);
-    box-shadow: 0 20px 34px -18px rgba(22, 36, 26, 0.4);
+    box-shadow: 0 18px 30px -18px rgba(22, 36, 26, 0.35);
 }
 
 .home-card__media {
@@ -263,20 +212,19 @@
 
 .equipo-card {
     border: 1px solid var(--bt-borde);
-    border-radius: 16px;
+    border-radius: 14px;
     background-color: #fff;
     height: 100%;
     padding: 1.5rem 1.1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .equipo-card:hover {
     transform: translateY(-4px);
-    border-color: var(--bt-verde);
-    box-shadow: 0 20px 34px -18px rgba(22, 36, 26, 0.4);
+    box-shadow: 0 18px 30px -18px rgba(22, 36, 26, 0.35);
 }
 
 .equipo-card__foto {
@@ -340,68 +288,66 @@
     white-space: nowrap;
 }
 
-/* ---------- Categorías del equipo de Bienestar ---------- */
-/* Cada categoría tiene su propio color de identidad, consistente
-   entre las pastillas de filtro y la insignia de cada tarjeta. */
+/* ---------- Eventos ---------- */
 
-:root {
-    --cat-salud: #C0455B;
-    --cat-psicosocial: #2E6DA4;
-    --cat-deporte: #C97A1E;
-    --cat-cultura: #7A4FA0;
-}
-
-.filtro-categoria {
-    display: inline-flex;
+.home-evento {
+    display: flex;
     align-items: center;
-    padding: 0.45rem 1.1rem;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-decoration: none;
-    border: 1.5px solid var(--bt-borde);
-    color: var(--bt-tinta);
+    gap: 1rem;
+    padding: 1rem 1.1rem;
     background-color: #fff;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    border: 1px solid var(--bt-borde);
+    border-radius: 12px;
 }
 
-.filtro-categoria:hover {
-    transform: translateY(-1px);
-    border-color: var(--bt-verde);
+.home-evento + .home-evento {
+    margin-top: 0.75rem;
+}
+
+.home-evento__fecha {
+    flex: 0 0 auto;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 10px;
+    background-color: var(--bt-fondo-alt);
     color: var(--bt-verde-oscuro);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
 }
 
-.filtro-categoria--activo {
-    background-color: var(--bt-tinta);
-    border-color: var(--bt-tinta);
-    color: #fff;
+.home-evento__img {
+    flex: 0 0 auto;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 10px;
+    object-fit: cover;
 }
 
-.filtro-categoria--activo:hover {
-    color: #fff;
-}
-
-.filtro-categoria--salud.filtro-categoria--activo     { background-color: var(--cat-salud);     border-color: var(--cat-salud); }
-.filtro-categoria--psicosocial.filtro-categoria--activo { background-color: var(--cat-psicosocial); border-color: var(--cat-psicosocial); }
-.filtro-categoria--deporte.filtro-categoria--activo  { background-color: var(--cat-deporte);  border-color: var(--cat-deporte); }
-.filtro-categoria--cultura.filtro-categoria--activo   { background-color: var(--cat-cultura);   border-color: var(--cat-cultura); }
-
-.equipo-card__categoria {
-    display: inline-block;
-    font-size: 0.68rem;
+.home-evento__fecha .dia {
+    font-size: 1.15rem;
     font-weight: 700;
+}
+
+.home-evento__fecha .mes {
+    font-size: 0.65rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    padding: 0.25rem 0.7rem;
-    border-radius: 999px;
-    margin-bottom: 0.75rem;
-    color: #fff;
 }
 
-.equipo-card__categoria--salud     { background-color: var(--cat-salud); }
-.equipo-card__categoria--psicosocial { background-color: var(--cat-psicosocial); }
-.equipo-card__categoria--deporte  { background-color: var(--cat-deporte); }
-.equipo-card__categoria--cultura   { background-color: var(--cat-cultura); }
+.home-evento__horas {
+    flex: 0 0 auto;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--bt-verde-oscuro);
+    background-color: var(--bt-fondo-alt);
+    border-radius: 999px;
+    padding: 0.3rem 0.75rem;
+    white-space: nowrap;
+}
 
 /* ---------- Eventos (misma base que .home-card, con insignia
    de fecha superpuesta sobre la imagen) ---------- */
@@ -489,19 +435,8 @@
 /* ---------- Servicios ---------- */
 
 .home-servicio {
-    display: block;
     text-align: center;
     padding: 1.5rem 1rem;
-    border-radius: 16px;
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.home-servicio:hover {
-    transform: translateY(-4px);
-    background-color: var(--bt-fondo-alt);
-    color: inherit;
 }
 
 .home-servicio__icono {
@@ -515,10 +450,4 @@
     align-items: center;
     justify-content: center;
     font-size: 1.6rem;
-    transition: background-color 0.2s ease, color 0.2s ease;
 }
-
-.home-servicio--salud:hover .home-servicio__icono     { background-color: var(--cat-salud);     color: #fff; }
-.home-servicio--psicosocial:hover .home-servicio__icono { background-color: var(--cat-psicosocial); color: #fff; }
-.home-servicio--deporte:hover .home-servicio__icono  { background-color: var(--cat-deporte);  color: #fff; }
-.home-servicio--cultura:hover .home-servicio__icono   { background-color: var(--cat-cultura);   color: #fff; }

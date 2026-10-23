@@ -43,6 +43,7 @@ class PublicacionListView(PersonalBienestarRequeridoMixin, ListView):
     model = Publicacion
     template_name = "publicaciones/panel_lista.html"
     context_object_name = "publicaciones"
+    queryset = Publicacion.objects.select_related("autor")
     ordering = ["-fecha_creacion"]
     paginate_by = 15
 
@@ -92,7 +93,7 @@ class PublicacionDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
 
 @personal_bienestar_requerido
 def exportar_publicaciones(request):
-    publicaciones = Publicacion.objects.order_by("-fecha_creacion")
+    publicaciones = Publicacion.objects.select_related("autor").order_by("-fecha_creacion")
 
     q = request.GET.get("q", "").strip()
     if q:

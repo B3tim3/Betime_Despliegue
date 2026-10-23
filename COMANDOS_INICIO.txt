@@ -1,22 +1,37 @@
 ==========================================================
- BE TIME - COMANDOS PARA INICIALIZAR EL PROYECTO EN UN PC NUEVO
+ BE TIME - GUIA DE INICIO Y TRABAJO DIARIO (VERSION 2)
+ Incluye variables de entorno (.env)
 ==========================================================
 
-Sigue estos pasos EN ORDEN. Copia y pega cada bloque en la
+Sigue los pasos EN ORDEN. Copia y pega cada bloque en la
 terminal (PowerShell, CMD o Git Bash en Windows / Terminal en Mac-Linux).
+
+QUE CAMBIO RESPECTO A LA VERSION ANTERIOR:
+- Los datos sensibles (SECRET_KEY, base de datos, correo) ya NO estan
+  escritos en settings.py. Viven en un archivo .env que NO se sube a Git.
+- Hay un paso nuevo: crear tu .env (paso 5).
+- La base de datos se configura con una sola variable: DATABASE_URL.
+- Hay 2 librerias nuevas: python-dotenv y dj-database-url.
+
+POR QUE: si las claves estan en el codigo, cualquiera que vea el
+repositorio las ve. Con .env el codigo es el mismo en todos los sitios
+(tu PC, Render) y solo cambia la configuracion.
 
 
 ----------------------------------------------------------
 1) CLONAR EL REPOSITORIO
 ----------------------------------------------------------
 
-git clone https://github.com/chokoramow-pixel/B3Time.git
+git clone <URL_DEL_REPOSITORIO_NUEVO>
 cd B3Time
 
-Para trabajar directamente en tu rama personal:
+Cambia <URL_DEL_REPOSITORIO_NUEVO> por la direccion del repo nuevo.
+
+Para trabajar en tu rama personal:
 
 git checkout main
 git pull origin main
+git checkout -b tu-rama        (solo la primera vez)
 
 
 ----------------------------------------------------------
@@ -36,7 +51,7 @@ Windows (PowerShell):
 entorno\Scripts\activate
 
 Si PowerShell bloquea la activacion, corre esto UNA sola vez
-(como administrador) y vuelve a intentar:
+y vuelve a intentar:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 Windows (CMD):
@@ -45,43 +60,117 @@ entorno\Scripts\activate.bat
 Linux / Mac:
 source entorno/bin/activate
 
-(Vas a ver "(entorno)" al inicio de la linea de comandos
-cuando este activo correctamente).
+(Vas a ver "(entorno)" al inicio de la linea cuando este activo).
 
 
 ----------------------------------------------------------
-4) INSTALAR LAS DEPENDENCIAS DEL PROYECTO
+4) INSTALAR LAS DEPENDENCIAS
 ----------------------------------------------------------
 
 pip install -r requirements.txt
 
+Asegurate de que requirements.txt incluya estas dos lineas nuevas
+(si no estan, agregalas y vuelve a correr el comando):
+
+python-dotenv>=1.0
+dj-database-url>=2.2
+
+Cuando agregues una libreria nueva al proyecto:
+pip install nombre-libreria
+pip freeze > requirements.txt
+
 
 ----------------------------------------------------------
-5) CREAR LA BASE DE DATOS (PostgreSQL)
+5) CREAR TU ARCHIVO .env  (PASO NUEVO)
 ----------------------------------------------------------
 
-Asegurate de tener PostgreSQL instalado y corriendo.
-Luego:
+El repositorio trae un archivo plantilla llamado .env.example.
+Copialo con el nombre .env (en la raiz, junto a manage.py):
 
-createdb betime
+Windows (CMD):      copy .env.example .env
+Windows (PowerShell): Copy-Item .env.example .env
+Linux / Mac:        cp .env.example .env
+
+Abre el .env y llena los valores. Ejemplo para trabajo LOCAL:
+
+SECRET_KEY=pega-aqui-una-clave-generada
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1,localhost
+CSRF_TRUSTED_ORIGINS=http://127.0.0.1:8000
+DATABASE_URL=postgres://postgres:TU_CLAVE@localhost:5432/betime
+EMAIL_HOST_USER=tu_correo@gmail.com
+EMAIL_HOST_PASSWORD=contrasena-de-aplicacion
+
+Generar una SECRET_KEY nueva:
+
+python -c "from django.core.management.utils import get_random_secret_key as g; print(g())"
+
+REGLAS DEL .env:
+- NUNCA se sube a Git (ya esta en .gitignore). Comprueba con "git status":
+  el .env NO debe aparecer en la lista.
+- Sin comillas y sin espacios alrededor del "=".
+- Si tu clave de Postgres tiene caracteres especiales, codificalos en la
+  URL:  @ -> %40    # -> %23    / -> %2F    : -> %3A
+- Cada integrante tiene su propio .env. Los valores reales se comparten
+  por un canal privado, nunca por GitHub ni por un grupo abierto.
+- Si agregas una variable nueva, agregala TAMBIEN a .env.example
+  (con valor vacio o falso) y avisa al equipo.
+
+Si el proyecto da KeyError: 'SECRET_KEY' es porque falta el .env o la
+variable. Es a proposito: sin clave no arranca.
+
+
+----------------------------------------------------------
+6) CREAR LA BASE DE DATOS (PostgreSQL local)
+----------------------------------------------------------
+
+Asegurate de tener PostgreSQL instalado y corriendo. Luego:
+
+createdb -U postgres betime
+
+(o crea la base "betime" desde pgAdmin4: clic derecho en Databases
+-> Create -> Database).
 
 Si ya existia y quieres empezar limpio:
-dropdb betime
-createdb betime
+dropdb -U postgres betime
+createdb -U postgres betime
 
-Revisa que los datos de conexion en betime/settings.py
-(usuario, password, host, puerto) coincidan con tu Postgres local.
+Los datos de conexion ya NO se editan en settings.py: van en
+DATABASE_URL dentro de tu .env.
+
+Formato:  postgres://USUARIO:CLAVE@HOST:PUERTO/NOMBRE_BD
 
 
 ----------------------------------------------------------
-6) APLICAR LAS MIGRACIONES
+7) VERIFICAR LA CONFIGURACION
+----------------------------------------------------------
+
+python manage.py check
+
+Debe decir: System check identified no issues.
+
+Para ver que configuracion esta usando Django de verdad:
+
+python manage.py shell -c "from django.conf import settings as s; d=s.DATABASES['default']; print(s.SETTINGS_MODULE, d.get('HOST'), d.get('NAME'), s.DEBUG)"
+
+Revision de seguridad para produccion (simula DEBUG apagado):
+
+Windows (CMD):  set DEBUG=False && python manage.py check --deploy
+Linux / Mac:    DEBUG=False python manage.py check --deploy
+
+Debe salir sin avisos. Con DEBUG=True en local es NORMAL que salgan
+W004, W008, W012, W016 y W018: se activan solos en produccion.
+
+
+----------------------------------------------------------
+8) APLICAR LAS MIGRACIONES
 ----------------------------------------------------------
 
 python manage.py migrate
 
 
 ----------------------------------------------------------
-7) CREAR UN SUPERUSUARIO (para entrar al /admin/)
+9) CREAR UN SUPERUSUARIO (para entrar al /admin/)
 ----------------------------------------------------------
 
 python manage.py createsuperuser
@@ -95,7 +184,7 @@ Va a pedir, en este orden:
 
 
 ----------------------------------------------------------
-8) LEVANTAR EL SERVIDOR
+10) LEVANTAR EL SERVIDOR
 ----------------------------------------------------------
 
 python manage.py runserver
@@ -109,17 +198,21 @@ http://127.0.0.1:8000/admin/    -> panel de administracion
  DIA A DIA (una vez ya configurado todo lo anterior)
 ==========================================================
 
-Cada vez que vuelvas a trabajar en el proyecto:
-
 cd B3Time
 entorno\Scripts\activate          (o source entorno/bin/activate)
-git pull origin jandres
+git pull origin tu-rama
 python manage.py runserver
 
-Si alguien (o tu mismo desde otro PC) agrego cambios a los
-modelos, corre tambien esto antes de runserver:
+Si alguien agrego cambios a los modelos o hay migraciones nuevas:
 
 python manage.py migrate
+
+Si alguien agrego librerias nuevas:
+
+pip install -r requirements.txt
+
+Si alguien agrego variables nuevas al .env.example: copiale esas
+lineas a tu .env.
 
 
 ==========================================================
@@ -129,13 +222,93 @@ python manage.py migrate
 git status                         (revisa que cambio)
 git add .
 git commit -m "mensaje describiendo el cambio"
-git pull origin jandres            (trae lo nuevo antes de subir)
+git pull origin tu-rama            (trae lo nuevo antes de subir)
 git push
+
+ANTES DE CADA COMMIT, revisa que NO vayan estos archivos:
+.env, entorno/, media/, staticfiles/, db.sqlite3
+
+Comprobar que .env no esta rastreado por Git:
+git ls-files | findstr /i ".env"       (Windows)
+git ls-files | grep -i ".env"          (Linux / Mac)
+Solo debe aparecer .env.example.
+
+FLUJO DE RAMAS:
+rama personal  ->  dev  ->  main
+Nunca se trabaja directo sobre main.
+
+
+==========================================================
+ DESPLIEGUE EN RENDER (variables de entorno)
+==========================================================
+
+En Render NO existe el archivo .env. Las variables se crean en el
+panel del servicio: Environment -> Add Environment Variable.
+
+SECRET_KEY              una clave NUEVA (distinta a la local)
+DEBUG                   False
+ALLOWED_HOSTS           betime-despliegue.onrender.com
+CSRF_TRUSTED_ORIGINS    https://betime-despliegue.onrender.com
+DATABASE_URL            el "Service URI" de Aiven
+EMAIL_HOST_USER         correo de la plataforma
+EMAIL_HOST_PASSWORD     contrasena de aplicacion NUEVA
+
+Donde esta el DATABASE_URL de Aiven:
+console.aiven.io -> tu proyecto -> servicio PostgreSQL ->
+Overview -> Connection information -> "Service URI".
+Debe terminar en ?sslmode=require
+
+Cambiar de base de datos (local <-> Aiven) = cambiar SOLO el valor de
+DATABASE_URL. Ya no se comenta ni se descomenta codigo.
+
+(PROXIMO PASO: WhiteNoise + Gunicorn para servir estaticos en Render.
+Se agregaran a requirements.txt y a esta guia.)
+
+
+==========================================================
+ SEGURIDAD: REGLAS DEL EQUIPO
+==========================================================
+
+1. Ninguna clave, contrasena o token dentro del codigo ni en Git.
+2. Si una clave se filtro, NO basta con borrarla: queda en el historial.
+   Hay que ROTARLA (generar una nueva y revocar la vieja).
+3. Ya se consideran comprometidas y deben cambiarse:
+   - la contrasena de aplicacion de Gmail que estuvo en settings.py
+   - la SECRET_KEY anterior
+   - la contrasena de PostgreSQL que estuvo escrita en el codigo
+4. El repositorio nuevo se crea con "git init" limpio, sin copiar la
+   carpeta .git vieja (para no arrastrar claves del historial).
+5. DEBUG=True solo en tu PC. En Render siempre False.
 
 
 ==========================================================
  SI ALGO SALE MAL
 ==========================================================
+
+KeyError: 'SECRET_KEY'
+  Falta el .env o la variable. Revisa el paso 5.
+
+Sigue conectando a una base vieja aunque borraste el .env
+  Una variable quedo definida en tu terminal o en el sistema.
+  load_dotenv NO sobrescribe variables que ya existen. Revisa:
+  Windows (CMD):  set | findstr /i "DATABASE SECRET DEBUG ALLOWED EMAIL DJANGO"
+  Quita una con:  set DATABASE_URL=
+  Si es permanente, borrala en "Variables de entorno del sistema"
+  y cierra y abre la terminal.
+  Tambien cierra cualquier runserver que siga abierto en otra terminal.
+
+DisallowedHost (Invalid HTTP_HOST header)
+  El dominio no esta en ALLOWED_HOSTS. Agregalo en el .env o en Render.
+
+Error 403 CSRF en Render
+  Falta CSRF_TRUSTED_ORIGINS con https:// y el dominio exacto.
+
+Error de conexion a Aiven
+  Revisa que DATABASE_URL termine en ?sslmode=require y que la clave
+  no tenga caracteres especiales sin codificar.
+
+password authentication failed (Postgres local)
+  La clave en DATABASE_URL no coincide con la de tu Postgres.
 
 Ver que archivos estan sin trackear / modificados:
 git status

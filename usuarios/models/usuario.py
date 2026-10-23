@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
-from usuarios.choices import TIPO_DOCUMENTO_CHOICES
+from usuarios.choices import GENERO_CHOICES, TIPO_DOCUMENTO_CHOICES
 from usuarios.managers import UsuarioManager
 
 
@@ -33,6 +33,24 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         unique=True,
         null=True,
         blank=True
+    )
+
+    # ---------- Datos personales adicionales ----------
+    # blank=True: las cuentas que ya existen (y las de Bienestar /
+    # Administrador) no tienen estos datos; el formulario de registro de
+    # aprendices sí los exige.
+
+    genero = models.CharField(
+        max_length=1,
+        choices=GENERO_CHOICES,
+        blank=True,
+        default=""
+    )
+
+    telefono = models.CharField(
+        max_length=15,
+        blank=True,
+        default=""
     )
 
     # ---------- Estados ----------

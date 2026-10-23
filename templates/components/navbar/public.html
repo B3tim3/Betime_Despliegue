@@ -1,53 +1,54 @@
 {% load static %}
-<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+{% url 'publicaciones:lista' as u_pub %}{% url 'eventos:lista' as u_eve %}{% url 'bienestar:nosotros' as u_nos %}
+<nav class="navbar navbar-expand-lg bg-white shadow-sm nav-betime">
     <div class="container">
 
         <!-- Logo -->
         <a class="navbar-brand" href="/">
-            <img src="{% static 'img/logo.png' %}" alt="Be Time" height="87">
+            <img src="{% static 'img/logo.png' %}" alt="Be Time" height="40">
         </a>
 
         <!-- Botón para móviles -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarPublic">
+            data-bs-target="#navbarPublic"
+            aria-controls="navbarPublic" aria-expanded="false" aria-label="Abrir menú">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <!-- Menú -->
         <div class="collapse navbar-collapse" id="navbarPublic">
 
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto me-lg-3">
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Inicio</a>
+                    <a class="nav-link{% if request.path == '/' %} active{% endif %}" href="/">Inicio</a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'publicaciones:lista' %}">Publicaciones</a>
+                    <a class="nav-link{% if u_pub in request.path %} active{% endif %}" href="{% url 'publicaciones:lista' %}">Publicaciones</a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'eventos:lista' %}">Eventos</a>
+                    <a class="nav-link{% if u_eve in request.path %} active{% endif %}" href="{% url 'eventos:lista' %}">Eventos</a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'bienestar:nosotros' %}">Nosotros</a>
+                    <a class="nav-link{% if u_nos in request.path %} active{% endif %}" href="{% url 'bienestar:nosotros' %}">Nosotros</a>
                 </li>
 
             </ul>
 
-            {% if user.is_authenticated %}
-                <a href="{% url 'usuarios:dashboard' %}" class="btn btn-outline-success ms-lg-2">
-                    Mi panel
-                </a>
-                <a href="{% url 'usuarios:logout' %}" class="btn btn-success ms-lg-2">
-                    Cerrar sesión
-                </a>
-            {% else %}
-                <a href="{% url 'usuarios:login' %}" class="btn btn-success ms-lg-3">
-                    Iniciar sesión
-                </a>
-            {% endif %}
+            <div class="nav-acciones">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'usuarios:dashboard' %}" class="btn btn-outline-success">Mi panel</a>
+                    <form method="post" action="{% url 'usuarios:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success w-100">Cerrar sesión</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'usuarios:login' %}" class="btn btn-success">Iniciar sesión</a>
+                {% endif %}
+            </div>
 
         </div>
 

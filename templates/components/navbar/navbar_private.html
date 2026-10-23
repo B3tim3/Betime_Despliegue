@@ -1,14 +1,25 @@
-{% load static %}
+{% load static notificaciones_tags %}
+{% notificaciones_no_leidas as n_noti %}
 {# Navbar para usuarios autenticados: aprendices, personal de bienestar y administradores #}
-<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+<nav class="navbar navbar-expand-lg bg-white shadow-sm nav-betime">
     <div class="container-fluid px-3 px-lg-4">
 
         <a class="navbar-brand" href="/">
-            <img src="{% static 'img/logo.png' %}" alt="Be Time" height="87">
+            <img src="{% static 'img/logo.png' %}" alt="Be Time" height="40">
+        </a>
+
+        {# Campanita en celular: fuera del menú colapsable para que siempre se vea #}
+        <a href="{% url 'notificaciones:lista' %}" class="d-lg-none ms-auto me-3 text-body position-relative"
+           aria-label="Notificaciones{% if n_noti %}, {{ n_noti }} sin leer{% endif %}">
+            <i class="bi {% if n_noti %}bi-bell-fill text-success{% else %}bi-bell{% endif %} fs-4"></i>
+            {% if n_noti %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{% if n_noti > 99 %}99+{% else %}{{ n_noti }}{% endif %}</span>
+            {% endif %}
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarPrivate">
+            data-bs-target="#navbarPrivate"
+            aria-controls="navbarPrivate" aria-expanded="false" aria-label="Abrir menú">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -16,23 +27,35 @@
 
             <ul class="navbar-nav ms-auto align-items-lg-center">
 
-                <li class="nav-item me-lg-3">
-                    <span class="nav-link text-muted">
-                        {{ request.user.get_full_name }}
-                        {% if request.user.administrador %}
-                            <span class="badge text-bg-light border ms-1">Administrador</span>
-                        {% elif request.user.personal_bienestar %}
-                            <span class="badge text-bg-light border ms-1">Personal de Bienestar</span>
-                        {% elif request.user.aprendiz %}
-                            <span class="badge text-bg-light border ms-1">Aprendiz</span>
+                {# Campanita en escritorio #}
+                <li class="nav-item d-none d-lg-block me-3">
+                    <a href="{% url 'notificaciones:lista' %}" class="nav-link position-relative px-2"
+                       aria-label="Notificaciones{% if n_noti %}, {{ n_noti }} sin leer{% endif %}">
+                        <i class="bi {% if n_noti %}bi-bell-fill text-success{% else %}bi-bell{% endif %} fs-5"></i>
+                        {% if n_noti %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{% if n_noti > 99 %}99+{% else %}{{ n_noti }}{% endif %}</span>
                         {% endif %}
-                    </span>
+                    </a>
+                </li>
+
+                <li class="nav-item me-lg-3">
+                    <div class="nav-usuario">
+                        <span class="nav-usuario__nombre">{{ request.user.get_full_name }}</span>
+                        {% if request.user.administrador %}
+                            <span class="badge text-bg-light border">Administrador</span>
+                        {% elif request.user.personal_bienestar %}
+                            <span class="badge text-bg-light border">Personal de Bienestar</span>
+                        {% elif request.user.aprendiz %}
+                            <span class="badge text-bg-light border">Aprendiz</span>
+                        {% endif %}
+                    </div>
                 </li>
 
                 <li class="nav-item">
-                    <a href="{% url 'usuarios:logout' %}" class="btn btn-outline-success btn-sm">
-                        Cerrar sesión
-                    </a>
+                    <form method="post" action="{% url 'usuarios:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-success btn-sm w-100">Cerrar sesión</button>
+                    </form>
                 </li>
 
             </ul>

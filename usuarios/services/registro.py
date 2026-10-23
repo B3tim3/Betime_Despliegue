@@ -5,7 +5,8 @@ from usuarios.models import Administrador, Aprendiz, PersonalBienestar, Usuario
 
 
 @transaction.atomic
-def registrar_aprendiz(*, tipo_documento, numero_documento, nombres, apellidos, email, password, ficha):
+def registrar_aprendiz(*, tipo_documento, numero_documento, nombres, apellidos, email, password,
+                       grupo, genero="", telefono=""):
     """
     Crea el Usuario y su perfil de Aprendiz de forma atómica.
     Si algo falla, no queda ningún registro a medias.
@@ -18,11 +19,13 @@ def registrar_aprendiz(*, tipo_documento, numero_documento, nombres, apellidos, 
         nombres=nombres,
         apellidos=apellidos,
         email=email,
+        genero=genero,
+        telefono=telefono,
     )
 
     aprendiz = Aprendiz.objects.create(
         usuario=usuario,
-        ficha=ficha,
+        grupo=grupo,
         fecha_ingreso=timezone.now().date(),
     )
 
@@ -31,7 +34,7 @@ def registrar_aprendiz(*, tipo_documento, numero_documento, nombres, apellidos, 
 
 @transaction.atomic
 def crear_usuario_administrativo(*, tipo_documento, numero_documento, nombres, apellidos,
-                                   email, password, tipo_perfil, ficha=None, cargo=None):
+                                   email, password, tipo_perfil, grupo=None, cargo=None):
     """
     Crea un Usuario y su perfil correspondiente, elegido por un
     Administrador desde el panel (no por la persona misma, como sí
@@ -39,7 +42,7 @@ def crear_usuario_administrativo(*, tipo_documento, numero_documento, nombres, a
 
     tipo_perfil: "aprendiz", "bienestar" o "administrador" -- decide
     qué tabla de perfil se crea. Los campos que no aplican a un tipo
-    de perfil (ficha para bienestar/administrador, cargo para
+    de perfil (grupo para bienestar/administrador, cargo para
     aprendiz/administrador) simplemente se ignoran.
     """
 
@@ -55,7 +58,7 @@ def crear_usuario_administrativo(*, tipo_documento, numero_documento, nombres, a
     if tipo_perfil == "aprendiz":
         perfil = Aprendiz.objects.create(
             usuario=usuario,
-            ficha=ficha,
+            grupo=grupo,
             fecha_ingreso=timezone.now().date(),
         )
     elif tipo_perfil == "bienestar":

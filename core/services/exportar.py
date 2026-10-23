@@ -1,6 +1,6 @@
 """
 Utilidades compartidas para exportar cualquier listado del panel
-(Programas, Jornadas, Fichas, Aprendices, Eventos, Publicaciones...)
+(Programas, Jornadas, Grupos, Aprendices, Eventos, Publicaciones...)
 a Excel, Word o PDF, sin duplicar la lógica en cada vista.
 
 Los 3 formatos llevan el mismo "membrete" (logo, software, quién
@@ -77,6 +77,32 @@ def _fecha_exportacion():
     return timezone.now().strftime("%d/%m/%Y %H:%M")
 
 
+def _palabra_mas_larga(texto):
+    return max((len(p) for p in _valor_a_texto(texto).split()), default=0)
+
+
+def _columna_vacia(i, filas):
+    """True si la columna no trae datos (ej. la de "Firma": se llena a mano)."""
+    return all(not _valor_a_texto(f[i]).strip() for f in filas if i < len(f))
+
+
+def _palabras_minimas(encabezados, filas, tope=32):
+    """
+    Para cada columna, cuántos caracteres necesita como MÍNIMO para que
+    ninguna palabra se parta a la mitad ("Masculi/no"). El texto largo
+    sí puede saltar de línea entre palabras, pero una palabra suelta no.
+    Las palabras del encabezado cuentan un poco más porque van en negrita.
+    """
+    minimos = []
+    for i, encabezado in enumerate(encabezados):
+        palabra_dato = max(
+            (_palabra_mas_larga(f[i]) for f in filas if i < len(f)), default=0
+        )
+        palabra_encabezado = _palabra_mas_larga(encabezado) * 1.1
+        minimos.append(min(max(palabra_dato, palabra_encabezado, 3), tope))
+    return minimos
+
+
 def _pesos_de_columna(encabezados, filas, minimo=6, maximo=40):
     """
     Calcula, para cada columna, un "peso" relativo -- pero le da
@@ -87,7 +113,12 @@ def _pesos_de_columna(encabezados, filas, minimo=6, maximo=40):
     ensancha la columna más de lo que su contenido real necesita;
     el encabezado solo empuja el ancho una fracción de su propio
     largo, y el resto lo resuelve el salto de línea.
+
+    Dos garantías: ninguna columna queda más angosta que su palabra
+    más larga, y una columna sin datos (la de la firma, que se llena a
+    mano) recibe un ancho generoso para poder escribir en ella.
     """
+    minimos = _palabras_minimas(encabezados, filas)
     pesos = []
     for i, encabezado in enumerate(encabezados):
         largo_encabezado = len(_valor_a_texto(encabezado))
@@ -98,8 +129,42 @@ def _pesos_de_columna(encabezados, filas, minimo=6, maximo=40):
         peso = max(largo_datos, minimo)
         if largo_encabezado > peso:
             peso = max(peso, largo_encabezado * 0.6)
-        pesos.append(min(peso, maximo))
+        peso = min(peso, maximo)
+        if filas and _columna_vacia(i, filas):
+            peso = max(peso, 22)
+        pesos.append(max(peso, minimos[i]))
     return pesos
+
+
+def _tamano_fuente(encabezados, filas, ancho_total, relleno, opciones):
+    """
+    Elige la letra más grande (de `opciones`, de mayor a menor) con la que
+    todas las columnas caben sin partir palabras. Los listados con
+    muchas columnas (como la asistencia, de 14) usan letra más chica.
+    ancho_total y relleno van en puntos tipográficos.
+    """
+    minimos = _palabras_minimas(encabezados, filas)
+    for tamano in opciones:
+        necesario = sum(m * tamano * 0.6 + relleno for m in minimos)
+        if necesario <= ancho_total:
+            return tamano
+    return opciones[-1]
+
+
+def _anchos_en_puntos(encabezados, filas, ancho_total, tamano, relleno):
+    """
+    Reparte `ancho_total` (puntos): primero a cada columna lo mínimo
+    para que no se parta ninguna palabra y el sobrante en proporción al
+    peso de cada una (las que traen más texto reciben más).
+    """
+    pesos = _pesos_de_columna(encabezados, filas)
+    minimos = [m * tamano * 0.6 + relleno for m in _palabras_minimas(encabezados, filas)]
+    if sum(minimos) >= ancho_total:
+        total = sum(minimos) or 1
+        return [ancho_total * m / total for m in minimos]
+    sobrante = ancho_total - sum(minimos)
+    total_peso = sum(pesos) or 1
+    return [m + sobrante * p / total_peso for m, p in zip(minimos, pesos)]
 
 
 # =========================================================
@@ -332,14 +397,20 @@ def exportar_word(nombre_archivo, titulo, encabezados, filas, exportado_por="Sis
                     run.font.size = Pt(9)
 
     # ---------- Ancho de columnas, repartido según el contenido ----------
-    pesos = _pesos_de_columna(encabezados, filas)
-    total_peso = sum(pesos) or 1
     ancho_disponible = seccion.page_width - seccion.left_margin - seccion.right_margin
+    ancho_pt = ancho_disponible / 12700  # EMU -> puntos
+    tamano = _tamano_fuente(encabezados, filas, ancho_pt, 12, (9, 8, 7.5, 7, 6.5, 6))
+    anchos_pt = _anchos_en_puntos(encabezados, filas, ancho_pt, tamano, 12)
 
-    for i, peso in enumerate(pesos):
-        ancho_columna = int(ancho_disponible * peso / total_peso)
+    for i, ancho_pt_col in enumerate(anchos_pt):
+        # La cuadrícula de la tabla (tblGrid) también necesita el ancho: Word
+        # usa el de las celdas, pero LibreOffice y otros visores usan este.
+        tabla.columns[i].width = int(ancho_pt_col * 12700)
         for fila_tabla in tabla.rows:
-            fila_tabla.cells[i].width = ancho_columna
+            fila_tabla.cells[i].width = int(ancho_pt_col * 12700)
+            for parrafo_celda in fila_tabla.cells[i].paragraphs:
+                for run in parrafo_celda.runs:
+                    run.font.size = Pt(tamano)
 
     # ---------- Pie con el total (además del que ya va en el encabezado) ----------
     parrafo_final = documento.add_paragraph()
@@ -437,9 +508,8 @@ def exportar_pdf(nombre_archivo, titulo, encabezados, filas, exportado_por="Sist
     # según qué tan largo es el contenido de cada una, en vez de
     # dejar la tabla más angosta que la hoja. ----------
     ancho_disponible = landscape(letter)[0] - documento.leftMargin - documento.rightMargin
-    pesos = _pesos_de_columna(encabezados, filas)
-    total_peso = sum(pesos) or 1
-    anchos_columnas = [ancho_disponible * peso / total_peso for peso in pesos]
+    tamano = _tamano_fuente(encabezados, filas, ancho_disponible, 10, (7.5, 7, 6.5, 6, 5.5))
+    anchos_columnas = _anchos_en_puntos(encabezados, filas, ancho_disponible, tamano, 10)
 
     # ---------- Celdas como Paragraph, no texto plano ----------
     # reportlab no ajusta línea por sí solo en una celda de texto
@@ -448,12 +518,12 @@ def exportar_pdf(nombre_archivo, titulo, encabezados, filas, exportado_por="Sist
     # una sola línea necesita poder partirse en dos, en vez de
     # desbordarse fuera de la celda.
     estilo_encabezado_celda = ParagraphStyle(
-        "encabezado_celda", fontName="Helvetica-Bold", fontSize=8,
-        textColor=colors.white, alignment=TA_CENTER, leading=10,
+        "encabezado_celda", fontName="Helvetica-Bold", fontSize=tamano + 0.5,
+        textColor=colors.white, alignment=TA_CENTER, leading=tamano + 2.5,
     )
     estilo_dato_celda = ParagraphStyle(
-        "dato_celda", fontName="Helvetica", fontSize=7.5,
-        textColor=colors.HexColor("#1a1a1a"), alignment=TA_CENTER, leading=9,
+        "dato_celda", fontName="Helvetica", fontSize=tamano,
+        textColor=colors.HexColor("#1a1a1a"), alignment=TA_CENTER, leading=tamano + 1.5,
     )
 
     fila_encabezados_pdf = [Paragraph(_valor_a_texto(h), estilo_encabezado_celda) for h in encabezados]

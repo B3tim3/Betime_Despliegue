@@ -19,8 +19,8 @@ class Aprendiz(models.Model):
         related_name="aprendiz"
     )
 
-    ficha = models.ForeignKey(
-        "usuarios.Ficha",
+    grupo = models.ForeignKey(
+        "usuarios.Grupo",
         on_delete=models.PROTECT,
         related_name="aprendices"
     )

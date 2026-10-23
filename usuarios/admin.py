@@ -3,11 +3,13 @@ from django.contrib import admin
 from usuarios.models import (
     ProgramaFormacion,
     Jornada,
-    Ficha,
+    Grupo,
+    NivelFormacion,
     Usuario,
     Aprendiz,
     PersonalBienestar,
     Administrador,
+    IntentoFallido,
 )
 
 
@@ -28,14 +30,14 @@ class JornadaAdmin(admin.ModelAdmin):
     list_display = ("id", "nombre")
 
 
-@admin.register(Ficha)
-class FichaAdmin(admin.ModelAdmin):
-    list_display = ("id", "numero_ficha", "programa_formacion", "jornada", "estado")
+@admin.register(Grupo)
+class GrupoAdmin(admin.ModelAdmin):
+    list_display = ("id", "numero_grupo", "programa_formacion", "jornada", "estado")
 
 
 @admin.register(Aprendiz)
 class AprendizAdmin(admin.ModelAdmin):
-    list_display = ("id", "usuario", "ficha", "estado")
+    list_display = ("id", "usuario", "grupo", "estado")
 
 
 @admin.register(PersonalBienestar)
@@ -46,3 +48,22 @@ class PersonalBienestarAdmin(admin.ModelAdmin):
 @admin.register(Administrador)
 class AdministradorAdmin(admin.ModelAdmin):
     list_display = ("id", "usuario")
+
+
+@admin.register(NivelFormacion)
+class NivelFormacionAdmin(admin.ModelAdmin):
+    list_display = ("id", "nombre")
+
+
+@admin.register(IntentoFallido)
+class IntentoFallidoAdmin(admin.ModelAdmin):
+    """Solo lectura: sirve para revisar quién está probando contraseñas."""
+    list_display = ("numero_documento", "ip", "fecha")
+    search_fields = ("numero_documento", "ip")
+    date_hierarchy = "fecha"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

@@ -46,8 +46,8 @@ class LoginForm(forms.Form):
             ).exists()
 
             if coincide_otro_tipo:
-                raise forms.ValidationError(
-                    "El tipo de documento no coincide con el número ingresado."
-                )
+                # Mismo mensaje que una contraseña incorrecta: decir "el tipo
+                # de documento no coincide" confirmaría que ese número existe.
+                raise forms.ValidationError("Documento o contraseña incorrectos.")
 
         return cleaned_data

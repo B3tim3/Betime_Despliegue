@@ -20,20 +20,16 @@ class AprendizTable(tables.Table):
         verbose_name="Nombre",
         order_by=("usuario__apellidos", "usuario__nombres"),
     )
-    tipo_documento = tables.Column(
-        accessor="usuario__tipo_documento",
-        verbose_name="Tipo",
-    )
     documento = tables.Column(
         accessor="usuario__numero_documento",
         verbose_name="Documento",
     )
-    ficha = tables.Column(
-        accessor="ficha__numero_ficha",
-        verbose_name="Ficha",
+    grupo = tables.Column(
+        accessor="grupo__numero_grupo",
+        verbose_name="Grupo",
     )
     programa = tables.Column(
-        accessor="ficha__programa_formacion__nombre",
+        accessor="grupo__programa_formacion__nombre",
         verbose_name="Programa",
     )
     estado = tables.Column(verbose_name="Estado")
@@ -55,7 +51,7 @@ class AprendizTable(tables.Table):
 
     class Meta:
         model = Aprendiz
-        fields = ("nombre", "tipo_documento", "documento", "ficha", "programa", "estado", "acciones")
+        fields = ("nombre", "documento", "grupo", "programa", "estado", "acciones")
         attrs = {"class": "table align-middle bg-white"}
         order_by = ("usuario__apellidos",)
 

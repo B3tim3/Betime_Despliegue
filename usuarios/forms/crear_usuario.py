@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
 from usuarios.choices import TIPO_DOCUMENTO_CHOICES
-from usuarios.models import Ficha, ProgramaFormacion
+from usuarios.models import Grupo, ProgramaFormacion
 
 TIPO_PERFIL_CHOICES = [
     ("aprendiz", "Aprendiz"),
@@ -71,13 +71,13 @@ class CrearUsuarioAdminForm(forms.Form):
         empty_label="Selecciona el programa"
     )
 
-    ficha = forms.ModelChoiceField(
-        queryset=Ficha.objects.none(),
-        label="Ficha",
+    grupo = forms.ModelChoiceField(
+        queryset=Grupo.objects.none(),
+        label="Grupo",
         required=False,
         widget=forms.Select(attrs={
             "class": "form-select",
-            "id": "id_ficha",
+            "id": "id_grupo",
         }),
         empty_label="Selecciona primero el programa"
     )
@@ -114,14 +114,14 @@ class CrearUsuarioAdminForm(forms.Form):
 
         # Mismo truco que en RegistroAprendizForm: si el formulario se
         # reenvía tras un error de validación con un programa ya
-        # elegido, se llena el <select> de fichas con las de ese
+        # elegido, se llena el <select> de grupos con las de ese
         # programa para que el valor enviado siga siendo válido.
         programa_id = self.data.get("programa_formacion") if self.data else None
 
         if programa_id:
-            self.fields["ficha"].queryset = Ficha.objects.filter(
+            self.fields["grupo"].queryset = Grupo.objects.filter(
                 programa_formacion_id=programa_id
-            ).order_by("numero_ficha")
+            ).order_by("numero_grupo")
 
     def clean_numero_documento(self):
         numero_documento = self.cleaned_data["numero_documento"]
@@ -161,8 +161,8 @@ class CrearUsuarioAdminForm(forms.Form):
 
         tipo_perfil = cleaned_data.get("tipo_perfil")
 
-        if tipo_perfil == "aprendiz" and not cleaned_data.get("ficha"):
-            self.add_error("ficha", "Selecciona una ficha para el aprendiz.")
+        if tipo_perfil == "aprendiz" and not cleaned_data.get("grupo"):
+            self.add_error("grupo", "Selecciona un grupo para el aprendiz.")
 
         if tipo_perfil == "bienestar" and not cleaned_data.get("cargo"):
             self.add_error("cargo", "Indica el cargo de esta persona en Bienestar.")

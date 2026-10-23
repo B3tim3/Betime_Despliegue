@@ -7,3 +7,296 @@
 [data-bs-toggle="collapse"] .bi-chevron-down {
     transition: transform 0.2s ease;
 }
+
+/* =====================================================================
+   MÓVIL (menos de 768 px)
+   ---------------------------------------------------------------------
+   1) Tablas -> tarjetas. static/js/tabla-movil.js marca las tablas con
+      la clase .tabla-cards y copia el nombre de cada columna en el
+      atributo data-label de cada celda; aquí se muestra ese nombre
+      como etiqueta. Así se ven TODOS los datos y los botones de
+      Editar / Eliminar, que antes quedaban escondidos a la derecha.
+   2) Barras de botones del encabezado (Exportar + Nuevo ...) a lo ancho.
+   3) Paginación que no se desborda.
+   ===================================================================== */
+
+@media (max-width: 767.98px) {
+
+    .table-responsive:has(.tabla-cards) {
+        overflow: visible;
+    }
+
+    table.tabla-cards,
+    table.tabla-cards tbody,
+    table.tabla-cards tr,
+    table.tabla-cards td {
+        display: block;
+        width: 100%;
+    }
+
+    table.tabla-cards {
+        background: transparent !important;
+        border: 0;
+    }
+
+    table.tabla-cards thead {
+        display: none;  /* los nombres de columna pasan a ser etiquetas de cada dato */
+    }
+
+    /* Cada fila = una tarjeta. OJO: sin !important en "display" de tr,
+       porque tabla-filtro.js oculta filas con style="display:none". */
+    table.tabla-cards tr {
+        background: #fff;
+        border: 1px solid var(--bt-borde, #E1E9DC);
+        border-radius: 0.75rem;
+        padding: 0.35rem 0.9rem 0.6rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 1px 2px rgba(22, 36, 26, 0.05);
+    }
+
+    table.tabla-cards td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.4rem 0;
+        border: 0;
+        text-align: right !important;
+        background: transparent !important;
+        min-width: 0;
+        word-break: break-word;
+    }
+
+    table.tabla-cards td + td:not(.celda-acciones) {
+        border-top: 1px dashed var(--bt-borde, #E1E9DC);
+    }
+
+    table.tabla-cards td::before {
+        content: attr(data-label);
+        flex: 0 0 38%;
+        max-width: 38%;
+        text-align: left;
+        word-break: normal;
+        overflow-wrap: normal;
+        hyphens: none;
+        line-height: 1.2;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: #6c757d;
+    }
+
+    table.tabla-cards td:empty {
+        display: none;
+    }
+
+    /* Primera celda: es el "título" de la tarjeta (nombre, número...). */
+    table.tabla-cards td:first-child {
+        display: block;
+        text-align: left !important;
+        font-weight: 600;
+        font-size: 1.02rem;
+        padding-top: 0.55rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--bt-borde, #E1E9DC);
+    }
+
+    table.tabla-cards td:first-child::before {
+        display: none;
+    }
+
+    /* Celda de botones: ocupa todo el ancho, botones grandes y cómodos de tocar. */
+    table.tabla-cards td.celda-acciones {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: stretch;
+        gap: 0.5rem;
+        padding-top: 0.7rem;
+        margin-top: 0.3rem;
+        border-top: 1px solid var(--bt-borde, #E1E9DC);
+    }
+
+    table.tabla-cards td.celda-acciones::before {
+        display: none;
+    }
+
+    table.tabla-cards td.celda-acciones > .btn,
+    table.tabla-cards td.celda-acciones > form,
+    table.tabla-cards td.celda-acciones > a {
+        flex: 1 1 auto;
+        margin: 0 !important;
+    }
+
+    table.tabla-cards td.celda-acciones form .btn {
+        width: 100%;
+    }
+
+    table.tabla-cards .btn-sm {
+        padding: 0.45rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    table.tabla-cards td input.form-control {
+        max-width: 110px;
+    }
+
+    table.tabla-cards td img {
+        max-width: 72px;
+        height: auto;
+    }
+
+    /* Checklist de asistencia: sin la columna "pegada" del escritorio. */
+    #tabla-checklist .col-aprendiz,
+    #tabla-checklist .col-programa,
+    #tabla-checklist .col-correo {
+        position: static !important;
+        min-width: 0 !important;
+        box-shadow: none !important;
+    }
+
+    #tabla-checklist.tabla-cards td {
+        white-space: normal !important;
+    }
+
+    #tabla-checklist.tabla-cards tr.fila-asistio-activa {
+        border-color: var(--bt-verde, #2E8B3D);
+        background: #f3faf1;
+    }
+
+    /* Aprendices (django-tables2): quita el rojo de los enlaces de orden en las celdas. */
+    table.tabla-cards td a:not(.btn) {
+        text-decoration: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+
+    /* Encabezado de cada listado: título arriba, botones debajo y a lo ancho. */
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .d-flex.gap-2,
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .btn-group {
+        width: 100%;
+    }
+
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .d-flex.gap-2 > .btn,
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .d-flex.gap-2 > .btn-group {
+        flex: 1 1 0;
+    }
+
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .btn-group > .btn,
+    .d-flex.justify-content-between.flex-wrap.gap-2 > .d-flex.gap-2 > .btn-group > .btn {
+        width: 100%;
+    }
+
+    /* Botones de formularios (Guardar / Cancelar): uno junto al otro a lo ancho. */
+    form .d-flex.gap-2 > .btn {
+        flex: 1 1 0;
+    }
+
+    /* Buscador a todo el ancho (tenía un máximo de 420 px). */
+    .input-group[style*="max-width"] {
+        max-width: 100% !important;
+    }
+
+    /* Paginación: se parte en renglones en vez de salirse de la pantalla. */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.25rem 0;
+    }
+
+    /* Bloque "Horas para todos" del checklist. */
+    #aplicar-horas-todos {
+        width: 100%;
+    }
+}
+
+/* ==========================================================
+   Barra de navegación (pública y privada)
+   ========================================================== */
+.nav-betime {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    padding-block: .55rem;
+    border-bottom: 1px solid #edf1ee;
+}
+.nav-betime .navbar-brand { margin-right: 1rem; }
+/* TAMAÑO DEL LOGO: cambia solo este número (en px) */
+.nav-betime .navbar-brand img { height: 81px; width: auto; max-width: none; flex-shrink: 0; }
+
+.nav-betime .navbar-toggler {
+    border: 1px solid #d9e2dc;
+    border-radius: .65rem;
+    padding: .35rem .5rem;
+    transition: background-color .15s, border-color .15s;
+}
+.nav-betime .navbar-toggler:hover { background: #f3f8f4; border-color: #b9d3be; }
+.nav-betime .navbar-toggler:focus { box-shadow: 0 0 0 .2rem rgba(46, 125, 50, .2); }
+
+.nav-betime .nav-link { color: #4b5750; font-weight: 500; }
+.nav-betime .nav-link:hover,
+.nav-betime .nav-link.active { color: #2e7d32; }
+
+.nav-betime .nav-acciones form { margin: 0; }
+.nav-betime .nav-acciones .btn { border-radius: 999px; font-weight: 500; white-space: nowrap; }
+
+.nav-usuario {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .3rem .6rem;
+    color: #6c757d;
+}
+.nav-usuario__nombre { font-weight: 600; color: #26332b; }
+
+/* Celular y tablet */
+@media (max-width: 991.98px) {
+    .nav-betime .navbar-collapse {
+        margin-top: .6rem;
+        padding-top: .25rem;
+        border-top: 1px solid #edf1ee;
+    }
+    .nav-betime .navbar-nav { padding-block: .25rem; }
+    .nav-betime .navbar-nav .nav-link {
+        padding: .8rem .5rem;
+        border-radius: .6rem;
+    }
+    .nav-betime .navbar-nav .nav-link.active { background: #eef6ef; }
+    .nav-betime .navbar-nav .nav-link:active { background: #e3f0e5; }
+
+    /* Botones lado a lado, mismo tamaño */
+    .nav-betime .nav-acciones {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .6rem;
+        padding: .6rem 0 .5rem;
+    }
+    .nav-betime .nav-acciones > :only-child { grid-column: 1 / -1; }
+    .nav-betime .nav-acciones .btn { padding: .65rem .75rem; }
+
+    /* Tarjeta con el nombre y el rol (panel privado) */
+    .nav-usuario {
+        background: #f5f8f6;
+        border-radius: .8rem;
+        padding: .7rem .9rem;
+        margin: .4rem 0 .6rem;
+    }
+    .nav-betime .nav-item form .btn {
+        border-radius: 999px;
+        padding: .6rem .75rem;
+        font-size: 1rem;
+    }
+    .nav-betime .nav-item:last-child { padding-bottom: .5rem; }
+}
+
+/* Escritorio */
+@media (min-width: 992px) {
+    .nav-betime .navbar-nav { gap: .25rem; }
+    .nav-betime .navbar-nav .nav-link { padding: .5rem .8rem; border-radius: .6rem; }
+    .nav-betime .navbar-nav .nav-link:hover { background: #f3f8f4; }
+    .nav-betime .navbar-nav .nav-link.active { background: #eef6ef; }
+    .nav-betime .nav-acciones { display: flex; align-items: center; gap: .5rem; }
+    .nav-betime .nav-acciones .btn { padding: .45rem 1.1rem; }
+    .nav-usuario { padding: 0 .25rem; }
+    .nav-betime .nav-item form .btn { border-radius: 999px; padding: .4rem 1rem; }
+}

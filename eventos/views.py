@@ -1,17 +1,27 @@
 from django.contrib import messages
+import re
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from bienestar.services import registrar_asistencia_y_horas
+from core.services.auditoria import registrar as auditar
 from core.services.exportar import responder_export
 from eventos.forms import EventoForm
 from eventos.models import Evento, Inscripcion
 from eventos.services import generar_imagen_qr
+from eventos.services.avisos import (
+    avisar_cambios_evento, avisar_evento_eliminado, avisar_evento_nuevo,
+)
+from eventos.services.inscripciones import InscripcionError, cancelar, inscribir
+from usuarios.services.datos_aprendiz import DatosAprendiz, SELECT_RELATED_APRENDIZ
 from usuarios.decorators import personal_bienestar_requerido
 from usuarios.mixins import PersonalBienestarRequeridoMixin
 
@@ -31,16 +41,29 @@ def detalle_evento(request, evento_id):
 
     evento = get_object_or_404(Evento, id=evento_id)
 
-    ya_inscrito = False
+    inscripcion = None
     if request.user.is_authenticated and hasattr(request.user, "aprendiz"):
-        ya_inscrito = Inscripcion.objects.filter(
+        inscripcion = Inscripcion.objects.filter(
             evento=evento, aprendiz=request.user.aprendiz
-        ).exclude(estado="cancelada").exists()
+        ).exclude(estado="cancelada").select_related("evento").first()
 
     return render(request, "eventos/detalle.html", {
         "evento": evento,
-        "ya_inscrito": ya_inscrito,
+        "ya_inscrito": inscripcion is not None,
+        "inscripcion": inscripcion,
     })
+
+
+def _volver(request, por_defecto, **kwargs):
+    """
+    Adónde regresar tras inscribirse/cancelar: la pantalla desde donde
+    se hizo el clic (campo oculto "next"), solo si es una ruta de este
+    mismo sitio; si no, la pantalla por defecto.
+    """
+    destino = request.POST.get("next", "")
+    if destino and url_has_allowed_host_and_scheme(destino, allowed_hosts={request.get_host()}):
+        return redirect(destino)
+    return redirect(por_defecto, **kwargs)
 
 
 @login_required(login_url="usuarios:login")
@@ -52,32 +75,54 @@ def inscribirse_evento(request, evento_id):
         messages.error(request, "Solo los aprendices pueden inscribirse a eventos.")
         return redirect("eventos:detalle", evento_id=evento.id)
 
-    if evento.estado != "programado":
-        messages.error(request, "Este evento ya no está abierto para inscripciones.")
-        return redirect("eventos:detalle", evento_id=evento.id)
-
     if request.method == "POST":
-        _, creada = Inscripcion.objects.get_or_create(
-            evento=evento,
-            aprendiz=request.user.aprendiz,
-            defaults={"estado": "inscrito"},
-        )
-
-        if creada:
-            messages.success(request, "Te inscribiste correctamente. ¡Nos vemos en el evento!")
+        try:
+            _, accion = inscribir(request.user.aprendiz, evento)
+        except InscripcionError as error:
+            messages.error(request, str(error))
         else:
-            messages.info(request, "Ya estabas inscrito a este evento.")
+            if accion == "existente":
+                messages.info(request, "Ya estabas inscrito a este evento.")
+            else:
+                messages.success(request, "Te inscribiste correctamente. ¡Nos vemos en el evento!")
+    elif evento.estado != "programado":
+        messages.error(request, "Este evento ya no está abierto para inscripciones.")
 
-    return redirect("eventos:detalle", evento_id=evento.id)
+    return _volver(request, "eventos:detalle", evento_id=evento.id)
+
+
+@login_required(login_url="usuarios:login")
+@require_POST
+def cancelar_inscripcion(request, inscripcion_id):
+    """El aprendiz cancela SU inscripción (nunca la de otra persona)."""
+
+    if not hasattr(request.user, "aprendiz"):
+        messages.error(request, "Solo los aprendices tienen inscripciones.")
+        return redirect("usuarios:dashboard")
+
+    inscripcion = get_object_or_404(
+        Inscripcion.objects.select_related("evento", "aprendiz__usuario"),
+        id=inscripcion_id, aprendiz=request.user.aprendiz,
+    )
+
+    try:
+        cancelar(inscripcion)
+    except InscripcionError as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(request, f"Cancelaste tu inscripción a «{inscripcion.evento.titulo}».")
+
+    return _volver(request, "usuarios:dashboard_aprendiz")
 
 
 # ---------- Panel de gestión (Personal de Bienestar / Administrador) ----------
-# CRUD como Class-Based Views, igual que ProgramaFormacion/Jornada/Ficha en usuarios.
+# CRUD como Class-Based Views, igual que ProgramaFormacion/Jornada/Grupo en usuarios.
 
 class EventoListView(PersonalBienestarRequeridoMixin, ListView):
     model = Evento
     template_name = "eventos/panel_lista.html"
     context_object_name = "eventos"
+    queryset = Evento.objects.select_related("creado_por")
     ordering = ["-fecha_inicio"]
     paginate_by = 15
 
@@ -92,7 +137,9 @@ class EventoCreateView(PersonalBienestarRequeridoMixin, CreateView):
     def form_valid(self, form):
         form.instance.creado_por = self.request.user
         messages.success(self.request, "Evento creado correctamente.")
-        return super().form_valid(form)
+        respuesta = super().form_valid(form)
+        avisar_evento_nuevo(self.object)
+        return respuesta
 
 
 class EventoUpdateView(PersonalBienestarRequeridoMixin, UpdateView):
@@ -103,8 +150,18 @@ class EventoUpdateView(PersonalBienestarRequeridoMixin, UpdateView):
     extra_context = {"titulo_pagina": "Editar evento"}
 
     def form_valid(self, form):
+        # form.instance ya trae los valores nuevos; el estado "de antes" hay
+        # que leerlo de la base de datos, que todavía no se ha guardado.
+        anterior = Evento.objects.get(pk=self.object.pk)
         messages.success(self.request, "Evento actualizado correctamente.")
-        return super().form_valid(form)
+        respuesta = super().form_valid(form)
+        avisar_cambios_evento(anterior, self.object)
+        if anterior.estado != "cancelado" and self.object.estado == "cancelado":
+            auditar(
+                "evento_cancelado", f"Se canceló el evento «{self.object.titulo}».",
+                request=self.request, detalles={"evento_id": self.object.pk},
+            )
+        return respuesta
 
 
 class EventoDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
@@ -114,13 +171,19 @@ class EventoDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
     success_url = reverse_lazy("eventos:panel_lista")
 
     def form_valid(self, form):
+        avisar_evento_eliminado(self.object)
+        auditar(
+            "evento_eliminado",
+            f"Se eliminó el evento «{self.object.titulo}» ({self.object.inscripciones.count()} inscripciones).",
+            request=self.request, detalles={"evento_id": self.object.pk},
+        )
         messages.success(self.request, "Evento eliminado.")
         return super().form_valid(form)
 
 
 @personal_bienestar_requerido
 def exportar_eventos(request):
-    eventos = Evento.objects.order_by("-fecha_inicio")
+    eventos = Evento.objects.select_related("creado_por").order_by("-fecha_inicio")
 
     q = request.GET.get("q", "").strip()
     if q:
@@ -142,53 +205,6 @@ def exportar_eventos(request):
     return responder_export(request, "eventos", "Eventos", encabezados, filas, "eventos:panel_lista")
 
 
-# ---------- Exportar los inscritos de un evento puntual ----------
-# A diferencia de exportar_eventos (que exporta TODOS los eventos),
-# esta exporta los inscritos de UN evento -- por eso el id del evento
-# viaja como parámetro de la URL (?evento_id=), no en la ruta, así
-# reutiliza el mismo componente de botones que ya usan las demás
-# listas (ver export_extra_params en checklist_inscritos).
-
-@personal_bienestar_requerido
-def exportar_inscritos(request):
-    evento_id = request.GET.get("evento_id")
-    evento = get_object_or_404(Evento, id=evento_id)
-
-    inscripciones = Inscripcion.objects.filter(
-        evento=evento
-    ).exclude(
-        estado="cancelada"
-    ).select_related(
-        "aprendiz__usuario", "aprendiz__ficha", "asistencia"
-    ).order_by("aprendiz__usuario__apellidos", "aprendiz__usuario__nombres")
-
-    def horas_de(inscripcion):
-        if not hasattr(inscripcion, "asistencia") or not inscripcion.asistencia.asistio:
-            return ""
-        registro = inscripcion.asistencia.horas_bienestar.first()
-        return registro.cantidad_horas if registro else ""
-
-    def asistio_texto(inscripcion):
-        return "Sí" if hasattr(inscripcion, "asistencia") and inscripcion.asistencia.asistio else "No"
-
-    encabezados = ["Aprendiz", "Tipo Documento", "Documento", "Ficha", "Asistió", "Horas"]
-    filas = [
-        [
-            i.aprendiz.usuario.get_full_name(),
-            i.aprendiz.usuario.tipo_documento,
-            i.aprendiz.usuario.numero_documento,
-            i.aprendiz.ficha.numero_ficha,
-            asistio_texto(i),
-            horas_de(i),
-        ]
-        for i in inscripciones
-    ]
-
-    return responder_export(
-        request, "inscritos", f"Inscritos - {evento.titulo}", encabezados, filas, "eventos:panel_lista"
-    )
-
-
 # ---------- Checklist de asistencia y horas de bienestar ----------
 # El "checklist manual" del que habla el roadmap: Bienestar entra a un
 # evento, ve a todos los inscritos, marca quién asistió y con cuántas
@@ -208,7 +224,9 @@ def checklist_inscritos(request, evento_id):
     ).exclude(
         estado="cancelada"
     ).select_related(
-        "aprendiz__usuario", "asistencia"
+        *[f"aprendiz__{relacion}" for relacion in SELECT_RELATED_APRENDIZ], "asistencia"
+    ).prefetch_related(
+        "asistencia__horas_bienestar"
     ).order_by("aprendiz__usuario__apellidos", "aprendiz__usuario__nombres")
 
     if request.method == "POST":
@@ -237,11 +255,89 @@ def checklist_inscritos(request, evento_id):
         messages.success(request, "Asistencia y horas registradas correctamente.")
         return redirect("eventos:panel_inscritos", evento_id=evento.id)
 
+    inscripciones = list(inscripciones)
+    for inscripcion in inscripciones:
+        # Todos los datos del aprendiz que pide Bienestar, ya listos
+        # para mostrar (la misma fuente que usan las exportaciones).
+        inscripcion.datos = DatosAprendiz.de(inscripcion.aprendiz)
+        # Horas que ya se le otorgaron (si las hay), para no mostrar
+        # siempre el valor por defecto del evento y evitar que al volver
+        # a guardar el checklist se pisen horas ajustadas a mano.
+        inscripcion.horas_guardadas = _horas_otorgadas(inscripcion)
+
     return render(request, "eventos/checklist_inscritos.html", {
         "evento": evento,
         "inscripciones": inscripciones,
+        # El botón "Exportar" lo anexa a la URL: así el archivo es de ESTE evento.
         "export_extra_params": f"evento_id={evento.id}",
     })
+
+
+def _horas_otorgadas(inscripcion):
+    """Suma de horas ya registradas para esta inscripción (None si no hay)."""
+    asistencia = getattr(inscripcion, "asistencia", None)
+    if asistencia is None:
+        return None
+    horas = [h.cantidad_horas for h in asistencia.horas_bienestar.all()]
+    return sum(horas) if horas else None
+
+
+def _texto_seguro(texto):
+    """Quita los caracteres que Excel no admite en el nombre de una hoja ([ ] : * ? / \\)."""
+    return re.sub(r"[\[\]:*?/\\]", " ", texto).strip()
+
+
+@personal_bienestar_requerido
+def exportar_inscritos(request):
+    """
+    Lista de asistencia de un evento en Excel / Word / PDF, con los datos
+    del aprendiz que pide Bienestar. Replica el listado que antes se
+    llenaba a mano (sin horas ni firma: la firma física no se necesita en el sistema).
+
+    Parámetros: ?evento_id=<id>  (lo agrega el botón de la pantalla)
+                ?q=<texto>       (lo agrega el buscador: se exporta solo lo filtrado)
+    """
+    evento_id = request.GET.get("evento_id", "")
+
+    if not evento_id.isdigit():
+        messages.error(request, "Falta indicar de qué evento es la lista.")
+        return redirect("eventos:panel_lista")
+
+    evento = get_object_or_404(Evento, id=evento_id)
+
+    inscripciones = Inscripcion.objects.filter(
+        evento=evento
+    ).exclude(
+        estado="cancelada"
+    ).select_related(
+        *[f"aprendiz__{relacion}" for relacion in SELECT_RELATED_APRENDIZ], "asistencia"
+    ).prefetch_related(
+        "asistencia__horas_bienestar"
+    ).order_by("aprendiz__usuario__apellidos", "aprendiz__usuario__nombres")
+
+    q = request.GET.get("q", "").strip().lower()
+
+    encabezados = ["N°", *DatosAprendiz.ENCABEZADOS, "Asistió"]
+    filas = []
+
+    for inscripcion in inscripciones:
+        datos = DatosAprendiz.de(inscripcion.aprendiz)
+        asistio = bool(getattr(inscripcion, "asistencia", None) and inscripcion.asistencia.asistio)
+        estado = "Sí" if asistio else "Pendiente"
+
+        # Mismo criterio que el buscador de la pantalla: el texto escrito
+        # puede estar en cualquier dato de la fila.
+        if q and q not in f"{datos.texto_busqueda()} {estado.lower()}":
+            continue
+
+        filas.append([len(filas) + 1, *datos.como_fila(), estado])
+
+    fecha = timezone.localtime(evento.fecha_inicio).strftime("%d/%m/%Y")
+    titulo = _texto_seguro(f"Asistencia - {evento.titulo} - {fecha}")
+
+    return responder_export(
+        request, f"asistencia_evento_{evento.id}", titulo, encabezados, filas, "eventos:panel_lista"
+    )
 
 
 # ---------- QR: mecanismo alterno al checklist manual ----------
@@ -264,6 +360,10 @@ def mi_qr_inscripcion(request, inscripcion_id):
     if not hasattr(request.user, "aprendiz") or inscripcion.aprendiz != request.user.aprendiz:
         messages.error(request, "No tienes permiso para ver este código.")
         return redirect("usuarios:dashboard")
+
+    if inscripcion.estado == "cancelada":
+        messages.error(request, "Cancelaste esta inscripción, por eso ya no tiene código QR.")
+        return redirect("usuarios:dashboard_aprendiz")
 
     return render(request, "eventos/mi_qr.html", {
         "inscripcion": inscripcion,
@@ -314,7 +414,7 @@ def confirmar_asistencia_qr(request, token):
 
     inscripcion = get_object_or_404(
         Inscripcion.objects.select_related(
-            "aprendiz__usuario", "aprendiz__ficha", "evento"
+            "aprendiz__usuario", "aprendiz__grupo", "evento"
         ),
         token=token,
     )
@@ -337,6 +437,7 @@ def confirmar_asistencia_qr(request, token):
             cantidad_horas=inscripcion.evento.horas_otorgadas,
             motivo=f"Asistencia a: {inscripcion.evento.titulo} (QR)",
             asignado_por=request.user.personal_bienestar,
+            metodo="QR",
         )
         messages.success(
             request,
