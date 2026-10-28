@@ -3,7 +3,7 @@ import re
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404, redirect, render
@@ -20,7 +20,8 @@ from eventos.services import generar_imagen_qr
 from eventos.services.avisos import (
     avisar_cambios_evento, avisar_evento_eliminado, avisar_evento_nuevo,
 )
-from eventos.services.inscripciones import InscripcionError, cancelar, inscribir
+from eventos.services.estados import sincronizar_estados
+from eventos.services.inscripciones import InscripcionError, cancelar, inscribir, motivo_no_confirmable
 from usuarios.services.datos_aprendiz import DatosAprendiz, SELECT_RELATED_APRENDIZ
 from usuarios.decorators import personal_bienestar_requerido
 from usuarios.mixins import PersonalBienestarRequeridoMixin
@@ -28,8 +29,12 @@ from usuarios.mixins import PersonalBienestarRequeridoMixin
 
 def lista_eventos(request):
 
-    eventos = Evento.objects.filter(
-        fecha_inicio__gte=timezone.now()
+    sincronizar_estados()
+
+    # Incluye los que están en curso (ya empezaron pero no terminan): por eso se
+    # filtra por fecha_fin y no por fecha_inicio.
+    eventos = Evento.objects.exclude(estado="cancelado").filter(
+        fecha_fin__gte=timezone.now()
     ).order_by("fecha_inicio")
 
     return render(request, "eventos/lista.html", {
@@ -39,6 +44,7 @@ def lista_eventos(request):
 
 def detalle_evento(request, evento_id):
 
+    sincronizar_estados()
     evento = get_object_or_404(Evento, id=evento_id)
 
     inscripcion = None
@@ -69,6 +75,7 @@ def _volver(request, por_defecto, **kwargs):
 @login_required(login_url="usuarios:login")
 def inscribirse_evento(request, evento_id):
 
+    sincronizar_estados()
     evento = get_object_or_404(Evento, id=evento_id)
 
     if not hasattr(request.user, "aprendiz"):
@@ -85,7 +92,7 @@ def inscribirse_evento(request, evento_id):
                 messages.info(request, "Ya estabas inscrito a este evento.")
             else:
                 messages.success(request, "Te inscribiste correctamente. ¡Nos vemos en el evento!")
-    elif evento.estado != "programado":
+    elif evento.estado_actual != "programado":
         messages.error(request, "Este evento ya no está abierto para inscripciones.")
 
     return _volver(request, "eventos:detalle", evento_id=evento.id)
@@ -125,6 +132,10 @@ class EventoListView(PersonalBienestarRequeridoMixin, ListView):
     queryset = Evento.objects.select_related("creado_por")
     ordering = ["-fecha_inicio"]
     paginate_by = 15
+
+    def get_queryset(self):
+        sincronizar_estados()   # el panel siempre muestra el estado de ahora
+        return super().get_queryset()
 
 
 class EventoCreateView(PersonalBienestarRequeridoMixin, CreateView):
@@ -183,6 +194,7 @@ class EventoDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
 
 @personal_bienestar_requerido
 def exportar_eventos(request):
+    sincronizar_estados()
     eventos = Evento.objects.select_related("creado_por").order_by("-fecha_inicio")
 
     q = request.GET.get("q", "").strip()
@@ -244,6 +256,18 @@ def checklist_inscritos(request, evento_id):
             horas_texto = request.POST.get(f"horas_{inscripcion.id}", "").strip()
             cantidad_horas = int(horas_texto) if horas_texto.isdigit() else 0
 
+            # Cada fila trae escondido cómo estaba cuando se ABRIÓ la página
+            # ("1|2" = asistió con 2 horas, "0" = pendiente). Si esa fila no
+            # se tocó, se salta: así guardar el checklist no pisa lo que otra
+            # persona de Bienestar confirmó con el QR mientras esta página
+            # estaba abierta. Si el campo no viene (formulario viejo), se
+            # comporta como antes y guarda todo.
+            inicial = request.POST.get(f"inicial_{inscripcion.id}")
+            if inicial is not None:
+                ahora_texto = f"1|{cantidad_horas}" if asistio else "0"
+                if inicial == ahora_texto:
+                    continue
+
             registrar_asistencia_y_horas(
                 inscripcion=inscripcion,
                 asistio=asistio,
@@ -265,9 +289,13 @@ def checklist_inscritos(request, evento_id):
         # a guardar el checklist se pisen horas ajustadas a mano.
         inscripcion.horas_guardadas = _horas_otorgadas(inscripcion)
 
+    total_asistieron = sum(1 for i in inscripciones if getattr(getattr(i, "asistencia", None), "asistio", False))
+
     return render(request, "eventos/checklist_inscritos.html", {
         "evento": evento,
         "inscripciones": inscripciones,
+        "total_asistieron": total_asistieron,
+        "total_pendientes": len(inscripciones) - total_asistieron,
         # El botón "Exportar" lo anexa a la URL: así el archivo es de ESTE evento.
         "export_extra_params": f"evento_id={evento.id}",
     })
@@ -400,7 +428,14 @@ def escanear_qr(request):
     con la app de cámara normal del celular -- esta pantalla es solo
     una comodidad extra, no la única forma de hacerlo.
     """
-    return render(request, "eventos/escanear_qr.html")
+    # Si se llegó desde el checklist de un evento, el botón "Escanear QR" manda
+    # ?evento=<id>: así el enlace de arriba puede regresar justo a ese checklist
+    # en vez de sacar a la persona del panel. Si el dato no sirve, se ignora.
+    evento = None
+    evento_id = request.GET.get("evento", "")
+    if evento_id.isdigit():
+        evento = Evento.objects.filter(pk=int(evento_id)).first()
+    return render(request, "eventos/escanear_qr.html", {"evento": evento})
 
 
 def confirmar_asistencia_qr(request, token):
@@ -430,7 +465,12 @@ def confirmar_asistencia_qr(request, token):
             "(un Administrador puede ver esta pantalla, pero no confirmarla)."
         )
 
+    motivo = motivo_no_confirmable(inscripcion)
+
     if request.method == "POST" and hasattr(request.user, "personal_bienestar"):
+        if motivo:
+            messages.error(request, motivo)
+            return redirect("eventos:confirmar_asistencia_qr", token=token)
         registrar_asistencia_y_horas(
             inscripcion=inscripcion,
             asistio=True,
@@ -447,4 +487,59 @@ def confirmar_asistencia_qr(request, token):
 
     return render(request, "eventos/confirmar_asistencia_qr.html", {
         "inscripcion": inscripcion,
+        "motivo": motivo,
     })
+
+
+@personal_bienestar_requerido
+@require_POST
+def confirmar_asistencia_qr_rapido(request, token):
+    """
+    Versión para el modo de escaneo continuo: recibe el token de un QR,
+    confirma y responde JSON corto, sin cambiar de página. Así una sola
+    persona puede escanear una fila de aprendices seguidos con un celular.
+
+    Solo Personal de Bienestar (igual que la confirmación normal). Con
+    accion=deshacer revierte una confirmación hecha por equivocación.
+    Escanear dos veces el mismo QR no duplica nada: responde "ya estaba".
+    """
+    if not hasattr(request.user, "personal_bienestar"):
+        return JsonResponse(
+            {"ok": False, "mensaje": "Solo Personal de Bienestar puede confirmar asistencia."},
+            status=403,
+        )
+
+    inscripcion = Inscripcion.objects.select_related(
+        "aprendiz__usuario", "aprendiz__grupo", "evento", "asistencia"
+    ).filter(token=token).first()
+    if inscripcion is None:
+        return JsonResponse({"ok": False, "mensaje": "Ese código QR no corresponde a ninguna inscripción."}, status=404)
+
+    aprendiz = inscripcion.aprendiz.usuario
+    datos = {"nombre": aprendiz.get_full_name(), "grupo": inscripcion.aprendiz.grupo.numero_grupo,
+             "evento": inscripcion.evento.titulo}
+    personal = request.user.personal_bienestar
+
+    if request.POST.get("accion") == "deshacer":
+        registrar_asistencia_y_horas(
+            inscripcion=inscripcion, asistio=False, cantidad_horas=0,
+            motivo=f"Asistencia a: {inscripcion.evento.titulo} (QR, deshecha)",
+            asignado_por=personal, metodo="QR",
+        )
+        return JsonResponse({"ok": True, "estado": "deshecho", **datos, "mensaje": "Confirmación deshecha."})
+
+    motivo = motivo_no_confirmable(inscripcion)
+    if motivo:
+        return JsonResponse({"ok": False, "estado": "rechazado", **datos, "mensaje": motivo}, status=409)
+
+    asistencia = getattr(inscripcion, "asistencia", None)
+    if asistencia is not None and asistencia.asistio:
+        return JsonResponse({"ok": True, "estado": "ya_estaba", **datos, "mensaje": "Ya estaba confirmado."})
+
+    registrar_asistencia_y_horas(
+        inscripcion=inscripcion, asistio=True,
+        cantidad_horas=inscripcion.evento.horas_otorgadas,
+        motivo=f"Asistencia a: {inscripcion.evento.titulo} (QR)",
+        asignado_por=personal, metodo="QR",
+    )
+    return JsonResponse({"ok": True, "estado": "confirmado", **datos, "mensaje": "Asistencia confirmada."})

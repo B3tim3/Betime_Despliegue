@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
@@ -12,14 +13,40 @@ from usuarios.decorators import personal_bienestar_requerido
 from usuarios.mixins import PersonalBienestarRequeridoMixin
 
 
+def _minutos_lectura(texto):
+    """Tiempo estimado de lectura: unas 200 palabras por minuto, mínimo 1."""
+    return max(1, round(len(texto.split()) / 200))
+
+
 def lista_publicaciones(request):
+    """
+    Lista pública: la más reciente va destacada (solo en la primera página y
+    sin búsqueda), el resto en tarjetas, con buscador y 10 por página.
+    """
 
     publicaciones = Publicacion.objects.filter(
         estado="publicado"
-    ).order_by("-fecha_publicacion")
+    ).select_related("autor").order_by("-fecha_publicacion")
+
+    q = request.GET.get("q", "").strip()
+    if q:
+        publicaciones = publicaciones.filter(Q(titulo__icontains=q) | Q(contenido__icontains=q))
+
+    pagina = Paginator(publicaciones, 10).get_page(request.GET.get("page"))
+
+    elementos = list(pagina)
+    for p in elementos:
+        p.minutos_lectura = _minutos_lectura(p.contenido)
+
+    destacada = None
+    if pagina.number == 1 and not q and elementos:
+        destacada, elementos = elementos[0], elementos[1:]
 
     return render(request, "publicaciones/lista.html", {
-        "publicaciones": publicaciones,
+        "pagina": pagina,
+        "destacada": destacada,
+        "resto": elementos,
+        "q": q,
     })
 
 
@@ -31,8 +58,15 @@ def detalle_publicacion(request, publicacion_id):
         estado="publicado"
     )
 
+    publicacion.minutos_lectura = _minutos_lectura(publicacion.contenido)
+
+    otras = Publicacion.objects.filter(
+        estado="publicado"
+    ).exclude(pk=publicacion.pk).order_by("-fecha_publicacion")[:3]
+
     return render(request, "publicaciones/detalle.html", {
         "publicacion": publicacion,
+        "otras": otras,
     })
 
 

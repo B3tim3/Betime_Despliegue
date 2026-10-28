@@ -16,6 +16,24 @@ class InscripcionError(Exception):
     """Se puede mostrar tal cual al usuario (mensaje en español)."""
 
 
+def motivo_no_confirmable(inscripcion):
+    """
+    Devuelve el mensaje (en español) de por qué NO se puede confirmar la
+    asistencia de esta inscripción, o None si sí se puede.
+    Solo lee datos: no cambia nada. Lo usan la pantalla del QR, el modo
+    de escaneo rápido y las pruebas, para que la regla sea una sola.
+    """
+    # Sin límite de horario: quien se inscribió y asistió merece sus horas
+    # sin importar cuándo se inscribió ni a qué hora se confirme.
+    evento = inscripcion.evento
+
+    if inscripcion.estado == "cancelada":
+        return "Esta inscripción fue cancelada: el aprendiz ya no está inscrito en el evento."
+    if evento.estado == "cancelado":
+        return "El evento fue cancelado, no se puede confirmar asistencia."
+    return None
+
+
 def _fecha(evento):
     return timezone.localtime(evento.fecha_inicio).strftime("%d/%m/%Y a las %I:%M %p")
 
@@ -30,7 +48,7 @@ def inscribir(aprendiz, evento):
     Al reactivar se genera un token nuevo: el QR anterior, que ya había
     sido cancelado, deja de servir.
     """
-    if evento.estado != "programado":
+    if evento.estado_actual != "programado":
         raise InscripcionError("Este evento ya no está abierto para inscripciones.")
 
     inscripcion, creada = Inscripcion.objects.select_for_update().get_or_create(

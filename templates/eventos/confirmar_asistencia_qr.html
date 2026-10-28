@@ -32,7 +32,13 @@ Confirmar asistencia | Be Time
             </div>
         {% endif %}
 
-        {% if request.user.is_authenticated and request.user.personal_bienestar %}
+        {% if motivo %}
+            <div class="alert alert-danger py-2 mb-3">
+                <i class="bi bi-exclamation-triangle-fill"></i> {{ motivo }}
+            </div>
+        {% endif %}
+
+        {% if request.user.is_authenticated and request.user.personal_bienestar and not motivo %}
             <form method="post">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-success w-100">
@@ -40,7 +46,7 @@ Confirmar asistencia | Be Time
                     {% if inscripcion.asistencia.asistio %}Confirmar de nuevo{% else %}Confirmar asistencia{% endif %}
                 </button>
             </form>
-        {% elif request.user.is_authenticated %}
+        {% elif request.user.is_authenticated and not request.user.personal_bienestar %}
             <div class="alert alert-warning py-2 mb-0">
                 Solo Personal de Bienestar puede confirmar asistencia por QR.
             </div>

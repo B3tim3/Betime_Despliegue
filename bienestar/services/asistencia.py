@@ -7,7 +7,7 @@ from django.db import transaction
 
 from bienestar.models import HorasBienestar
 from core.services.auditoria import registrar as auditar
-from eventos.models import Asistencia
+from eventos.models import Asistencia, Inscripcion
 from notificaciones.services import notificar
 
 
@@ -23,7 +23,15 @@ def registrar_asistencia_y_horas(*, inscripcion, asistio, cantidad_horas, motivo
     ya existían, los actualiza con los valores nuevos (por ejemplo, si
     Bienestar vuelve a guardar el checklist con una cantidad de horas
     distinta a la primera vez).
+
+    Dos personas de Bienestar pueden escanear el mismo QR (o guardar el
+    checklist) al mismo tiempo. Por eso lo primero es BLOQUEAR la fila de
+    la inscripción: la segunda petición espera a que termine la primera y
+    entonces ve su resultado, en vez de ambas "no encontrar nada" y crear
+    cada una su propio registro de horas.
     """
+
+    list(Inscripcion.objects.select_for_update().filter(pk=inscripcion.pk))
 
     asistio_antes = Asistencia.objects.filter(inscripcion=inscripcion).values_list("asistio", flat=True).first()
     horas_antes = HorasBienestar.objects.filter(

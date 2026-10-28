@@ -57,7 +57,7 @@ Gestionar eventos | Be Time
                             <span class="d-block small text-muted">{{ evento.fecha_creacion|date:"d/m/Y" }}</span>
                         </td>
                         <td>
-                            <span class="badge text-bg-light border">{{ evento.get_estado_display|default:evento.estado }}</span>
+                            <span class="badge {% if evento.estado == 'programado' %}text-bg-success{% elif evento.estado == 'en_curso' %}text-bg-warning{% elif evento.estado == 'cancelado' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">{{ evento.get_estado_display|default:evento.estado }}</span>
                         </td>
                         <td class="text-end">
                             <a href="{% url 'eventos:panel_inscritos' evento.id %}" class="btn btn-sm btn-outline-primary">

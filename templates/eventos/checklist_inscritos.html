@@ -23,6 +23,12 @@ Inscritos - {{ evento.titulo }} | Be Time
     #tabla-checklist .col-programa { min-width: 190px; }
     #tabla-checklist .col-correo { min-width: 190px; word-break: break-all; }
     #tabla-checklist .dato-vacio { color: #9aa79d; }
+    /* Fila de otra pestaña: se oculta con una clase propia (no con style.display,
+       porque el buscador usa style.display y se pisarían entre sí). */
+    #tabla-checklist tr.fila-otra-pestana { display: none !important; }
+    #pestanas-checklist .nav-link { color: #2e7d32; }
+    #pestanas-checklist .nav-link.active { background: #2e7d32; color: #fff; }
+    #pestanas-checklist .badge { margin-left: .35rem; }
 </style>
 {% endblock %}
 
@@ -36,7 +42,7 @@ Inscritos - {{ evento.titulo }} | Be Time
     <h1 class="h3 fw-bold mb-0">Inscritos: {{ evento.titulo }}</h1>
     <div class="d-flex gap-2">
         {% include 'components/exportar/botones.html' with base_url='eventos:panel_inscritos_exportar' tabla_id='tabla-checklist' %}
-        <a href="{% url 'eventos:escanear_qr' %}" class="btn btn-outline-success">
+        <a href="{% url 'eventos:escanear_qr' %}?evento={{ evento.id }}" class="btn btn-outline-success">
             <i class="bi bi-qr-code-scan"></i> Escanear QR
         </a>
     </div>
@@ -44,7 +50,8 @@ Inscritos - {{ evento.titulo }} | Be Time
 <p class="text-muted mb-3">
     Marca quién asistió y con cuántas horas. Se prellenan con las
     {{ evento.horas_otorgadas }} horas del evento — puedes ajustarlas
-    fila por fila antes de guardar.
+    fila por fila antes de guardar. Usa las pestañas para ver solo a
+    quienes faltan por confirmar; al guardar, cada persona pasa a su pestaña.
 </p>
 
 {% if inscripciones %}
@@ -52,6 +59,24 @@ Inscritos - {{ evento.titulo }} | Be Time
         <i class="bi bi-people-fill text-success"></i>
         <span><strong id="resumen-asistieron">0</strong> de <strong>{{ inscripciones|length }}</strong> marcados como asistieron</span>
     </div>
+
+    <ul class="nav nav-pills gap-1 mb-3" id="pestanas-checklist" role="tablist" data-evento="{{ evento.id }}">
+        <li class="nav-item" role="presentation">
+            <button type="button" class="nav-link" data-pestana="pendiente" role="tab">
+                Pendientes <span class="badge text-bg-light border" id="cuenta-pendiente">{{ total_pendientes }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button type="button" class="nav-link" data-pestana="asistio" role="tab">
+                Asistieron <span class="badge text-bg-light border" id="cuenta-asistio">{{ total_asistieron }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button type="button" class="nav-link" data-pestana="todos" role="tab">
+                Todos <span class="badge text-bg-light border">{{ inscripciones|length }}</span>
+            </button>
+        </li>
+    </ul>
 
     <div class="row g-2 mb-3">
         <div class="col-12 col-md-5">
@@ -105,7 +130,7 @@ Inscritos - {{ evento.titulo }} | Be Time
                 <tbody>
                     {% for inscripcion in inscripciones %}
                         {% with datos=inscripcion.datos %}
-                        <tr class="{% if inscripcion.asistencia.asistio %}fila-asistio-activa{% endif %}">
+                        <tr class="{% if inscripcion.asistencia.asistio %}fila-asistio-activa{% endif %}" data-pestana="{% if inscripcion.asistencia.asistio %}asistio{% else %}pendiente{% endif %}">
                             <td class="col-aprendiz">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="avatar-iniciales">
@@ -118,6 +143,9 @@ Inscritos - {{ evento.titulo }} | Be Time
                                 </div>
                             </td>
                             <td class="text-center">
+                                {# Cómo estaba la fila al abrir la página: si no se toca, al guardar se salta (ver checklist_inscritos). #}
+                                <input type="hidden" name="inicial_{{ inscripcion.id }}"
+                                       value="{% if inscripcion.asistencia.asistio %}1|{% if inscripcion.horas_guardadas is not None %}{{ inscripcion.horas_guardadas }}{% else %}{{ evento.horas_otorgadas }}{% endif %}{% else %}0{% endif %}">
                                 <div class="form-check form-switch d-inline-flex mb-1">
                                     <input
                                         type="checkbox"
@@ -183,7 +211,7 @@ Inscritos - {{ evento.titulo }} | Be Time
             // a nadie que no esté viendo en pantalla en ese momento.
             function filaEstaVisible(elemento) {
                 const fila = elemento.closest("tr");
-                return fila && fila.style.display !== "none";
+                return fila && fila.style.display !== "none" && !fila.classList.contains("fila-otra-pestana");
             }
 
             // Sincroniza TODO lo visual de una fila (insignia, fondo
@@ -264,6 +292,44 @@ Inscritos - {{ evento.titulo }} | Be Time
                         }
                     });
                 });
+            }
+
+            // ---------- Pestañas: Pendientes / Asistieron / Todos ----------
+            // Se agrupan por cómo estaba cada persona AL ABRIR la página (data-pestana).
+            // Así, al marcar un switch, la fila no desaparece de golpe de la pestaña;
+            // pasa a la otra pestaña cuando se guarda y la página se recarga.
+            const contenedorPestanas = document.getElementById("pestanas-checklist");
+            if (contenedorPestanas) {
+                const botones = contenedorPestanas.querySelectorAll("[data-pestana]");
+                const filasTabla = document.querySelectorAll("#tabla-checklist tbody tr");
+                const clave = "checklist-pestana-" + contenedorPestanas.dataset.evento;
+
+                function guardada() {
+                    try { return sessionStorage.getItem(clave); } catch (e) { return null; }
+                }
+
+                function mostrarPestana(nombre) {
+                    botones.forEach(function (b) {
+                        b.classList.toggle("active", b.dataset.pestana === nombre);
+                        b.setAttribute("aria-selected", b.dataset.pestana === nombre ? "true" : "false");
+                    });
+                    filasTabla.forEach(function (fila) {
+                        const coincide = nombre === "todos" || fila.dataset.pestana === nombre;
+                        fila.classList.toggle("fila-otra-pestana", !coincide);
+                    });
+                    try { sessionStorage.setItem(clave, nombre); } catch (e) { /* sin almacenamiento: no pasa nada */ }
+                }
+
+                botones.forEach(function (b) {
+                    b.addEventListener("click", function () { mostrarPestana(b.dataset.pestana); });
+                });
+
+                // Pestaña inicial: la que se estaba usando; si no hay, "Pendientes"
+                // cuando falta gente por confirmar, y si no, "Todos".
+                const hayPendientes = parseInt(document.getElementById("cuenta-pendiente").textContent, 10) > 0;
+                const previa = guardada();
+                const validas = ["pendiente", "asistio", "todos"];
+                mostrarPestana(validas.indexOf(previa) !== -1 ? previa : (hayPendientes ? "pendiente" : "todos"));
             }
 
             // Al cargar la página, cuenta lo que ya viene marcado de
