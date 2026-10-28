@@ -18,6 +18,7 @@ from django.core.mail import EmailMessage, get_connection
 from django.utils import timezone
 
 from eventos.models import Inscripcion
+from eventos.services.estados import sincronizar_estados
 from notificaciones.services import notificar
 
 logger = logging.getLogger(__name__)
@@ -66,6 +67,7 @@ def enviar_recordatorios(horas=HORAS_POR_DEFECTO, ahora=None, enviar_correo=True
     """
     ahora = ahora or timezone.now()
     limite = ahora + timedelta(hours=horas)
+    sincronizar_estados(ahora)
 
     pendientes = list(
         Inscripcion.objects.filter(

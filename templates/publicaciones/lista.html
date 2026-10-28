@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
 Publicaciones | Be Time
@@ -6,52 +7,98 @@ Publicaciones | Be Time
 
 {% block content %}
 
-<section class="home-section">
+<link rel="stylesheet" href="{% static 'css/publicaciones.css' %}?v=1">
+
+<section class="pub">
     <div class="container">
 
-        <div class="mb-4">
-            <a href="/" class="text-muted small text-decoration-none d-inline-block mb-3">
-                <i class="bi bi-arrow-left"></i> Volver al inicio
+        <header class="pub__cabecera">
+            <div>
+                <div class="pub__eyebrow">Novedades</div>
+                <h1 class="pub__titulo">Publicaciones</h1>
+                <p class="pub__subtitulo">Noticias, avisos y novedades de Bienestar al Aprendiz.</p>
+            </div>
+            <form method="get" class="pub__buscar" role="search">
+                <i class="bi bi-search"></i>
+                <input type="search" name="q" value="{{ q }}" placeholder="Buscar publicaciones..." aria-label="Buscar publicaciones">
+            </form>
+        </header>
+
+        {% if q %}
+            <p class="text-muted mb-4">
+                {{ pagina.paginator.count }} resultado{{ pagina.paginator.count|pluralize }} para «{{ q }}»
+                · <a href="{% url 'publicaciones:lista' %}">Ver todas</a>
+            </p>
+        {% endif %}
+
+        {% if destacada %}
+            <a href="{% url 'publicaciones:detalle' destacada.id %}" class="pub-destacada">
+                {% if destacada.imagen %}
+                    <div class="img-marco" style="--img:url('{{ destacada.imagen.url }}')">
+                        <img src="{{ destacada.imagen.url }}" alt="{{ destacada.titulo }}">
+                    </div>
+                {% else %}
+                    <div class="pub-tarjeta__sin-imagen" style="aspect-ratio:auto;min-height:260px"><i class="bi bi-newspaper"></i></div>
+                {% endif %}
+                <div class="pub-destacada__texto">
+                    <span class="pub-destacada__etiqueta">Lo más reciente</span>
+                    <h2>{{ destacada.titulo }}</h2>
+                    <p>{{ destacada.contenido|truncatewords:34 }}</p>
+                    <div class="pub-meta">
+                        <span><i class="bi bi-calendar3"></i>{{ destacada.fecha_publicacion|date:"d \d\e F \d\e Y" }}</span>
+                        <span><i class="bi bi-clock"></i>{{ destacada.minutos_lectura }} min de lectura</span>
+                    </div>
+                    <span class="pub-leer">Leer publicación <i class="bi bi-arrow-right"></i></span>
+                </div>
             </a>
-            <div class="home-section__eyebrow mb-1">Novedades</div>
-            <h1 class="home-section__title mb-0">Publicaciones</h1>
-        </div>
+        {% endif %}
 
-        {% if publicaciones %}
+        {% if resto %}
             <div class="row g-4">
-                {% for publicacion in publicaciones %}
+                {% for publicacion in resto %}
                     <div class="col-12 col-md-6 col-lg-4">
-                        <div class="home-card">
-
-                            <div class="home-card__media">
-                                {% if publicacion.imagen %}
-                                    <img src="{{ publicacion.imagen.url }}" alt="{{ publicacion.titulo }}">
-                                {% else %}
-                                    <i class="bi bi-image"></i>
-                                {% endif %}
+                        <a href="{% url 'publicaciones:detalle' publicacion.id %}" class="pub-tarjeta">
+                            {% if publicacion.imagen %}
+                                <div class="img-marco img-marco--tarjeta" style="--img:url('{{ publicacion.imagen.url }}')">
+                                    <img src="{{ publicacion.imagen.url }}" alt="{{ publicacion.titulo }}" loading="lazy">
+                                </div>
+                            {% else %}
+                                <div class="pub-tarjeta__sin-imagen"><i class="bi bi-newspaper"></i></div>
+                            {% endif %}
+                            <div class="pub-tarjeta__cuerpo">
+                                <div class="pub-meta">
+                                    <span><i class="bi bi-calendar3"></i>{{ publicacion.fecha_publicacion|date:"d M Y" }}</span>
+                                    <span><i class="bi bi-clock"></i>{{ publicacion.minutos_lectura }} min</span>
+                                </div>
+                                <h2>{{ publicacion.titulo }}</h2>
+                                <p>{{ publicacion.contenido|truncatewords:20 }}</p>
+                                <span class="pub-leer">Leer más <i class="bi bi-arrow-right"></i></span>
                             </div>
-
-                            <div class="home-card__body">
-                                <h2 class="h6 fw-bold mb-2">
-                                    {{ publicacion.titulo }}
-                                </h2>
-                                <p class="text-muted small mb-3">
-                                    {{ publicacion.contenido|truncatewords:18 }}
-                                </p>
-                                <a href="{% url 'publicaciones:detalle' publicacion.id %}"
-                                   class="text-bt-verde fw-semibold text-decoration-none small">
-                                    Leer más <i class="bi bi-arrow-right"></i>
-                                </a>
-                            </div>
-
-                        </div>
+                        </a>
                     </div>
                 {% endfor %}
             </div>
-        {% else %}
-            <div class="home-card p-4 text-center text-muted">
-                Todavía no hay publicaciones.
+        {% elif not destacada %}
+            <div class="pub-vacio">
+                <i class="bi bi-newspaper"></i>
+                {% if q %}
+                    No encontramos publicaciones con «{{ q }}».
+                {% else %}
+                    Todavía no hay publicaciones. ¡Vuelve pronto!
+                {% endif %}
             </div>
+        {% endif %}
+
+        {% if pagina.has_other_pages %}
+            <nav class="pub-paginas" aria-label="Páginas de publicaciones">
+                {% if pagina.has_previous %}
+                    <a href="?page={{ pagina.previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}"><i class="bi bi-chevron-left"></i> Anterior</a>
+                {% endif %}
+                <span class="actual">{{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+                {% if pagina.has_next %}
+                    <a href="?page={{ pagina.next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}">Siguiente <i class="bi bi-chevron-right"></i></a>
+                {% endif %}
+            </nav>
         {% endif %}
 
     </div>

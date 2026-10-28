@@ -71,6 +71,7 @@ NIVELES = {
     "usuarios/perfil/contrasena/": LOGUEADO,
     "usuarios/dashboard/": LOGUEADO,
     "eventos/asistencia/confirmar/<uuid:token>/": LOGUEADO,
+    "eventos/asistencia/confirmar/<uuid:token>/rapido/": PERSONAL,
     "notificaciones/": LOGUEADO,
     "notificaciones/marcar-todas/": LOGUEADO,
     "notificaciones/<int:notificacion_id>/abrir/": LOGUEADO,
@@ -144,6 +145,7 @@ NIVELES = {
 SOLO_POST = {
     "usuarios/logout/",
     "eventos/mis-inscripciones/<int:inscripcion_id>/cancelar/",
+    "eventos/asistencia/confirmar/<uuid:token>/rapido/",
     "notificaciones/marcar-todas/",
     "notificaciones/<int:notificacion_id>/leida/",
 }

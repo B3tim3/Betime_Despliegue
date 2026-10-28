@@ -1,0 +1,326 @@
+/* ==========================================================
+   Vista de un evento (templates/eventos/detalle.html)
+   Archivo propio: no depende de pages.css ni de responsive.css.
+   ========================================================== */
+
+.ev {
+    --ev-verde: var(--bt-verde, #2e7d32);
+    --ev-verde-oscuro: var(--bt-verde-oscuro, #1e5e2a);
+    --ev-suave: var(--bt-fondo-alt, #eef6ef);
+    --ev-borde: var(--bt-borde, #dfe8e0);
+    --ev-tinta: var(--bt-tinta, #16241a);
+    --ev-texto: #4b5a4f;
+    padding: 2rem 0 4rem;
+    color: var(--ev-tinta);
+}
+
+.ev__volver {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .95rem;
+    color: #6c7a70;
+    text-decoration: none;
+    margin-bottom: 1.25rem;
+}
+.ev__volver:hover { color: var(--ev-verde-oscuro); }
+
+/* ---------- Banner ---------- */
+
+.ev__banner {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    aspect-ratio: 16 / 6;
+    background: linear-gradient(135deg, #2e7d32 0%, #1e5e2a 55%, #14421d 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, .9);
+}
+/* Sin imagen: franja más baja para no ocupar media pantalla */
+.ev__banner--sin-imagen { aspect-ratio: 16 / 4; }
+/* Con imagen: se ve completa (sin recortar) sobre un fondo difuminado de la misma foto */
+.ev__banner--con-imagen {
+    aspect-ratio: auto;
+    background: var(--ev-suave);
+}
+.ev__banner--con-imagen::before {
+    content: "";
+    position: absolute;
+    inset: -24px;
+    background-image: var(--img);
+    background-size: cover;
+    background-position: center;
+    filter: blur(24px) saturate(1.1);
+    opacity: .6;
+}
+.ev__banner img {
+    position: relative;
+    display: block;
+    max-width: 100%;
+    max-height: 480px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+.ev__banner-icono { font-size: 4.5rem; opacity: .85; }
+
+.ev__estado {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .35rem .8rem;
+    border-radius: 999px;
+    font-size: .82rem;
+    font-weight: 700;
+    background: #fff;
+    color: var(--ev-verde-oscuro);
+    box-shadow: 0 6px 16px -8px rgba(0, 0, 0, .45);
+}
+.ev__estado--en_curso { color: #8a5a00; }
+.ev__estado--finalizado { color: #5d6a61; }
+.ev__estado--cancelado { color: #b3261e; }
+
+/* ---------- Título ---------- */
+
+.ev__cabecera { margin: 1.5rem 0 2rem; }
+
+.ev__eyebrow {
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ev-verde-oscuro);
+    margin-bottom: .4rem;
+}
+
+.ev__titulo {
+    font-size: clamp(1.8rem, 4.2vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.12;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Distribución ---------- */
+
+.ev__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 2.5rem;
+    align-items: start;
+}
+
+.ev__lateral { position: sticky; top: 1.5rem; }
+
+/* ---------- Contenido principal ---------- */
+
+.ev__bloque + .ev__bloque { margin-top: 2.25rem; }
+
+.ev__bloque h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 .85rem;
+}
+
+.ev__descripcion {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--ev-texto);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    margin: 0;
+}
+
+.ev__pasos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: .9rem;
+}
+.ev__pasos li {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: #fff;
+    border: 1px solid var(--ev-borde);
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+}
+.ev__paso-num {
+    flex: 0 0 auto;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: var(--ev-suave);
+    color: var(--ev-verde-oscuro);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ev__pasos strong { display: block; margin-bottom: .1rem; }
+.ev__pasos span { color: var(--ev-texto); font-size: .98rem; line-height: 1.5; }
+
+/* ---------- Tarjeta lateral ---------- */
+
+.ev-card {
+    background: #fff;
+    border: 1px solid var(--ev-borde);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 24px 40px -30px rgba(22, 36, 26, .45);
+}
+
+.ev-card__fecha {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--ev-borde);
+}
+.ev-fecha {
+    flex: 0 0 auto;
+    width: 4.2rem;
+    border-radius: 14px;
+    background: var(--ev-suave);
+    color: var(--ev-verde-oscuro);
+    text-align: center;
+    padding: .55rem 0;
+    line-height: 1;
+}
+.ev-fecha__dia { display: block; font-size: 1.7rem; font-weight: 800; }
+.ev-fecha__mes {
+    display: block;
+    margin-top: .25rem;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+.ev-card__fecha-texto { font-weight: 700; line-height: 1.3; }
+.ev-card__fecha-texto small { display: block; font-weight: 500; color: var(--ev-texto); margin-top: .2rem; }
+
+.ev-datos {
+    list-style: none;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    display: grid;
+    gap: .9rem;
+}
+.ev-datos li { display: flex; gap: .85rem; align-items: flex-start; }
+.ev-datos i {
+    flex: 0 0 auto;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 10px;
+    background: var(--ev-suave);
+    color: var(--ev-verde-oscuro);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ev-datos small { display: block; color: #6c7a70; font-size: .8rem; }
+.ev-datos span { font-weight: 600; overflow-wrap: anywhere; }
+
+/* ---------- Estado de la inscripción ---------- */
+
+.ev-accion { display: grid; gap: .75rem; }
+
+.ev-aviso {
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+    border-radius: 14px;
+    padding: .9rem 1rem;
+    font-size: .95rem;
+    line-height: 1.45;
+    background: #f3f5f3;
+    color: var(--ev-texto);
+}
+.ev-aviso i { font-size: 1.25rem; line-height: 1; margin-top: .05rem; }
+.ev-aviso strong { display: block; color: var(--ev-tinta); }
+.ev-aviso--ok { background: #e8f5e9; color: #25552b; }
+.ev-aviso--ok strong { color: #1b4d22; }
+.ev-aviso--cerrado { background: #fdf0e0; color: #7a4b00; }
+.ev-aviso--cancelado { background: #fdeceb; color: #8c2a24; }
+
+.ev-boton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .55rem;
+    width: 100%;
+    padding: .9rem 1.2rem;
+    border: 2px solid var(--ev-verde);
+    border-radius: 14px;
+    background: var(--ev-verde);
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .15s, transform .15s, box-shadow .15s;
+}
+.ev-boton:hover {
+    background: var(--ev-verde-oscuro);
+    border-color: var(--ev-verde-oscuro);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 14px 24px -14px rgba(30, 94, 42, .7);
+}
+.ev-boton--suave { background: #fff; color: var(--ev-verde-oscuro); }
+.ev-boton--suave:hover { background: var(--ev-suave); color: var(--ev-verde-oscuro); box-shadow: none; }
+
+.ev-cancelar {
+    width: 100%;
+    background: none;
+    border: 0;
+    padding: .6rem;
+    font-size: .95rem;
+    font-weight: 600;
+    color: #b3261e;
+    cursor: pointer;
+    border-radius: 10px;
+}
+.ev-cancelar:hover { background: #fdeceb; }
+
+.ev-nota { font-size: .85rem; color: #6c7a70; text-align: center; margin: 0; }
+
+/* ---------- Celular y tablet ---------- */
+
+@media (max-width: 991.98px) {
+    .ev__grid { grid-template-columns: 1fr; gap: 1.75rem; }
+    /* La tarjeta con la fecha y el botón sube, antes de la descripción */
+    .ev__lateral { position: static; order: -1; }
+}
+
+@media (max-width: 575.98px) {
+    .ev { padding: 1.25rem 0 3rem; }
+    .ev__banner { aspect-ratio: 16 / 9; border-radius: 16px; }
+    .ev__banner--con-imagen { aspect-ratio: auto; }
+    .ev__banner img { max-height: 320px; }
+    /* Sin imagen: el ícono va a la derecha para no quedar tapado por la etiqueta */
+    .ev__banner--sin-imagen {
+        aspect-ratio: auto;
+        min-height: 120px;
+        justify-content: flex-end;
+        padding: 1rem 1.5rem;
+    }
+    .ev__banner--sin-imagen .ev__banner-icono { font-size: 3rem; }
+    .ev__cabecera { margin: 1.1rem 0 1.4rem; }
+    .ev-card { padding: 1.15rem; border-radius: 16px; }
+    .ev__descripcion { font-size: 1.02rem; }
+    .ev__pasos li { padding: .85rem .9rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ev-boton { transition: none; }
+    .ev-boton:hover { transform: none; }
+}

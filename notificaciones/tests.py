@@ -87,7 +87,7 @@ class InscribirYCancelarTests(Base):
         self.assertEqual(Notificacion.objects.count(), 1)
 
     def test_evento_cerrado_no_permite_inscribirse(self):
-        ev = self.evento(estado="finalizado")
+        ev = self.evento(dias=-3)   # ya terminó: el estado "finalizado" sale de las fechas
         with self.assertRaises(InscripcionError):
             inscribir(self.ap1, ev)
 

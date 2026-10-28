@@ -1,0 +1,73 @@
+/* ==========================================================
+   Imágenes sin recortar (eventos y publicaciones)
+   Archivo propio: se carga DESPUÉS de pages.css para ganarle a
+   sus reglas "object-fit: cover", que recortaban las fotos.
+
+   1) .img-marco: componente nuevo. Muestra la imagen COMPLETA y
+      rellena los lados con una copia difuminada de la misma foto,
+      así no quedan barras vacías ni se recorta nada.
+        <div class="img-marco" style="--img:url('...')"><img ...></div>
+   2) Reglas para las miniaturas que ya existían (tarjetas y listas):
+      la imagen entera con un fondo suave, en vez de recortada.
+   ========================================================== */
+
+/* ---------- 1) Marco con fondo difuminado ---------- */
+
+.img-marco {
+    --img-max: 480px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 18px;
+    background: var(--bt-fondo-alt, #f3f8f0);
+}
+
+.img-marco::before {
+    content: "";
+    position: absolute;
+    inset: -24px;
+    background-image: var(--img);
+    background-size: cover;
+    background-position: center;
+    filter: blur(24px) saturate(1.1);
+    opacity: .6;
+}
+
+.img-marco > img {
+    position: relative;
+    display: block;
+    max-width: 100%;
+    max-height: var(--img-max);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Variante de tarjeta: caja fija 16:10 para que la cuadrícula quede pareja */
+.img-marco--tarjeta {
+    aspect-ratio: 16 / 10;
+    border-radius: 0;
+}
+.img-marco--tarjeta > img {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+}
+
+/* ---------- 2) Miniaturas ya existentes: entera, no recortada ---------- */
+
+.home-card__media img,
+.home-evento-card__media img {
+    object-fit: contain;
+}
+
+.home-evento__img {
+    object-fit: contain;
+    background-color: var(--bt-fondo-alt, #f3f8f0);
+}
+
+@media (max-width: 575.98px) {
+    .img-marco { --img-max: 320px; border-radius: 14px; }
+}
