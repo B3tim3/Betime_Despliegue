@@ -6,6 +6,32 @@ from eventos.models import Evento
 
 class EventoForm(forms.ModelForm):
 
+    # El estado ya NO se elige entre cuatro: programado / en curso / finalizado
+    # se calculan solos con las fechas. Aquí solo se decide si el evento está
+    # cancelado. Es un CharField (con un Select de dos opciones) para seguir
+    # aceptando cualquier valor viejo que llegue; clean_estado lo normaliza.
+    estado = forms.CharField(
+        label="Estado",
+        required=False,
+        widget=forms.Select(
+            choices=[("", "Automático (según las fechas)"), ("cancelado", "Cancelado")],
+            attrs={"class": "form-select"},
+        ),
+        help_text=(
+            "Cambia solo: Programado antes de iniciar, En curso mientras ocurre y "
+            "Finalizado después. Marca «Cancelado» solo si el evento no se va a realizar."
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.initial["estado"] = "cancelado" if getattr(self.instance, "estado", "") == "cancelado" else ""
+
+    def clean_estado(self):
+        # Cualquier cosa que no sea "cancelado" significa "automático"; el modelo
+        # calcula el estado real al guardar (Evento.save).
+        return "cancelado" if self.cleaned_data.get("estado") == "cancelado" else "programado"
+
     class Meta:
         model = Evento
         fields = [
@@ -26,7 +52,6 @@ class EventoForm(forms.ModelForm):
             "imagen": forms.ClearableFileInput(attrs={"class": "form-control"}),
             "fecha_inicio": FlatpickrDateTimeInput(),
             "fecha_fin": FlatpickrDateTimeInput(),
-            "estado": forms.Select(attrs={"class": "form-select"}),
         }
 
     def clean(self):

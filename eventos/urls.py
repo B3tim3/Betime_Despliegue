@@ -15,6 +15,7 @@ urlpatterns = [
     path("panel/inscritos/exportar/", views.exportar_inscritos, name="panel_inscritos_exportar"),
     path("panel/escanear-qr/", views.escanear_qr, name="escanear_qr"),
     path("asistencia/confirmar/<uuid:token>/", views.confirmar_asistencia_qr, name="confirmar_asistencia_qr"),
+    path("asistencia/confirmar/<uuid:token>/rapido/", views.confirmar_asistencia_qr_rapido, name="confirmar_qr_rapido"),
     path("<int:evento_id>/", views.detalle_evento, name="detalle"),
     path("<int:evento_id>/inscribirse/", views.inscribirse_evento, name="inscribirse"),
     path("mis-inscripciones/<int:inscripcion_id>/cancelar/", views.cancelar_inscripcion, name="cancelar_inscripcion"),

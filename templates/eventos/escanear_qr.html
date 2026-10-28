@@ -6,19 +6,57 @@ Escanear QR | Be Time
 
 {% block dashboard_content %}
 
+<nav class="mb-2">
+    {% if evento %}
+        <a href="{% url 'eventos:panel_inscritos' evento.id %}" class="text-decoration-none">
+            &larr; Volver a los inscritos de «{{ evento.titulo }}»
+        </a>
+    {% else %}
+        <a href="{% url 'eventos:panel_lista' %}" class="text-decoration-none">&larr; Volver a eventos</a>
+    {% endif %}
+</nav>
+
 <h1 class="h3 fw-bold mb-1">Escanear QR de asistencia</h1>
-<p class="text-muted mb-4">
+<p class="text-muted mb-3">
     Apunta la cámara al código QR que te muestre el aprendiz. También
     puedes usar la app de cámara normal de tu celular en vez de esto
     -- las dos formas llevan al mismo lugar.
 </p>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-body p-4">
-        <div id="lector-qr" style="max-width: 420px; margin: 0 auto;"></div>
-        <p id="lector-qr-estado" class="text-muted text-center small mt-3 mb-0"></p>
+<div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" role="switch" id="modo-continuo" checked>
+    <label class="form-check-label" for="modo-continuo">
+        <strong>Modo continuo</strong>: confirma cada QR al instante y sigue escaneando
+        (ideal para una fila de aprendices). Si lo apagas, cada QR abre su pantalla de confirmación.
+    </label>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div id="lector-qr" style="max-width: 420px; margin: 0 auto;"></div>
+                <p id="lector-qr-estado" class="text-muted text-center small mt-3 mb-0"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6" id="panel-resultados">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h6 fw-bold mb-0">Escaneados en esta sesión</h2>
+                    <span class="badge bg-success" id="contador-confirmados">0</span>
+                </div>
+                <ul class="list-group list-group-flush" id="lista-escaneados">
+                    <li class="list-group-item text-muted small px-0" id="lista-vacia">Aquí aparecerán los aprendices que vayas confirmando.</li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
+
+<form id="form-csrf" class="d-none">{% csrf_token %}</form>
 
 {% endblock %}
 
@@ -28,27 +66,118 @@ Escanear QR | Be Time
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
+            const estado = document.getElementById("lector-qr-estado");
+
             if (typeof Html5QrcodeScanner === "undefined") {
-                document.getElementById("lector-qr-estado").textContent =
-                    "No se pudo cargar el lector de QR (revisa tu conexión a internet).";
+                estado.textContent = "No se pudo cargar el lector de QR (revisa tu conexión a internet).";
                 return;
             }
 
-            const estado = document.getElementById("lector-qr-estado");
+            const modoContinuo = document.getElementById("modo-continuo");
+            const lista = document.getElementById("lista-escaneados");
+            const contador = document.getElementById("contador-confirmados");
+            const csrf = document.querySelector("#form-csrf [name=csrfmiddlewaretoken]").value;
 
-            function alEscanearConExito(textoDecodificado) {
-                // El QR trae la URL completa de confirmación -- solo
-                // hay que llevar al navegador hasta ahí.
-                estado.textContent = "Código detectado, abriendo...";
-                window.location.href = textoDecodificado;
+            // URL base del endpoint rápido; el token real reemplaza al ceros.
+            const URL_RAPIDO = "{% url 'eventos:confirmar_qr_rapido' '00000000-0000-0000-0000-000000000000' %}";
+            const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+            // Evita procesar el mismo QR muchas veces seguidas: la cámara lo
+            // "lee" 10 veces por segundo mientras el aprendiz lo sostiene.
+            const recientes = {};
+            const ESPERA_MS = 5000;
+            let confirmados = 0;
+
+            function enviar(token, accion) {
+                const datos = new URLSearchParams();
+                datos.append("csrfmiddlewaretoken", csrf);
+                if (accion) { datos.append("accion", accion); }
+                return fetch(URL_RAPIDO.replace("00000000-0000-0000-0000-000000000000", token), {
+                    method: "POST",
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    body: datos,
+                    credentials: "same-origin",
+                }).then(function (r) {
+                    return r.json().catch(function () {
+                        return { ok: false, mensaje: "Respuesta inesperada del servidor (¿se cerró tu sesión?)." };
+                    });
+                });
             }
 
-            const escaner = new Html5QrcodeScanner(
-                "lector-qr",
-                { fps: 10, qrbox: 250 },
-                /* verbose= */ false
-            );
+            function pintar(resp, token) {
+                const vacia = document.getElementById("lista-vacia");
+                if (vacia) { vacia.remove(); }
 
+                const li = document.createElement("li");
+                li.className = "list-group-item px-0 d-flex justify-content-between align-items-start gap-2";
+
+                const info = document.createElement("div");
+                const nombre = document.createElement("div");
+                nombre.className = "fw-semibold";
+                nombre.textContent = resp.nombre || "Código no válido";
+                const detalle = document.createElement("div");
+                detalle.className = "small " + (resp.ok ? (resp.estado === "ya_estaba" ? "text-warning" : "text-success") : "text-danger");
+                detalle.textContent = (resp.grupo ? "Grupo " + resp.grupo + " · " : "") + resp.mensaje;
+                info.appendChild(nombre);
+                info.appendChild(detalle);
+                li.appendChild(info);
+
+                if (resp.ok && resp.estado === "confirmado") {
+                    confirmados += 1;
+                    contador.textContent = confirmados;
+                    const deshacer = document.createElement("button");
+                    deshacer.type = "button";
+                    deshacer.className = "btn btn-sm btn-outline-secondary";
+                    deshacer.textContent = "Deshacer";
+                    deshacer.addEventListener("click", function () {
+                        deshacer.disabled = true;
+                        enviar(token, "deshacer").then(function (r) {
+                            if (r.ok) {
+                                confirmados = Math.max(0, confirmados - 1);
+                                contador.textContent = confirmados;
+                                detalle.className = "small text-muted";
+                                detalle.textContent = "Confirmación deshecha.";
+                                deshacer.remove();
+                            } else {
+                                deshacer.disabled = false;
+                                detalle.textContent = r.mensaje;
+                            }
+                        });
+                    });
+                    li.appendChild(deshacer);
+                }
+                lista.prepend(li);
+            }
+
+            function alEscanearConExito(texto) {
+                if (!modoContinuo.checked) {
+                    // Modo clásico: el QR trae la URL completa de confirmación.
+                    estado.textContent = "Código detectado, abriendo...";
+                    window.location.href = texto;
+                    return;
+                }
+
+                const m = UUID.exec(texto);
+                if (!m) {
+                    estado.textContent = "Ese código no es de Be Time.";
+                    return;
+                }
+                const token = m[0].toLowerCase();
+                const ahora = Date.now();
+                if (recientes[token] && ahora - recientes[token] < ESPERA_MS) { return; }
+                recientes[token] = ahora;
+
+                estado.textContent = "Confirmando...";
+                enviar(token).then(function (resp) {
+                    pintar(resp, token);
+                    estado.textContent = resp.ok ? "Listo. Puedes escanear el siguiente." : "No se pudo confirmar. Revisa el detalle.";
+                }).catch(function () {
+                    estado.textContent = "Sin conexión. Intenta de nuevo.";
+                    delete recientes[token];
+                });
+            }
+
+            const escaner = new Html5QrcodeScanner("lector-qr", { fps: 10, qrbox: 250 }, false);
             escaner.render(alEscanearConExito);
         });
     </script>

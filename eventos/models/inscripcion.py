@@ -79,7 +79,7 @@ class Inscripcion(models.Model):
         """
         return (
             self.estado == "inscrito"
-            and self.evento.estado == "programado"
+            and self.evento.estado_actual == "programado"
             and self.evento.fecha_inicio > timezone.now()
         )
 
