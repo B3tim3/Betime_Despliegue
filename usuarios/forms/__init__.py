@@ -3,7 +3,8 @@ from .perfil import PerfilAprendizForm, CambiarContrasenaForm
 from .registro import RegistroAprendizForm
 from .crear_usuario import CrearUsuarioAdminForm
 from .recuperacion import RecuperarContrasenaForm, NuevaContrasenaForm
-from .catalogos import ProgramaFormacionForm, NivelFormacionForm, JornadaForm, GrupoForm, AprendizEstadoForm
+from .catalogos import ProgramaFormacionForm, NivelFormacionForm, JornadaForm, GrupoForm
+from .aprendiz_panel import AprendizPanelForm
 
 __all__ = [
     "PerfilAprendizForm",
@@ -17,5 +18,5 @@ __all__ = [
     "NivelFormacionForm",
     "JornadaForm",
     "GrupoForm",
-    "AprendizEstadoForm",
+    "AprendizPanelForm",
 ]

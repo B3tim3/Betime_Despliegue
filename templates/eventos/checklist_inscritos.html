@@ -47,6 +47,13 @@ Inscritos - {{ evento.titulo }} | Be Time
         </a>
     </div>
 </div>
+{% if evento.cupo_maximo %}
+    <p class="mb-2">
+        <span class="badge {% if evento.esta_lleno %}text-bg-danger{% else %}text-bg-success{% endif %}">
+            <i class="bi bi-people"></i> Cupo: {{ evento.inscritos_activos }} / {{ evento.cupo_maximo }}{% if evento.esta_lleno %} · lleno{% endif %}
+        </span>
+    </p>
+{% endif %}
 <p class="text-muted mb-3">
     Marca quién asistió y con cuántas horas. Se prellenan con las
     {{ evento.horas_otorgadas }} horas del evento — puedes ajustarlas
@@ -122,6 +129,7 @@ Inscritos - {{ evento.titulo }} | Be Time
                         <th class="col-programa">Programa de formación</th>
                         <th>Jornada</th>
                         <th>Nivel</th>
+                        <th>Centro de formación</th>
                         <th>Género</th>
                         <th class="col-correo">Correo electrónico</th>
                         <th>Teléfono</th>
@@ -175,6 +183,7 @@ Inscritos - {{ evento.titulo }} | Be Time
                             <td class="col-programa">{{ datos.programa }}</td>
                             <td class="text-nowrap">{{ datos.jornada }}</td>
                             <td class="text-nowrap">{{ datos.nivel }}</td>
+                            <td class="text-nowrap">{{ datos.centro }}</td>
                             <td class="text-nowrap">{% if datos.genero %}{{ datos.genero }}{% else %}<span class="dato-vacio">—</span>{% endif %}</td>
                             <td class="col-correo">{% if datos.correo %}{{ datos.correo }}{% else %}<span class="dato-vacio">—</span>{% endif %}</td>
                             <td class="text-nowrap">{% if datos.telefono %}{{ datos.telefono }}{% else %}<span class="dato-vacio">—</span>{% endif %}</td>

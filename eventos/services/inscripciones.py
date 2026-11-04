@@ -8,12 +8,16 @@ import uuid
 from django.db import transaction
 from django.utils import timezone
 
-from eventos.models import Inscripcion
+from eventos.models import Evento, Inscripcion
 from notificaciones.services import notificar
 
 
 class InscripcionError(Exception):
     """Se puede mostrar tal cual al usuario (mensaje en español)."""
+
+
+class CupoAgotadoError(InscripcionError):
+    """El evento tiene cupo máximo y ya está completo."""
 
 
 def motivo_no_confirmable(inscripcion):
@@ -47,24 +51,38 @@ def inscribir(aprendiz, evento):
 
     Al reactivar se genera un token nuevo: el QR anterior, que ya había
     sido cancelado, deja de servir.
+
+    CUPO: si el evento tiene cupo máximo y ya está completo se lanza CupoAgotadoError
+    (aplica también a quien quiere volver a inscribirse tras cancelar). Se bloquea la
+    fila del evento mientras se cuenta y se inscribe, así dos personas que pulsan
+    «Inscribirme» al mismo tiempo por el último lugar no pueden entrar las dos.
     """
+    # Bloqueo por evento: las inscripciones al MISMO evento se atienden de a una.
+    evento = Evento.objects.select_for_update().get(pk=evento.pk)
+
     if evento.estado_actual != "programado":
         raise InscripcionError("Este evento ya no está abierto para inscripciones.")
 
-    inscripcion, creada = Inscripcion.objects.select_for_update().get_or_create(
-        evento=evento, aprendiz=aprendiz, defaults={"estado": "inscrito"},
-    )
+    inscripcion = Inscripcion.objects.filter(evento=evento, aprendiz=aprendiz).first()
 
-    if creada:
+    if inscripcion is not None and inscripcion.estado != "cancelada":
+        return inscripcion, "existente"          # ya tenía su lugar: no consume otro
+
+    if evento.esta_lleno:
+        raise CupoAgotadoError(
+            f"Los cupos de este evento se agotaron ({evento.cupo_maximo} de {evento.cupo_maximo}). "
+            "Si alguien cancela, el lugar se libera y podrás inscribirte."
+        )
+
+    if inscripcion is None:
+        inscripcion = Inscripcion.objects.create(evento=evento, aprendiz=aprendiz, estado="inscrito")
         accion = "creada"
-    elif inscripcion.estado == "cancelada":
+    else:
         inscripcion.estado = "inscrito"
         inscripcion.token = uuid.uuid4()
         inscripcion.recordatorio_enviado = False
         inscripcion.save(update_fields=["estado", "token", "recordatorio_enviado"])
         accion = "reactivada"
-    else:
-        return inscripcion, "existente"
 
     notificar(
         aprendiz.usuario,

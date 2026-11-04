@@ -14,6 +14,7 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from bienestar.services import registrar_asistencia_y_horas
 from core.services.auditoria import registrar as auditar
 from core.services.exportar import responder_export
+from core.services.periodos import PeriodoListMixin, filtrar as filtrar_periodo, resolver as resolver_periodo
 from eventos.forms import EventoForm
 from eventos.models import Evento, Inscripcion
 from eventos.services import generar_imagen_qr
@@ -33,7 +34,7 @@ def lista_eventos(request):
 
     # Incluye los que están en curso (ya empezaron pero no terminan): por eso se
     # filtra por fecha_fin y no por fecha_inicio.
-    eventos = Evento.objects.exclude(estado="cancelado").filter(
+    eventos = Evento.objects.con_cupos().exclude(estado="cancelado").filter(
         fecha_fin__gte=timezone.now()
     ).order_by("fecha_inicio")
 
@@ -45,7 +46,7 @@ def lista_eventos(request):
 def detalle_evento(request, evento_id):
 
     sincronizar_estados()
-    evento = get_object_or_404(Evento, id=evento_id)
+    evento = get_object_or_404(Evento.objects.con_cupos(), id=evento_id)
 
     inscripcion = None
     if request.user.is_authenticated and hasattr(request.user, "aprendiz"):
@@ -125,13 +126,14 @@ def cancelar_inscripcion(request, inscripcion_id):
 # ---------- Panel de gestión (Personal de Bienestar / Administrador) ----------
 # CRUD como Class-Based Views, igual que ProgramaFormacion/Jornada/Grupo en usuarios.
 
-class EventoListView(PersonalBienestarRequeridoMixin, ListView):
+class EventoListView(PeriodoListMixin, PersonalBienestarRequeridoMixin, ListView):
     model = Evento
     template_name = "eventos/panel_lista.html"
     context_object_name = "eventos"
-    queryset = Evento.objects.select_related("creado_por")
+    queryset = Evento.objects.con_cupos().select_related("creado_por")
     ordering = ["-fecha_inicio"]
     paginate_by = 15
+    campo_periodo = "fecha_inicio"      # por defecto solo el periodo vigente (ver core/services/periodos.py)
 
     def get_queryset(self):
         sincronizar_estados()   # el panel siempre muestra el estado de ahora
@@ -196,6 +198,7 @@ class EventoDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
 def exportar_eventos(request):
     sincronizar_estados()
     eventos = Evento.objects.select_related("creado_por").order_by("-fecha_inicio")
+    eventos = filtrar_periodo(eventos, "fecha_inicio", resolver_periodo(request.GET.get("periodo")))
 
     q = request.GET.get("q", "").strip()
     if q:
@@ -208,7 +211,9 @@ def exportar_eventos(request):
     encabezados = ["Título", "Lugar", "Fecha inicio", "Fecha fin", "Horas", "Estado", "Creado por"]
     filas = [
         [
-            e.titulo, e.lugar, e.fecha_inicio, e.fecha_fin,
+            e.titulo, e.lugar,
+            timezone.localtime(e.fecha_inicio).strftime("%d/%m/%Y %I:%M %p"),
+            timezone.localtime(e.fecha_fin).strftime("%d/%m/%Y %I:%M %p"),
             e.horas_otorgadas, e.estado, e.creado_por.get_full_name(),
         ]
         for e in eventos
@@ -229,7 +234,7 @@ def exportar_eventos(request):
 @personal_bienestar_requerido
 def checklist_inscritos(request, evento_id):
 
-    evento = get_object_or_404(Evento, id=evento_id)
+    evento = get_object_or_404(Evento.objects.con_cupos(), id=evento_id)
 
     inscripciones = Inscripcion.objects.filter(
         evento=evento

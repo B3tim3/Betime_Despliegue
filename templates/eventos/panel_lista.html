@@ -16,6 +16,8 @@ Gestionar eventos | Be Time
     </div>
 </div>
 
+{% include 'components/filtros/periodo.html' %}
+
 {% if eventos %}
     <div class="row g-2 mb-1">
         <div class="col-12 col-md-6">
@@ -40,8 +42,9 @@ Gestionar eventos | Be Time
                     <th data-ordenar-columna="1">Lugar</th>
                     <th data-ordenar-columna="2" data-ordenar-tipo="fecha">Fecha inicio</th>
                     <th data-ordenar-columna="3" data-ordenar-tipo="numero">Horas</th>
-                    <th data-ordenar-columna="4">Creado por</th>
-                    <th data-ordenar-columna="5">Estado</th>
+                    <th>Inscritos / Cupo</th>
+                    <th data-ordenar-columna="5">Creado por</th>
+                    <th data-ordenar-columna="6">Estado</th>
                     <th class="text-end">Acciones</th>
                 </tr>
             </thead>
@@ -50,8 +53,11 @@ Gestionar eventos | Be Time
                     <tr data-estado="{{ evento.estado }}">
                         <td>{{ evento.titulo }}</td>
                         <td>{{ evento.lugar }}</td>
-                        <td>{{ evento.fecha_inicio|date:"d/m/Y H:i" }}</td>
+                        <td>{{ evento.fecha_inicio|date:"d/m/Y h:i A" }}</td>
                         <td>{{ evento.horas_otorgadas }}</td>
+                        <td>
+                            {{ evento.inscritos_activos }}{% if evento.cupo_maximo %} / {{ evento.cupo_maximo }}{% if evento.esta_lleno %} <span class="badge text-bg-danger">Lleno</span>{% endif %}{% else %} <span class="text-muted small">sin límite</span>{% endif %}
+                        </td>
                         <td>
                             {{ evento.creado_por.get_full_name }}
                             <span class="d-block small text-muted">{{ evento.fecha_creacion|date:"d/m/Y" }}</span>
@@ -81,7 +87,7 @@ Gestionar eventos | Be Time
 {% else %}
     <div class="card border-0 shadow-sm">
         <div class="card-body text-center text-muted py-5">
-            Todavía no has creado ningún evento.
+            No hay eventos en este año.{% if not periodo.es_todos %} Cambia el año o elige «Todos los años» para ver el historial.{% endif %}
         </div>
     </div>
 {% endif %}

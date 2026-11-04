@@ -96,15 +96,17 @@
 
                     <ul class="ev-datos">
                         <li>
-                            <i class="bi bi-clock"></i>
+                            <i class="bi bi-play-circle"></i>
                             <div>
-                                <small>Horario</small>
-                                <span>
-                                    {{ evento.fecha_inicio|date:"H:i" }} – {{ evento.fecha_fin|date:"H:i" }}
-                                    {% if evento.fecha_inicio|date:"Ymd" != evento.fecha_fin|date:"Ymd" %}
-                                        ({{ evento.fecha_fin|date:"d/m" }})
-                                    {% endif %}
-                                </span>
+                                <small>Hora de inicio</small>
+                                <span>{{ evento.fecha_inicio|date:"d/m/Y" }} · {{ evento.fecha_inicio|date:"h:i A" }}</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="bi bi-stop-circle"></i>
+                            <div>
+                                <small>Hora de fin</small>
+                                <span>{{ evento.fecha_fin|date:"d/m/Y" }} · {{ evento.fecha_fin|date:"h:i A" }}</span>
                             </div>
                         </li>
                         <li>
@@ -121,6 +123,21 @@
                                 <span>{{ evento.horas_otorgadas }} hora{{ evento.horas_otorgadas|pluralize }}</span>
                             </div>
                         </li>
+                        {% if evento.cupo_maximo %}
+                        <li>
+                            <i class="bi bi-people"></i>
+                            <div>
+                                <small>Cupos</small>
+                                <span>
+                                    {% if evento.esta_lleno %}
+                                        Agotados ({{ evento.cupo_maximo }} de {{ evento.cupo_maximo }})
+                                    {% else %}
+                                        {{ evento.cupos_disponibles }} disponible{{ evento.cupos_disponibles|pluralize }} de {{ evento.cupo_maximo }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </li>
+                        {% endif %}
                     </ul>
 
                     <div class="ev-accion">
@@ -176,6 +193,15 @@
                                     </div>
                                 </div>
 
+                            {% elif evento.esta_lleno %}
+                                <div class="ev-aviso ev-aviso--cerrado">
+                                    <i class="bi bi-people"></i>
+                                    <div>
+                                        <strong>Cupos agotados</strong>
+                                        Ya se completaron los {{ evento.cupo_maximo }} lugares. Si alguien cancela, se libera un cupo y podrás inscribirte.
+                                    </div>
+                                </div>
+
                             {% else %}
                                 <form method="post" action="{% url 'eventos:inscribirse' evento.id %}">
                                     {% csrf_token %}
@@ -187,7 +213,12 @@
                             {% endif %}
 
                         {% else %}
-                            {% if evento.estado == "programado" %}
+                            {% if evento.estado == "programado" and evento.esta_lleno %}
+                                <div class="ev-aviso ev-aviso--cerrado">
+                                    <i class="bi bi-people"></i>
+                                    <div><strong>Cupos agotados</strong></div>
+                                </div>
+                            {% elif evento.estado == "programado" %}
                                 <a href="{% url 'usuarios:login' %}" class="ev-boton">
                                     <i class="bi bi-box-arrow-in-right"></i> Inicia sesión para inscribirte
                                 </a>

@@ -21,7 +21,8 @@ from django.test import TestCase
 from django.urls import get_resolver
 from django.utils import timezone
 
-from bienestar.models import ConstanciaHoras, MiembroBienestar
+from bienestar.models import ActividadExtracurricular, ConstanciaHoras, MiembroBienestar
+from bienestar.services.extracurriculares import token_qr_de
 from eventos.models import Asistencia, Evento, Inscripcion
 from notificaciones.models import Notificacion
 from publicaciones.models import Publicacion
@@ -71,6 +72,7 @@ NIVELES = {
     "usuarios/perfil/contrasena/": LOGUEADO,
     "usuarios/dashboard/": LOGUEADO,
     "eventos/asistencia/confirmar/<uuid:token>/": LOGUEADO,
+    "bienestar/extracurriculares/qr/<str:token>/": LOGUEADO,
     "eventos/asistencia/confirmar/<uuid:token>/rapido/": PERSONAL,
     "notificaciones/": LOGUEADO,
     "notificaciones/marcar-todas/": LOGUEADO,
@@ -86,6 +88,8 @@ NIVELES = {
     "bienestar/mi-historial/": APRENDIZ,
     "bienestar/mi-historial/exportar/": APRENDIZ,
     "bienestar/constancia/": APRENDIZ,
+    "bienestar/extracurriculares/recibir/": APRENDIZ,
+    "bienestar/extracurriculares/mi-qr/imagen/": APRENDIZ,
     # --- Personal de Bienestar y Administrador ---
     "usuarios/dashboard/bienestar/": PERSONAL,
     "usuarios/panel/grupos/": PERSONAL,
@@ -113,6 +117,15 @@ NIVELES = {
     "eventos/panel/<int:evento_id>/inscritos/": PERSONAL,
     "eventos/panel/inscritos/exportar/": PERSONAL,
     "eventos/panel/escanear-qr/": PERSONAL,
+    "bienestar/extracurriculares/": PERSONAL,
+    "bienestar/extracurriculares/crear/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/editar/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/estado/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/eliminar/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/agregar/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/escanear/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/qr-rapido/": PERSONAL,
     "bienestar/nosotros/panel/": PERSONAL,
     "bienestar/nosotros/panel/exportar/": PERSONAL,
     "bienestar/nosotros/panel/crear/": PERSONAL,
@@ -143,6 +156,10 @@ NIVELES = {
 # Rutas que solo aceptan POST (con GET responden 405 a todos: no se puede
 # juzgar el permiso por GET, así que se juzga solo por POST).
 SOLO_POST = {
+    "bienestar/extracurriculares/<int:actividad_id>/estado/",
+    "bienestar/extracurriculares/<int:actividad_id>/eliminar/",
+    "bienestar/extracurriculares/<int:actividad_id>/agregar/",
+    "bienestar/extracurriculares/<int:actividad_id>/qr-rapido/",
     "usuarios/logout/",
     "eventos/mis-inscripciones/<int:inscripcion_id>/cancelar/",
     "eventos/asistencia/confirmar/<uuid:token>/rapido/",
@@ -214,6 +231,8 @@ class PermisosTests(TestCase):
             titulo="Yoga", lugar="Coliseo", horas_otorgadas=2, creado_por=cls.u_personal,
             fecha_inicio=ini, fecha_fin=ini + timedelta(hours=2), estado="programado")
         cls.inscripcion = Inscripcion.objects.create(evento=cls.evento, aprendiz=cls.aprendiz)
+        cls.actividad = ActividadExtracurricular.objects.create(
+            titulo="Uniforme", horas=1, creado_por=cls.u_personal.personal_bienestar)
         cls.publicacion = Publicacion.objects.create(autor=cls.u_personal, titulo="Hola", contenido="x")
         cls.miembro = MiembroBienestar.objects.create(nombre="Ana", cargo="Psicóloga")
         cls.notificacion = Notificacion.objects.create(usuario=cls.u_ap, titulo="t", mensaje="m")
@@ -233,7 +252,10 @@ class PermisosTests(TestCase):
             ):
                 if clave in ruta:
                     return objeto.pk
+        if nombre == "token" and "extracurriculares" in ruta:
+            return token_qr_de(self.aprendiz)
         return {
+            "actividad_id": self.actividad.pk,
             "programa_id": self.programa.pk, "jornada_id": self.jornada.pk, "grupo_id": self.grupo.pk,
             "evento_id": self.evento.pk, "publicacion_id": self.publicacion.pk,
             "miembro_id": self.miembro.pk, "inscripcion_id": self.inscripcion.pk,

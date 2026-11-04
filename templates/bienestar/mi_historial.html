@@ -14,7 +14,7 @@ Mi historial | Be Time
     <h1 class="h3 fw-bold mb-0">Mi historial de asistencia</h1>
     <div class="d-flex gap-2">
         {% include 'components/exportar/botones.html' with base_url='bienestar:mi_historial_exportar' tabla_id='tabla-historial' %}
-        {% if resumen.horas > 0 %}
+        {% if progreso.total > 0 %}
             <a href="{% url 'bienestar:constancia' %}" class="btn btn-success">
                 <i class="bi bi-file-earmark-pdf"></i> Constancia
             </a>
@@ -99,6 +99,34 @@ Mi historial | Be Time
             <a href="{% url 'eventos:lista' %}">Ver eventos disponibles</a>
         </div>
     </div>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-center mt-5 mb-2 flex-wrap gap-2">
+    <h2 class="h5 fw-bold mb-0">Horas de bienestar por mérito</h2>
+    <a href="{% url 'bienestar:recibir_extracurriculares' %}" class="btn btn-sm btn-outline-success">
+        <i class="bi bi-stars"></i> Recibir horas de bienestar por mérito
+    </a>
+</div>
+{% if extracurriculares %}
+    <div class="table-responsive">
+        <table class="table align-middle bg-white">
+            <thead>
+                <tr><th>Actividad</th><th>Fecha</th><th>Estado</th><th class="text-end">Horas</th></tr>
+            </thead>
+            <tbody>
+                {% for x in extracurriculares %}
+                    <tr>
+                        <td>{{ x.actividad }}</td>
+                        <td>{{ x.fecha|date:"d/m/Y" }}</td>
+                        <td><span class="badge {% if x.estado_codigo == 'otorgada' %}bg-success{% else %}text-bg-light border{% endif %}">{{ x.estado }}</span></td>
+                        <td class="text-end">{% if x.horas %}{{ x.horas }}{% else %}—{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="text-muted small">Aquí aparecerán las horas que Bienestar te dé fuera de los eventos (uniforme, atención en charlas, etc.).</p>
 {% endif %}
 
 {% endblock %}

@@ -1,14 +1,11 @@
 from django.db import models
 
+from core.imagenes_mixin import ImagenOptimizadaMixin
 
-class MiembroBienestar(models.Model):
 
-    CATEGORIA_CHOICES = [
-        ("salud", "Salud"),
-        ("psicosocial", "Equipo Psicosocial"),
-        ("deporte", "Deporte"),
-        ("cultura", "Arte y Cultura"),
-    ]
+class MiembroBienestar(ImagenOptimizadaMixin, models.Model):
+
+    CAMPOS_IMAGEN = ("foto",)
 
     id = models.BigAutoField(primary_key=True)
 
@@ -20,12 +17,6 @@ class MiembroBienestar(models.Model):
 
     cargo = models.CharField(
         max_length=100
-    )
-
-    categoria = models.CharField(
-        max_length=20,
-        choices=CATEGORIA_CHOICES,
-        default="salud"
     )
 
     descripcion = models.TextField(

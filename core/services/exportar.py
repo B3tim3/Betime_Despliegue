@@ -74,7 +74,7 @@ def _valor_a_texto(valor):
 
 
 def _fecha_exportacion():
-    return timezone.now().strftime("%d/%m/%Y %H:%M")
+    return timezone.localtime().strftime("%d/%m/%Y %I:%M %p")
 
 
 def _palabra_mas_larga(texto):

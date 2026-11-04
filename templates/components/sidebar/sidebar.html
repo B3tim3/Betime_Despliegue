@@ -18,11 +18,19 @@
         <a href="{% url 'bienestar:mi_historial' %}" class="list-group-item list-group-item-action">
             <i class="bi bi-clock-history"></i> Mi historial
         </a>
+
+        <a href="{% url 'bienestar:recibir_extracurriculares' %}" class="list-group-item list-group-item-action">
+            <i class="bi bi-stars"></i> Horas de bienestar por mérito
+        </a>
     {% endif %}
 
     {% if request.user.personal_bienestar or request.user.administrador %}
         <a href="{% url 'eventos:panel_lista' %}" class="list-group-item list-group-item-action">
             <i class="bi bi-calendar-event"></i> Eventos
+        </a>
+
+        <a href="{% url 'bienestar:actividades_lista' %}" class="list-group-item list-group-item-action">
+            <i class="bi bi-stars"></i> Actividades por mérito
         </a>
 
         <a href="{% url 'publicaciones:panel_lista' %}" class="list-group-item list-group-item-action">

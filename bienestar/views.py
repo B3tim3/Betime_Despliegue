@@ -7,8 +7,8 @@ from django.urls import reverse
 from bienestar.forms import ConfiguracionBienestarForm, MiembroBienestarForm
 from bienestar.models import ConfiguracionBienestar, ConstanciaHoras, MiembroBienestar
 from bienestar.services.constancia import SinHorasError, emitir_constancia, generar_pdf_constancia
-from bienestar.services.historial import historial_de, resumen_historial
-from bienestar.services.progreso import calcular_progreso
+from bienestar.services.historial import historial_de, historial_extracurricular_de, resumen_historial
+from bienestar.services.progreso import calcular_progreso, total_horas_de
 from core.services.exportar import exportar_excel, exportar_word, exportar_pdf, responder_export
 from core.services.auditoria import registrar as auditar
 from usuarios.decorators import administrador_requerido, personal_bienestar_requerido
@@ -157,11 +157,14 @@ def mi_historial(request):
 
     filas = historial_de(aprendiz)
     resumen = resumen_historial(filas)
+    extracurriculares = historial_extracurricular_de(aprendiz)
 
     return render(request, "bienestar/mi_historial.html", {
         "filas": filas,
         "resumen": resumen,
-        "progreso": calcular_progreso(resumen["horas"]),
+        "extracurriculares": extracurriculares,
+        # El progreso suma eventos + extracurriculares (misma fuente que el panel y la constancia).
+        "progreso": calcular_progreso(total_horas_de(aprendiz)),
     })
 
 
@@ -184,6 +187,12 @@ def mi_historial_exportar(request):
         if q and q not in f"{f.evento} {f.lugar} {f.estado}".lower():
             continue
         filas.append([f.evento, f.lugar, f.fecha.strftime("%d/%m/%Y %I:%M %p"), f.estado, f.horas])
+    for x in historial_extracurricular_de(aprendiz):
+        if estado and estado != "extracurricular":
+            continue
+        if q and q not in f"{x.actividad} por mérito {x.estado}".lower():
+            continue
+        filas.append([f"{x.actividad} (por mérito)", "—", x.fecha.strftime("%d/%m/%Y"), x.estado, x.horas])
 
     return responder_export(
         request, "mi_historial_bienestar",

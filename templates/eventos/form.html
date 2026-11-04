@@ -66,6 +66,15 @@
 
             <div class="row">
                 <div class="col-12 col-sm-6 mb-3">
+                    <label for="{{ form.cupo_maximo.id_for_label }}" class="form-label">{{ form.cupo_maximo.label }}</label>
+                    {{ form.cupo_maximo }}
+                    <div class="form-text">{{ form.cupo_maximo.help_text }}</div>
+                    {% for error in form.cupo_maximo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-sm-6 mb-3">
                     <label for="{{ form.fecha_inicio.id_for_label }}" class="form-label">{{ form.fecha_inicio.label }}</label>
                     {{ form.fecha_inicio }}
                     {% for error in form.fecha_inicio.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}

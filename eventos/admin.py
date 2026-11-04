@@ -8,7 +8,7 @@ from usuarios.models import Usuario
 
 @admin.register(Evento)
 class EventoAdmin(admin.ModelAdmin):
-    list_display = ("id", "titulo", "lugar", "fecha_inicio", "fecha_fin", "horas_otorgadas", "estado")
+    list_display = ("id", "titulo", "lugar", "fecha_inicio", "fecha_fin", "horas_otorgadas", "cupo_maximo", "estado")
     formfield_overrides = {
         models.DateTimeField: {"widget": AdminSplitDateTimeSinSegundos},
     }
