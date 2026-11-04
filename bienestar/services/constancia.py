@@ -2,6 +2,7 @@
 Constancia de horas de bienestar: emisión (registro verificable) y PDF.
 """
 
+from datetime import datetime
 from io import BytesIO
 
 from django.contrib.staticfiles import finders
@@ -59,6 +60,14 @@ def emitir_constancia(aprendiz):
 def _qr_imagen(url):
     from eventos.services.qr import generar_imagen_qr
     return generar_imagen_qr(url)
+
+
+def _fecha_de(registro):
+    """Fecha de lo que dio las horas: el evento o el día de la actividad por mérito."""
+    if registro.participacion_id:
+        fecha = registro.participacion.actividad.fecha
+        return timezone.make_aware(datetime.combine(fecha, datetime.min.time()))
+    return timezone.localtime(registro.asistencia.inscripcion.evento.fecha_inicio)
 
 
 def generar_pdf_constancia(constancia, url_verificacion):
@@ -136,17 +145,17 @@ def generar_pdf_constancia(constancia, url_verificacion):
     # ---------- Detalle por evento ----------
     registros = list(
         horas_de(aprendiz)
-        .select_related("asistencia__inscripcion__evento")
-        .order_by("asistencia__inscripcion__evento__fecha_inicio")
+        .select_related("asistencia__inscripcion__evento", "participacion__actividad")
     )
+    # Eventos y actividades por mérito juntos, por fecha de la actividad.
+    registros.sort(key=lambda r: _fecha_de(r))
     # Solo lo que se certificó ese día: horas registradas hasta la emisión.
     registros = [r for r in registros if r.fecha <= constancia.fecha_emision]
     filas = [[Paragraph("Actividad", celda_h), Paragraph("Fecha", celda_h), Paragraph("Horas", celda_h)]]
     for r in registros:
-        evento = r.asistencia.inscripcion.evento
         filas.append([
-            Paragraph(e(evento.titulo), celda),
-            Paragraph(timezone.localtime(evento.fecha_inicio).strftime("%d/%m/%Y"), celda_c),
+            Paragraph(e(r.concepto), celda),
+            Paragraph(_fecha_de(r).strftime("%d/%m/%Y"), celda_c),
             Paragraph(str(r.cantidad_horas), celda_c),
         ])
     filas.append([Paragraph("<b>Total</b>", celda), "", Paragraph(f"<b>{constancia.total_horas}</b>", celda_c)])

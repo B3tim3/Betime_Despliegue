@@ -9,6 +9,7 @@ reordenaba las filas ya cargadas en el navegador.
 """
 
 import django_tables2 as tables
+from django.utils.html import format_html
 
 from usuarios.models import Aprendiz
 
@@ -23,6 +24,12 @@ class AprendizTable(tables.Table):
     documento = tables.Column(
         accessor="usuario__numero_documento",
         verbose_name="Documento",
+    )
+    contacto = tables.Column(
+        accessor="usuario__email",
+        verbose_name="Contacto",
+        orderable=False,
+        empty_values=(),
     )
     grupo = tables.Column(
         accessor="grupo__numero_grupo",
@@ -51,12 +58,28 @@ class AprendizTable(tables.Table):
 
     class Meta:
         model = Aprendiz
-        fields = ("nombre", "documento", "grupo", "programa", "estado", "acciones")
+        fields = ("nombre", "documento", "contacto", "grupo", "programa", "estado", "acciones")
         attrs = {"class": "table align-middle bg-white"}
         order_by = ("usuario__apellidos",)
 
     def render_nombre(self, value):
         return value.get_full_name()
 
+    def render_documento(self, value, record):
+        return f"{record.usuario.tipo_documento} {value}"
+
+    def render_contacto(self, record):
+        usuario = record.usuario
+        if not usuario.email and not usuario.telefono:
+            return format_html('<span class="text-muted">Sin datos</span>')
+        return format_html(
+            '<div class="small">{}</div><div class="small text-muted">{}</div>',
+            usuario.email or "—", usuario.telefono or "—",
+        )
+
     def render_estado(self, record):
-        return record.get_estado_display()
+        colores = {"activo": "success", "retirado": "secondary", "egresado": "info"}
+        return format_html(
+            '<span class="badge text-bg-{}">{}</span>',
+            colores.get(record.estado, "light"), record.get_estado_display(),
+        )

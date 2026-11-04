@@ -5,12 +5,15 @@ Pantallas de inicio (dashboard) de cada rol: aprendiz, Personal de Bienestar y A
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
+from django.db.models import Count, Q, Sum
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from bienestar.services.progreso import calcular_progreso, horas_de
 from eventos.models import Evento, Inscripcion
+from eventos.services.estados import sincronizar_estados
+from publicaciones.models import Publicacion
+from usuarios.models import Aprendiz
 
 
 @login_required(login_url="usuarios:login")
@@ -46,7 +49,7 @@ def dashboard_aprendiz(request):
     # Solo cuentan las horas de eventos con asistencia marcada como "asistió"
     # (misma regla que el historial y la constancia en PDF).
     horas = horas_de(aprendiz).select_related(
-        "asistencia__inscripcion__evento"
+        "asistencia__inscripcion__evento", "participacion__actividad"
     ).order_by("-fecha")
 
     total_horas = horas.aggregate(total=Sum("cantidad_horas"))["total"] or 0
@@ -75,6 +78,20 @@ def dashboard_aprendiz(request):
     })
 
 
+def _resumen_del_panel():
+    """Números y próximos eventos que se ven en el inicio de Bienestar y del administrador."""
+    sincronizar_estados()
+    vigentes = Evento.objects.filter(estado__in=["programado", "en_curso"])
+    return {
+        "total_aprendices_activos": Aprendiz.objects.filter(estado="activo").count(),
+        "total_eventos_vigentes": vigentes.count(),
+        "total_publicaciones": Publicacion.objects.filter(estado="publicado").count(),
+        "eventos_vigentes": vigentes.annotate(
+            total_inscritos=Count("inscripciones", filter=~Q(inscripciones__estado="cancelada"))
+        ).order_by("fecha_inicio")[:5],
+    }
+
+
 @login_required(login_url="usuarios:login")
 def dashboard_bienestar(request):
 
@@ -83,6 +100,7 @@ def dashboard_bienestar(request):
 
     return render(request, "dashboard/bienestar.html", {
         "personal_bienestar": request.user.personal_bienestar,
+        **_resumen_del_panel(),
     })
 
 
@@ -94,4 +112,5 @@ def dashboard_admin(request):
 
     return render(request, "dashboard/admin.html", {
         "administrador": request.user.administrador,
+        **_resumen_del_panel(),
     })

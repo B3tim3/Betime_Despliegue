@@ -17,6 +17,7 @@ from usuarios.forms import (
 )
 from usuarios.models import Aprendiz
 from usuarios.services import crear_usuario_administrativo
+from usuarios.services.datos_aprendiz import CENTRO_FORMACION
 from usuarios.services.perfil import actualizar_perfil_aprendiz
 
 
@@ -93,6 +94,7 @@ def perfil_aprendiz(request):
     return render(request, "usuarios/perfil.html", {
         "form": form,
         "aprendiz": aprendiz,
+        "centro_formacion": CENTRO_FORMACION,
     })
 
 

@@ -109,21 +109,30 @@ class ServicioTests(Base):
 
 class AccionesAuditadasTests(Base):
 
+    def datos_aprendiz(self, **cambios):
+        datos = {
+            "tipo_documento": "CC", "numero_documento": "3", "nombres": "Aprendiz",
+            "apellidos": "Prueba", "genero": "", "email": "3@x.co", "telefono": "",
+            "grupo": self.g1.pk, "estado": "activo",
+        }
+        datos.update(cambios)
+        return datos
+
     def test_editar_aprendiz_guarda_antes_y_despues(self):
         self.entrar(self.u_personal)
         self.client.post(reverse("usuarios:aprendices_editar", args=[self.aprendiz.pk]),
-                         {"grupo": self.g2.pk, "estado": "retirado"})
+                         self.datos_aprendiz(grupo=self.g2.pk, estado="retirado"))
         r = self.acciones("aprendiz_editado").get()
         self.assertEqual(r.usuario, self.u_personal)
         self.assertEqual(set(r.detalles), {"grupo", "estado"})
-        self.assertEqual(r.detalles["estado"], {"antes": "activo", "despues": "retirado"})
+        self.assertEqual(r.detalles["estado"], {"antes": "Activo", "despues": "Retirado"})
         self.assertIn("3000001", r.detalles["grupo"]["antes"])
         self.assertIn("3000002", r.detalles["grupo"]["despues"])
 
     def test_editar_sin_cambios_no_registra(self):
         self.entrar(self.u_personal)
         self.client.post(reverse("usuarios:aprendices_editar", args=[self.aprendiz.pk]),
-                         {"grupo": self.g1.pk, "estado": "activo"})
+                         self.datos_aprendiz())
         self.assertFalse(self.acciones("aprendiz_editado").exists())
 
     def test_eliminar_aprendiz(self):

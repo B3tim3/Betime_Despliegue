@@ -1,0 +1,124 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+{{ titulo_pagina }} | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<nav class="mb-2">
+    <a href="{% url 'usuarios:aprendices_lista' %}" class="text-decoration-none">&larr; Aprendices</a>
+</nav>
+
+<h1 class="h3 fw-bold mb-1">Datos del aprendiz</h1>
+<p class="text-muted mb-4">
+    {{ object.usuario.get_full_name }} · {{ object.usuario.tipo_documento }} {{ object.usuario.numero_documento }}.
+    Los cambios quedan en la bitácora de auditoría y la persona recibe un aviso en su campanita.
+</p>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2">
+            {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+    {% endif %}
+
+    {% if form.errors %}
+        <div class="alert alert-danger py-2">
+            Revisa los campos marcados: no se guardó ningún cambio.
+        </div>
+    {% endif %}
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 fw-bold mb-3">Identificación</h2>
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label for="{{ form.tipo_documento.id_for_label }}" class="form-label">{{ form.tipo_documento.label }}</label>
+                    {{ form.tipo_documento }}
+                    {% for error in form.tipo_documento.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-12 col-md-8">
+                    <label for="{{ form.numero_documento.id_for_label }}" class="form-label">{{ form.numero_documento.label }}</label>
+                    {{ form.numero_documento }}
+                    {% for error in form.numero_documento.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    <div class="form-text"><i class="bi bi-exclamation-triangle"></i> {{ form.numero_documento.help_text }}</div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.nombres.id_for_label }}" class="form-label">{{ form.nombres.label }}</label>
+                    {{ form.nombres }}
+                    {% for error in form.nombres.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.apellidos.id_for_label }}" class="form-label">{{ form.apellidos.label }}</label>
+                    {{ form.apellidos }}
+                    {% for error in form.apellidos.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label for="{{ form.genero.id_for_label }}" class="form-label">{{ form.genero.label }}</label>
+                    {{ form.genero }}
+                    {% for error in form.genero.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 fw-bold mb-3">Contacto</h2>
+            <div class="row g-3">
+                <div class="col-12 col-md-7">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                    {{ form.email }}
+                    {% for error in form.email.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-12 col-md-5">
+                    <label for="{{ form.telefono.id_for_label }}" class="form-label">{{ form.telefono.label }}</label>
+                    {{ form.telefono }}
+                    {% for error in form.telefono.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 fw-bold mb-1">Formación</h2>
+            <p class="text-muted small mb-3">
+                El programa, la jornada y el nivel salen del grupo: al cambiar el grupo cambian también.
+            </p>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Centro de formación</label>
+                    <div class="form-control bg-body-secondary h-auto text-break">{{ centro_formacion }}</div>
+                </div>
+                <div class="col-12 col-lg-8">
+                    <label for="{{ form.grupo.id_for_label }}" class="form-label">{{ form.grupo.label }}</label>
+                    {{ form.grupo }}
+                    {% for error in form.grupo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-12 col-lg-4">
+                    <label for="{{ form.estado.id_for_label }}" class="form-label">{{ form.estado.label }}</label>
+                    {{ form.estado }}
+                    {% for error in form.estado.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-12">
+                    <div class="small text-muted">
+                        Ahora: {{ object.grupo.programa_formacion.nombre }} ·
+                        {{ object.grupo.programa_formacion.nivel_formacion.nombre }} ·
+                        jornada {{ object.grupo.jornada.nombre }}.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <button type="submit" class="btn btn-success"><i class="bi bi-check2"></i> Guardar cambios</button>
+        <a href="{% url 'usuarios:aprendices_lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+</form>
+
+{% endblock %}

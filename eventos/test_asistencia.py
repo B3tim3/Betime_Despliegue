@@ -92,11 +92,12 @@ class DatosAprendizTests(AsistenciaBase):
         self.assertEqual(len(fila), len(DatosAprendiz.ENCABEZADOS))
         self.assertEqual(fila, [
             "Ana Gómez", "TI", "101", "Femenino", "3000002",
-            "Análisis y Desarrollo de Software", "Nocturna", "Tecnólogo", "ana@x.co", "3001112233"])
+            "Análisis y Desarrollo de Software", "Nocturna", "Tecnólogo",
+            "Centro de Diseño y Metrología (C.D.M)", "ana@x.co", "3001112233"])
 
     def test_cuenta_antigua_sin_datos_nuevos_no_falla(self):
         fila = DatosAprendiz.de(self.vieja).como_fila()
-        self.assertEqual((fila[3], fila[8], fila[9]), ("", "", ""))
+        self.assertEqual((fila[3], fila[9], fila[10]), ("", "", ""))
 
 
 class ChecklistPantallaTests(AsistenciaBase):
@@ -105,7 +106,8 @@ class ChecklistPantallaTests(AsistenciaBase):
         r = self.client.get(reverse("eventos:panel_inscritos", args=[self.evento.id]))
         self.assertEqual(r.status_code, 200)
         for texto in ("3000002", "3000001", "Nocturna", "Diurna", "Tecnólogo", "Femenino", "Masculino",
-                      "ana@x.co", "3001112233", "Análisis y Desarrollo de Software", "TI 101"):
+                      "ana@x.co", "3001112233", "Análisis y Desarrollo de Software", "TI 101",
+                      "Centro de Diseño y Metrología (C.D.M)"):
             self.assertContains(r, texto)
 
     def test_cuenta_antigua_muestra_guion(self):

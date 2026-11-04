@@ -14,14 +14,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     document.querySelectorAll(".flatpickr-fecha-hora").forEach(function (input) {
-    flatpickr(input, {
-        enableTime: true,
-        dateFormat: "Y-m-d H:i",   // lo que se manda al servidor — sigue igual, no toca la BD
-        altInput: true,
-        altFormat: "d/m/Y h:i K",  // lo que VE la persona: ahora 12h con AM/PM
-        time_24hr: false,
-        locale: "es",
+        flatpickr(input, {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",   // lo que de verdad se manda al servidor
+            altInput: true,
+            altFormat: "d/m/Y h:i K",  // lo que ve la persona: 12 horas con AM/PM
+            time_24hr: false,          // el selector de hora también en AM/PM
+            locale: "es",
+        });
     });
-});
 
 });

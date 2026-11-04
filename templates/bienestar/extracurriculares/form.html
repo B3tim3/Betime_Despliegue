@@ -1,0 +1,37 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+{{ titulo_pagina }} | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<nav class="mb-2">
+    <a href="{% if actividad %}{% url 'bienestar:actividad_detalle' actividad.id %}{% else %}{% url 'bienestar:actividades_lista' %}{% endif %}" class="text-decoration-none">&larr; Volver</a>
+</nav>
+<h1 class="h3 fw-bold mb-4">{{ titulo_pagina }}</h1>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% for campo in form %}
+                <div class="mb-3">
+                    <label for="{{ campo.id_for_label }}" class="form-label">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% if campo.name == 'horas' %}<div class="form-text">Cuántas horas recibe cada aprendiz (puedes ajustarlas por persona en la lista).</div>{% endif %}
+                    {% for error in campo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            {% endfor %}
+            {% if not actividad %}
+                <p class="text-muted small">Al guardar se genera un código único que compartes con los aprendices.</p>
+            {% endif %}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">Guardar</button>
+                <a href="{% if actividad %}{% url 'bienestar:actividad_detalle' actividad.id %}{% else %}{% url 'bienestar:actividades_lista' %}{% endif %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

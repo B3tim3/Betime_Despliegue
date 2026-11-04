@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from core.services.exportar import responder_export
+from core.services.periodos import PeriodoListMixin, filtrar as filtrar_periodo, resolver as resolver_periodo
 from publicaciones.forms import PublicacionForm
 from publicaciones.models import Publicacion
 from usuarios.decorators import personal_bienestar_requerido
@@ -73,13 +74,14 @@ def detalle_publicacion(request, publicacion_id):
 # ---------- Panel de gestión (Personal de Bienestar / Administrador) ----------
 # CRUD como Class-Based Views, igual que ProgramaFormacion/Jornada/Ficha en usuarios.
 
-class PublicacionListView(PersonalBienestarRequeridoMixin, ListView):
+class PublicacionListView(PeriodoListMixin, PersonalBienestarRequeridoMixin, ListView):
     model = Publicacion
     template_name = "publicaciones/panel_lista.html"
     context_object_name = "publicaciones"
     queryset = Publicacion.objects.select_related("autor")
     ordering = ["-fecha_creacion"]
     paginate_by = 15
+    campo_periodo = "fecha_creacion"    # por defecto solo el periodo vigente
 
 
 class PublicacionCreateView(PersonalBienestarRequeridoMixin, CreateView):
@@ -128,6 +130,7 @@ class PublicacionDeleteView(PersonalBienestarRequeridoMixin, DeleteView):
 @personal_bienestar_requerido
 def exportar_publicaciones(request):
     publicaciones = Publicacion.objects.select_related("autor").order_by("-fecha_creacion")
+    publicaciones = filtrar_periodo(publicaciones, "fecha_creacion", resolver_periodo(request.GET.get("periodo")))
 
     q = request.GET.get("q", "").strip()
     if q:

@@ -25,7 +25,7 @@ class AprendizFilter(django_filters.FilterSet):
         label="",
         widget=forms.TextInput(attrs={
             "class": "form-control",
-            "placeholder": "Buscar por nombre, documento o grupo...",
+            "placeholder": "Buscar por nombre, documento, correo o grupo...",
         }),
     )
 
@@ -54,5 +54,6 @@ class AprendizFilter(django_filters.FilterSet):
             Q(usuario__apellidos__icontains=value) |
             Q(usuario__numero_documento__icontains=value) |
             Q(usuario__tipo_documento__icontains=value) |
+            Q(usuario__email__icontains=value) |
             Q(grupo__numero_grupo__icontains=value)
         )

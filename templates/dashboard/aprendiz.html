@@ -4,6 +4,13 @@
 Mi panel | Be Time
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    #pestanas-aprendiz .nav-link { color: #2e7d32; }
+    #pestanas-aprendiz .nav-link.active { background: #2e7d32; color: #fff; }
+</style>
+{% endblock %}
+
 {% block dashboard_content %}
 
 <h1 class="h3 fw-bold mb-1">
@@ -20,6 +27,9 @@ Mi panel | Be Time
     </a>
     <a href="{% url 'bienestar:mi_historial' %}" class="btn btn-sm btn-outline-success">
         <i class="bi bi-clock-history"></i> Mi historial
+    </a>
+    <a href="{% url 'bienestar:recibir_extracurriculares' %}" class="btn btn-sm btn-success">
+        <i class="bi bi-stars"></i> Recibir horas de bienestar por mérito
     </a>
     {% if progreso.total > 0 %}
         <a href="{% url 'bienestar:constancia' %}" class="btn btn-sm btn-outline-success">
@@ -90,16 +100,32 @@ Mi panel | Be Time
     </div>
 {% endif %}
 
-<div class="row g-4">
-    <div class="col-12 col-lg-6">
-        <h2 class="h5 fw-bold mb-3">Mis horas registradas</h2>
+<ul class="nav nav-pills gap-1 mb-3" id="pestanas-aprendiz" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-horas" data-bs-toggle="pill" data-bs-target="#panel-horas"
+                type="button" role="tab" aria-controls="panel-horas" aria-selected="true">
+            <i class="bi bi-clock-history"></i> Mis horas registradas
+            <span class="badge text-bg-light border ms-1">{{ horas|length }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-inscripciones" data-bs-toggle="pill" data-bs-target="#panel-inscripciones"
+                type="button" role="tab" aria-controls="panel-inscripciones" aria-selected="false">
+            <i class="bi bi-calendar-check"></i> Mis inscripciones
+            <span class="badge text-bg-light border ms-1">{{ inscripciones|length }}</span>
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="panel-horas" role="tabpanel" aria-labelledby="tab-horas" tabindex="0">
 
         {% if horas %}
             <div class="table-responsive">
                 <table class="table align-middle bg-white">
                     <thead>
                         <tr>
-                            <th>Evento</th>
+                            <th>Evento o actividad</th>
                             <th>Horas</th>
                             <th>Otorgado por</th>
                             <th>Fecha</th>
@@ -108,7 +134,7 @@ Mi panel | Be Time
                     <tbody>
                         {% for h in horas %}
                             <tr>
-                                <td>{{ h.asistencia.inscripcion.evento.titulo }}</td>
+                                <td>{{ h.concepto }}</td>
                                 <td>{{ h.cantidad_horas }}</td>
                                 <td>{{ h.asignado_por.usuario.get_full_name }}</td>
                                 <td>{{ h.fecha|date:"d/m/Y" }}</td>
@@ -126,8 +152,7 @@ Mi panel | Be Time
         {% endif %}
     </div>
 
-    <div class="col-12 col-lg-6">
-        <h2 class="h5 fw-bold mb-3">Mis inscripciones</h2>
+    <div class="tab-pane fade" id="panel-inscripciones" role="tabpanel" aria-labelledby="tab-inscripciones" tabindex="0">
 
         {% if inscripciones %}
             <div class="table-responsive">
@@ -186,4 +211,26 @@ Mi panel | Be Time
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script>
+        // Recuerda la pestaña: al cancelar una inscripción la página se recarga
+        // y sin esto volvería a "Mis horas".
+        document.addEventListener("DOMContentLoaded", function () {
+            const clave = "pestana-panel-aprendiz";
+            let guardada = null;
+            try { guardada = sessionStorage.getItem(clave); } catch (e) {}
+            if (guardada === "tab-inscripciones") {
+                const b = document.getElementById("tab-inscripciones");
+                if (b && window.bootstrap) { bootstrap.Tab.getOrCreateInstance(b).show(); }
+            }
+            document.querySelectorAll("#pestanas-aprendiz [data-bs-toggle=pill]").forEach(function (b) {
+                b.addEventListener("shown.bs.tab", function () {
+                    try { sessionStorage.setItem(clave, b.id); } catch (e) {}
+                });
+            });
+        });
+    </script>
 {% endblock %}

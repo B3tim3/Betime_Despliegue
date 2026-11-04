@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load imagenes %}
 
 {% block title %}
 Eventos | Be Time
@@ -10,46 +11,43 @@ Eventos | Be Time
     <div class="container">
 
         <div class="mb-4">
-            <a href="/" class="text-muted small text-decoration-none d-inline-block mb-3">
-                <i class="bi bi-arrow-left"></i> Volver al inicio
-            </a>
             <div class="home-section__eyebrow mb-1">Agenda</div>
             <h1 class="home-section__title mb-0">Próximos eventos</h1>
         </div>
 
         {% if eventos %}
-            <div class="row g-4">
+            <div>
                 {% for evento in eventos %}
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <a href="{% url 'eventos:detalle' evento.id %}" class="home-evento-card">
+                    <a href="{% url 'eventos:detalle' evento.id %}" class="text-decoration-none text-reset">
+                        <div class="home-evento">
 
-                            <div class="home-evento-card__media">
-                                {% if evento.imagen %}
-                                    <img src="{{ evento.imagen.url }}" alt="{{ evento.titulo }}">
-                                {% else %}
-                                    <i class="bi bi-calendar-event"></i>
-                                {% endif %}
+                            {% if evento.imagen %}
+                                <img src="{{ evento.imagen|miniatura }}" alt="" class="home-evento__img" loading="lazy" onerror="this.onerror=null;this.src='{{ evento.imagen.url }}'">
+                            {% endif %}
 
-                                <div class="home-evento-card__fecha">
-                                    <span class="dia">{{ evento.fecha_inicio|date:"d" }}</span>
-                                    <span class="mes">{{ evento.fecha_inicio|date:"M" }}</span>
-                                </div>
+                            <div class="home-evento__fecha">
+                                <span class="dia">{{ evento.fecha_inicio|date:"d" }}</span>
+                                <span class="mes">{{ evento.fecha_inicio|date:"M" }}</span>
                             </div>
 
-                            <div class="home-evento-card__body">
-                                <h2 class="h6 fw-bold mb-2">
-                                    {{ evento.titulo }}
-                                </h2>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">{{ evento.titulo }}</div>
                                 <div class="text-muted small">
                                     <i class="bi bi-geo-alt"></i> {{ evento.lugar }}
                                 </div>
-                                <span class="home-evento-card__horas">
-                                    {{ evento.horas_otorgadas }} horas de bienestar
-                                </span>
                             </div>
 
-                        </a>
-                    </div>
+                            <div class="home-evento__horas">
+                                {{ evento.horas_otorgadas }} horas
+                                {% if evento.cupo_maximo %}
+                                    <span class="d-block small {% if evento.esta_lleno %}text-danger fw-semibold{% else %}text-muted{% endif %}">
+                                        {% if evento.esta_lleno %}Cupos agotados{% else %}{{ evento.cupos_disponibles }} cupo{{ evento.cupos_disponibles|pluralize }}{% endif %}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    </a>
                 {% endfor %}
             </div>
         {% else %}

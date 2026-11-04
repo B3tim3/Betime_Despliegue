@@ -18,6 +18,38 @@ class FilaHistorial:
     horas: int
 
 
+@dataclass(frozen=True)
+class FilaExtracurricular:
+    """Una actividad por mérito del aprendiz (horas fuera de eventos)."""
+
+    actividad: str
+    fecha: object          # datetime.date
+    estado_codigo: str     # otorgada | pendiente
+    estado: str
+    horas: int
+
+
+def historial_extracurricular_de(aprendiz):
+    """Actividades por mérito en las que participó, de la más reciente a la más antigua."""
+    participaciones = (
+        aprendiz.participaciones_extracurriculares
+        .select_related("actividad", "horas")
+        .order_by("-actividad__fecha", "-id")
+    )
+    filas = []
+    for p in participaciones:
+        otorgada = p.estado == "otorgada"
+        registro = getattr(p, "horas", None)
+        filas.append(FilaExtracurricular(
+            actividad=p.actividad.titulo,
+            fecha=p.actividad.fecha,
+            estado_codigo=p.estado,
+            estado="Horas otorgadas" if otorgada else "Pendiente de horas",
+            horas=registro.cantidad_horas if (otorgada and registro) else 0,
+        ))
+    return filas
+
+
 def _estado(inscripcion):
     if inscripcion.evento.estado == "cancelado":
         return "evento_cancelado", "Evento cancelado"

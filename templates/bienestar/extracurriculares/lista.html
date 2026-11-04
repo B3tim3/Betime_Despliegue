@@ -1,0 +1,49 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Actividades por mérito | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+    <h1 class="h3 fw-bold mb-0">Actividades por mérito</h1>
+    {% if request.user.personal_bienestar %}
+        <a href="{% url 'bienestar:actividad_crear' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i> Crear actividad</a>
+    {% endif %}
+</div>
+<p class="text-muted mb-4">
+    Horas de bienestar que se dan fuera de los eventos. No aparecen en la sección pública de Eventos.
+    Comparte el código con los aprendices o escanea su QR personal.
+</p>
+
+{% include 'components/filtros/periodo.html' %}
+
+{% if actividades %}
+    <div class="table-responsive">
+        <table class="table align-middle bg-white">
+            <thead>
+                <tr><th>Actividad</th><th>Fecha</th><th>Código</th><th>Horas</th><th>Con horas / en lista</th><th>Estado</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for a in actividades %}
+                    <tr>
+                        <td class="fw-semibold">{{ a.titulo }}</td>
+                        <td>{{ a.fecha|date:"d/m/Y" }}</td>
+                        <td><code class="fs-6">{{ a.codigo }}</code></td>
+                        <td>{{ a.horas }}</td>
+                        <td>{{ a.con_horas }} / {{ a.total }}</td>
+                        <td><span class="badge {% if a.abierta %}bg-success{% else %}text-bg-secondary{% endif %}">{{ a.get_estado_display }}</span></td>
+                        <td class="text-end"><a href="{% url 'bienestar:actividad_detalle' a.id %}" class="btn btn-sm btn-outline-success">Abrir</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm"><div class="card-body text-center text-muted py-5">
+        No hay actividades por mérito en este año.{% if not periodo.es_todos %} Cambia el año o elige «Todos los años».{% endif %}
+    </div></div>
+{% endif %}
+
+{% endblock %}

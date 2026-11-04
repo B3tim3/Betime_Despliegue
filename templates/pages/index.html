@@ -1,4 +1,9 @@
 {% extends 'base.html' %}
+{% load static imagenes %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home-hero.css' %}?v=1">
+{% endblock %}
 
 {% block title %}
 Be Time | Bienestar al Aprendiz - SENA
@@ -23,12 +28,12 @@ Be Time | Bienestar al Aprendiz - SENA
                 </h1>
 
                 <p class="home-hero__lead mb-4">
-                    La plataforma de <span class="text-bt-verde underline"><strong>Bienestar al aprendiz</strong></span> del Servicio Nacional
+                    La plataforma para gestionar el Bienestar al Aprendiz del Servicio Nacional
                     de Aprendizaje: consulta publicaciones, inscríbete a eventos y lleva el
                     control de tus horas de bienestar en un solo lugar.
                 </p>
 
-                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
+                <div class="d-flex flex-wrap gap-3">
                     {% if user.is_authenticated %}
                         <a href="{% url 'usuarios:dashboard' %}" class="btn btn-success btn-lg px-4">
                             Ir a mi panel
@@ -47,27 +52,23 @@ Be Time | Bienestar al Aprendiz - SENA
             </div>
 
             <div class="col-12 col-lg-6">
-                <div class="home-hero__art" role="img" aria-label="Engranajes que representan los servicios de Bienestar funcionando juntos">
-                    <div class="home-hero__ring"></div>
-                    <svg class="home-hero__svg" viewBox="0 0 360 360" aria-hidden="true" focusable="false">
-                      <g transform="translate(180,180)"><g class="gear gear--centro"><path d="M63.6,-7.2 L78.9,-3.0 L78.9,3.0 L63.6,7.2 L61.5,17.7 L74.1,27.4 L71.8,33.0 L56.0,31.0 L50.0,39.9 L57.9,53.7 L53.7,57.9 L39.9,50.0 L31.0,56.0 L33.0,71.8 L27.4,74.1 L17.7,61.5 L7.2,63.6 L3.0,78.9 L-3.0,78.9 L-7.2,63.6 L-17.7,61.5 L-27.4,74.1 L-33.0,71.8 L-31.0,56.0 L-39.9,50.0 L-53.7,57.9 L-57.9,53.7 L-50.0,39.9 L-56.0,31.0 L-71.8,33.0 L-74.1,27.4 L-61.5,17.7 L-63.6,7.2 L-78.9,3.0 L-78.9,-3.0 L-63.6,-7.2 L-61.5,-17.7 L-74.1,-27.4 L-71.8,-33.0 L-56.0,-31.0 L-50.0,-39.9 L-57.9,-53.7 L-53.7,-57.9 L-39.9,-50.0 L-31.0,-56.0 L-33.0,-71.8 L-27.4,-74.1 L-17.7,-61.5 L-7.2,-63.6 L-3.0,-78.9 L3.0,-78.9 L7.2,-63.6 L17.7,-61.5 L27.4,-74.1 L33.0,-71.8 L31.0,-56.0 L39.9,-50.0 L53.7,-57.9 L57.9,-53.7 L50.0,-39.9 L56.0,-31.0 L71.8,-33.0 L74.1,-27.4 L61.5,-17.7Z"/><circle cx="57.0" cy="0.0" r="4.5" class="gear__hole"/><circle cx="40.3" cy="40.3" r="4.5" class="gear__hole"/><circle cx="0.0" cy="57.0" r="4.5" class="gear__hole"/><circle cx="-40.3" cy="40.3" r="4.5" class="gear__hole"/><circle cx="-57.0" cy="0.0" r="4.5" class="gear__hole"/><circle cx="-40.3" cy="-40.3" r="4.5" class="gear__hole"/><circle cx="-0.0" cy="-57.0" r="4.5" class="gear__hole"/><circle cx="40.3" cy="-40.3" r="4.5" class="gear__hole"/></g></g>
-                      <g transform="translate(97.3,97.3)"><g class="gear gear--sat gear--salud"><path d="M35.6,10.1 L47.6,20.9 L44.9,26.2 L29.1,22.9 L22.9,29.1 L26.2,44.9 L20.9,47.6 L10.1,35.6 L1.4,37.0 L-5.2,51.7 L-11.1,50.8 L-12.7,34.7 L-20.6,30.7 L-34.6,38.8 L-38.8,34.6 L-30.7,20.6 L-34.7,12.7 L-50.8,11.1 L-51.7,5.2 L-37.0,-1.4 L-35.6,-10.1 L-47.6,-20.9 L-44.9,-26.2 L-29.1,-22.9 L-22.9,-29.1 L-26.2,-44.9 L-20.9,-47.6 L-10.1,-35.6 L-1.4,-37.0 L5.2,-51.7 L11.1,-50.8 L12.7,-34.7 L20.6,-30.7 L34.6,-38.8 L38.8,-34.6 L30.7,-20.6 L34.7,-12.7 L50.8,-11.1 L51.7,-5.2 L37.0,1.4Z"/><circle cx="26.0" cy="0.0" r="3" class="gear__hole"/><circle cx="8.0" cy="24.7" r="3" class="gear__hole"/><circle cx="-21.0" cy="15.3" r="3" class="gear__hole"/><circle cx="-21.0" cy="-15.3" r="3" class="gear__hole"/><circle cx="8.0" cy="-24.7" r="3" class="gear__hole"/></g></g>
-                      <g transform="translate(262.7,97.3)"><g class="gear gear--sat gear--asesorias"><path d="M37.0,-1.4 L51.7,5.2 L50.8,11.1 L34.7,12.7 L30.7,20.6 L38.8,34.6 L34.6,38.8 L20.6,30.7 L12.7,34.7 L11.1,50.8 L5.2,51.7 L-1.4,37.0 L-10.1,35.6 L-20.9,47.6 L-26.2,44.9 L-22.9,29.1 L-29.1,22.9 L-44.9,26.2 L-47.6,20.9 L-35.6,10.1 L-37.0,1.4 L-51.7,-5.2 L-50.8,-11.1 L-34.7,-12.7 L-30.7,-20.6 L-38.8,-34.6 L-34.6,-38.8 L-20.6,-30.7 L-12.7,-34.7 L-11.1,-50.8 L-5.2,-51.7 L1.4,-37.0 L10.1,-35.6 L20.9,-47.6 L26.2,-44.9 L22.9,-29.1 L29.1,-22.9 L44.9,-26.2 L47.6,-20.9 L35.6,-10.1Z"/><circle cx="26.0" cy="0.0" r="3" class="gear__hole"/><circle cx="8.0" cy="24.7" r="3" class="gear__hole"/><circle cx="-21.0" cy="15.3" r="3" class="gear__hole"/><circle cx="-21.0" cy="-15.3" r="3" class="gear__hole"/><circle cx="8.0" cy="-24.7" r="3" class="gear__hole"/></g></g>
-                      <g transform="translate(97.3,262.7)"><g class="gear gear--sat gear--deportes"><path d="M37.0,-1.4 L51.7,5.2 L50.8,11.1 L34.7,12.7 L30.7,20.6 L38.8,34.6 L34.6,38.8 L20.6,30.7 L12.7,34.7 L11.1,50.8 L5.2,51.7 L-1.4,37.0 L-10.1,35.6 L-20.9,47.6 L-26.2,44.9 L-22.9,29.1 L-29.1,22.9 L-44.9,26.2 L-47.6,20.9 L-35.6,10.1 L-37.0,1.4 L-51.7,-5.2 L-50.8,-11.1 L-34.7,-12.7 L-30.7,-20.6 L-38.8,-34.6 L-34.6,-38.8 L-20.6,-30.7 L-12.7,-34.7 L-11.1,-50.8 L-5.2,-51.7 L1.4,-37.0 L10.1,-35.6 L20.9,-47.6 L26.2,-44.9 L22.9,-29.1 L29.1,-22.9 L44.9,-26.2 L47.6,-20.9 L35.6,-10.1Z"/><circle cx="26.0" cy="0.0" r="3" class="gear__hole"/><circle cx="8.0" cy="24.7" r="3" class="gear__hole"/><circle cx="-21.0" cy="15.3" r="3" class="gear__hole"/><circle cx="-21.0" cy="-15.3" r="3" class="gear__hole"/><circle cx="8.0" cy="-24.7" r="3" class="gear__hole"/></g></g>
-                      <g transform="translate(262.7,262.7)"><g class="gear gear--sat gear--cultura"><path d="M35.6,10.1 L47.6,20.9 L44.9,26.2 L29.1,22.9 L22.9,29.1 L26.2,44.9 L20.9,47.6 L10.1,35.6 L1.4,37.0 L-5.2,51.7 L-11.1,50.8 L-12.7,34.7 L-20.6,30.7 L-34.6,38.8 L-38.8,34.6 L-30.7,20.6 L-34.7,12.7 L-50.8,11.1 L-51.7,5.2 L-37.0,-1.4 L-35.6,-10.1 L-47.6,-20.9 L-44.9,-26.2 L-29.1,-22.9 L-22.9,-29.1 L-26.2,-44.9 L-20.9,-47.6 L-10.1,-35.6 L-1.4,-37.0 L5.2,-51.7 L11.1,-50.8 L12.7,-34.7 L20.6,-30.7 L34.6,-38.8 L38.8,-34.6 L30.7,-20.6 L34.7,-12.7 L50.8,-11.1 L51.7,-5.2 L37.0,1.4Z"/><circle cx="26.0" cy="0.0" r="3" class="gear__hole"/><circle cx="8.0" cy="24.7" r="3" class="gear__hole"/><circle cx="-21.0" cy="15.3" r="3" class="gear__hole"/><circle cx="-21.0" cy="-15.3" r="3" class="gear__hole"/><circle cx="8.0" cy="-24.7" r="3" class="gear__hole"/></g></g>
-                    </svg>
-                    <div class="home-hero__badge">
-                        <i class="bi bi-award-fill"></i>
-                        <span>Horas de<br>Bienestar</span>
+                <div class="home-hero__art" role="img" aria-label="Engranajes que representan los cuatro servicios de Bienestar funcionando juntos: Promoción y Prevención, Apoyo Psicosocial, Deportes y Arte y Cultura">
+                    <div class="home-hero__stage">
+                        <div class="home-hero__ring"></div>
+                        <svg class="home-hero__svg" viewBox="0 0 360 360" aria-hidden="true" focusable="false"><defs><linearGradient id="g-centro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fae50"/><stop offset="1" stop-color="#1b5a27"/></linearGradient><linearGradient id="g-promocion" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8bd18f"/><stop offset="1" stop-color="#3f9d49"/></linearGradient><linearGradient id="g-psicosocial" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#93d9cb"/><stop offset="1" stop-color="#2b9686"/></linearGradient><linearGradient id="g-deportes" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6cf7e"/><stop offset="1" stop-color="#d98f1f"/></linearGradient><linearGradient id="g-cultura" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c0e37a"/><stop offset="1" stop-color="#76a935"/></linearGradient><radialGradient id="g-luz" cx="32%" cy="26%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><g transform="translate(180.0,180.0)" class="gear-wrap"><g class="gear gear--centro"><circle r="79.2" fill="none"/><path d="M62.56,-7.40L79.08,-4.35L79.08,4.35L62.56,7.40A63.00,63.00 0 0 1 60.63,17.10L74.73,26.24L71.40,34.28L54.97,30.78A63.00,63.00 0 0 1 49.47,39.00L59.00,52.84L52.84,59.00L39.00,49.47A63.00,63.00 0 0 1 30.78,54.97L34.28,71.40L26.24,74.73L17.10,60.63A63.00,63.00 0 0 1 7.40,62.56L4.35,79.08L-4.35,79.08L-7.40,62.56A63.00,63.00 0 0 1 -17.10,60.63L-26.24,74.73L-34.28,71.40L-30.78,54.97A63.00,63.00 0 0 1 -39.00,49.47L-52.84,59.00L-59.00,52.84L-49.47,39.00A63.00,63.00 0 0 1 -54.97,30.78L-71.40,34.28L-74.73,26.24L-60.63,17.10A63.00,63.00 0 0 1 -62.56,7.40L-79.08,4.35L-79.08,-4.35L-62.56,-7.40A63.00,63.00 0 0 1 -60.63,-17.10L-74.73,-26.24L-71.40,-34.28L-54.97,-30.78A63.00,63.00 0 0 1 -49.47,-39.00L-59.00,-52.84L-52.84,-59.00L-39.00,-49.47A63.00,63.00 0 0 1 -30.78,-54.97L-34.28,-71.40L-26.24,-74.73L-17.10,-60.63A63.00,63.00 0 0 1 -7.40,-62.56L-4.35,-79.08L4.35,-79.08L7.40,-62.56A63.00,63.00 0 0 1 17.10,-60.63L26.24,-74.73L34.28,-71.40L30.78,-54.97A63.00,63.00 0 0 1 39.00,-49.47L52.84,-59.00L59.00,-52.84L49.47,-39.00A63.00,63.00 0 0 1 54.97,-30.78L71.40,-34.28L74.73,-26.24L60.63,-17.10A63.00,63.00 0 0 1 62.56,-7.40Z" fill="url(#g-centro)"/><circle r="54.2" class="gear__aro"/><circle cx="52.0" cy="0.0" r="4.4" class="gear__hole"/><circle cx="36.8" cy="36.8" r="4.4" class="gear__hole"/><circle cx="0.0" cy="52.0" r="4.4" class="gear__hole"/><circle cx="-36.8" cy="36.8" r="4.4" class="gear__hole"/><circle cx="-52.0" cy="0.0" r="4.4" class="gear__hole"/><circle cx="-36.8" cy="-36.8" r="4.4" class="gear__hole"/><circle cx="-0.0" cy="-52.0" r="4.4" class="gear__hole"/><circle cx="36.8" cy="-36.8" r="4.4" class="gear__hole"/></g><circle r="62.0" fill="url(#g-luz)" pointer-events="none"/></g><g transform="translate(97.3,97.3)" class="gear-wrap sv-promocion" data-servicio="promocion"><g class="gear gear--sat"><circle r="52.2" fill="none"/><path d="M34.57,10.04L48.41,19.52L44.25,27.69L28.45,22.06A36.00,36.00 0 0 1 22.06,28.45L27.69,44.25L19.52,48.41L10.04,34.57A36.00,36.00 0 0 1 1.13,35.98L-3.60,52.08L-12.66,50.64L-12.19,33.87A36.00,36.00 0 0 1 -20.24,29.77L-33.53,40.01L-40.01,33.53L-29.77,20.24A36.00,36.00 0 0 1 -33.87,12.19L-50.64,12.66L-52.08,3.60L-35.98,-1.13A36.00,36.00 0 0 1 -34.57,-10.04L-48.41,-19.52L-44.25,-27.69L-28.45,-22.06A36.00,36.00 0 0 1 -22.06,-28.45L-27.69,-44.25L-19.52,-48.41L-10.04,-34.57A36.00,36.00 0 0 1 -1.13,-35.98L3.60,-52.08L12.66,-50.64L12.19,-33.87A36.00,36.00 0 0 1 20.24,-29.77L33.53,-40.01L40.01,-33.53L29.77,-20.24A36.00,36.00 0 0 1 33.87,-12.19L50.64,-12.66L52.08,-3.60L35.98,1.13A36.00,36.00 0 0 1 34.57,10.04Z" fill="url(#g-promocion)"/><circle r="31.0" class="gear__aro"/><circle cx="27.2" cy="13.8" r="2.3" class="gear__hole"/><circle cx="-4.8" cy="30.1" r="2.3" class="gear__hole"/><circle cx="-30.1" cy="4.8" r="2.3" class="gear__hole"/><circle cx="-13.8" cy="-27.2" r="2.3" class="gear__hole"/><circle cx="21.6" cy="-21.6" r="2.3" class="gear__hole"/></g><circle r="35.0" fill="url(#g-luz)" pointer-events="none"/><circle r="55.2" class="gear__halo"/></g><g transform="translate(262.7,97.3)" class="gear-wrap sv-psicosocial" data-servicio="psicosocial"><g class="gear gear--sat"><circle r="52.2" fill="none"/><path d="M35.98,-1.13L52.08,3.60L50.64,12.66L33.87,12.19A36.00,36.00 0 0 1 29.77,20.24L40.01,33.53L33.53,40.01L20.24,29.77A36.00,36.00 0 0 1 12.19,33.87L12.66,50.64L3.60,52.08L-1.13,35.98A36.00,36.00 0 0 1 -10.04,34.57L-19.52,48.41L-27.69,44.25L-22.06,28.45A36.00,36.00 0 0 1 -28.45,22.06L-44.25,27.69L-48.41,19.52L-34.57,10.04A36.00,36.00 0 0 1 -35.98,1.13L-52.08,-3.60L-50.64,-12.66L-33.87,-12.19A36.00,36.00 0 0 1 -29.77,-20.24L-40.01,-33.53L-33.53,-40.01L-20.24,-29.77A36.00,36.00 0 0 1 -12.19,-33.87L-12.66,-50.64L-3.60,-52.08L1.13,-35.98A36.00,36.00 0 0 1 10.04,-34.57L19.52,-48.41L27.69,-44.25L22.06,-28.45A36.00,36.00 0 0 1 28.45,-22.06L44.25,-27.69L48.41,-19.52L34.57,-10.04A36.00,36.00 0 0 1 35.98,-1.13Z" fill="url(#g-psicosocial)"/><circle r="31.0" class="gear__aro"/><circle cx="30.1" cy="4.8" r="2.3" class="gear__hole"/><circle cx="4.8" cy="30.1" r="2.3" class="gear__hole"/><circle cx="-27.2" cy="13.8" r="2.3" class="gear__hole"/><circle cx="-21.6" cy="-21.6" r="2.3" class="gear__hole"/><circle cx="13.8" cy="-27.2" r="2.3" class="gear__hole"/></g><circle r="35.0" fill="url(#g-luz)" pointer-events="none"/><circle r="55.2" class="gear__halo"/></g><g transform="translate(97.3,262.7)" class="gear-wrap sv-deportes" data-servicio="deportes"><g class="gear gear--sat"><circle r="52.2" fill="none"/><path d="M35.98,-1.13L52.08,3.60L50.64,12.66L33.87,12.19A36.00,36.00 0 0 1 29.77,20.24L40.01,33.53L33.53,40.01L20.24,29.77A36.00,36.00 0 0 1 12.19,33.87L12.66,50.64L3.60,52.08L-1.13,35.98A36.00,36.00 0 0 1 -10.04,34.57L-19.52,48.41L-27.69,44.25L-22.06,28.45A36.00,36.00 0 0 1 -28.45,22.06L-44.25,27.69L-48.41,19.52L-34.57,10.04A36.00,36.00 0 0 1 -35.98,1.13L-52.08,-3.60L-50.64,-12.66L-33.87,-12.19A36.00,36.00 0 0 1 -29.77,-20.24L-40.01,-33.53L-33.53,-40.01L-20.24,-29.77A36.00,36.00 0 0 1 -12.19,-33.87L-12.66,-50.64L-3.60,-52.08L1.13,-35.98A36.00,36.00 0 0 1 10.04,-34.57L19.52,-48.41L27.69,-44.25L22.06,-28.45A36.00,36.00 0 0 1 28.45,-22.06L44.25,-27.69L48.41,-19.52L34.57,-10.04A36.00,36.00 0 0 1 35.98,-1.13Z" fill="url(#g-deportes)"/><circle r="31.0" class="gear__aro"/><circle cx="30.1" cy="4.8" r="2.3" class="gear__hole"/><circle cx="4.8" cy="30.1" r="2.3" class="gear__hole"/><circle cx="-27.2" cy="13.8" r="2.3" class="gear__hole"/><circle cx="-21.6" cy="-21.6" r="2.3" class="gear__hole"/><circle cx="13.8" cy="-27.2" r="2.3" class="gear__hole"/></g><circle r="35.0" fill="url(#g-luz)" pointer-events="none"/><circle r="55.2" class="gear__halo"/></g><g transform="translate(262.7,262.7)" class="gear-wrap sv-cultura" data-servicio="cultura"><g class="gear gear--sat"><circle r="52.2" fill="none"/><path d="M34.57,10.04L48.41,19.52L44.25,27.69L28.45,22.06A36.00,36.00 0 0 1 22.06,28.45L27.69,44.25L19.52,48.41L10.04,34.57A36.00,36.00 0 0 1 1.13,35.98L-3.60,52.08L-12.66,50.64L-12.19,33.87A36.00,36.00 0 0 1 -20.24,29.77L-33.53,40.01L-40.01,33.53L-29.77,20.24A36.00,36.00 0 0 1 -33.87,12.19L-50.64,12.66L-52.08,3.60L-35.98,-1.13A36.00,36.00 0 0 1 -34.57,-10.04L-48.41,-19.52L-44.25,-27.69L-28.45,-22.06A36.00,36.00 0 0 1 -22.06,-28.45L-27.69,-44.25L-19.52,-48.41L-10.04,-34.57A36.00,36.00 0 0 1 -1.13,-35.98L3.60,-52.08L12.66,-50.64L12.19,-33.87A36.00,36.00 0 0 1 20.24,-29.77L33.53,-40.01L40.01,-33.53L29.77,-20.24A36.00,36.00 0 0 1 33.87,-12.19L50.64,-12.66L52.08,-3.60L35.98,1.13A36.00,36.00 0 0 1 34.57,10.04Z" fill="url(#g-cultura)"/><circle r="31.0" class="gear__aro"/><circle cx="27.2" cy="13.8" r="2.3" class="gear__hole"/><circle cx="-4.8" cy="30.1" r="2.3" class="gear__hole"/><circle cx="-30.1" cy="4.8" r="2.3" class="gear__hole"/><circle cx="-13.8" cy="-27.2" r="2.3" class="gear__hole"/><circle cx="21.6" cy="-21.6" r="2.3" class="gear__hole"/></g><circle r="35.0" fill="url(#g-luz)" pointer-events="none"/><circle r="55.2" class="gear__halo"/></g></svg>
+                        <div class="home-hero__badge">
+                            <i class="bi bi-award-fill"></i>
+                            <span>Horas de<br>Bienestar</span>
+                        </div>
+                        <div class="home-hero__nodo sv-promocion" data-servicio="promocion" style="left:27.02%;top:27.02%"><i class="bi bi-heart-pulse-fill"></i></div>
+                        <div class="home-hero__nodo sv-psicosocial" data-servicio="psicosocial" style="left:72.98%;top:27.02%"><i class="bi bi-chat-heart-fill"></i></div>
+                        <div class="home-hero__nodo sv-deportes" data-servicio="deportes" style="left:27.02%;top:72.98%"><i class="bi bi-trophy-fill"></i></div>
+                        <div class="home-hero__nodo sv-cultura" data-servicio="cultura" style="left:72.98%;top:72.98%"><i class="bi bi-palette-fill"></i></div>
                     </div>
-                    <div class="home-hero__nodo" style="left:27.02%;top:27.02%"><i class="bi bi-heart-pulse-fill"></i></div>
-                    <div class="home-hero__chip" style="left:27.02%;top:7.85%">Salud</div>
-                    <div class="home-hero__nodo" style="left:72.98%;top:27.02%"><i class="bi bi-mortarboard-fill"></i></div>
-                    <div class="home-hero__chip" style="left:72.98%;top:7.85%">Asesorías</div>
-                    <div class="home-hero__nodo" style="left:27.02%;top:72.98%"><i class="bi bi-trophy-fill"></i></div>
-                    <div class="home-hero__chip" style="left:27.02%;top:92.15%">Deportes</div>
-                    <div class="home-hero__nodo" style="left:72.98%;top:72.98%"><i class="bi bi-palette-fill"></i></div>
-                    <div class="home-hero__chip" style="left:72.98%;top:92.15%">Cultura</div>
+                    <span class="hero-chip hero-chip--tl sv-promocion" data-servicio="promocion"><i class="bi bi-heart-pulse-fill"></i>Promoción y Prevención</span>
+                    <span class="hero-chip hero-chip--tr sv-psicosocial" data-servicio="psicosocial"><i class="bi bi-chat-heart-fill"></i>Apoyo Psicosocial</span>
+                    <span class="hero-chip hero-chip--bl sv-deportes" data-servicio="deportes"><i class="bi bi-trophy-fill"></i>Deportes</span>
+                    <span class="hero-chip hero-chip--br sv-cultura" data-servicio="cultura"><i class="bi bi-palette-fill"></i>Arte y Cultura</span>
                 </div>
             </div>
 
@@ -90,7 +91,8 @@ Be Time | Bienestar al Aprendiz - SENA
                 </h2>
 
                 <p class="lead text-muted">
-                    Be Time centraliza la gestión de los servicios ofrecidos por <span class="text-bt-verde underline"><strong>Bienestar al aprendiz</strong></span>, permitiendo consultar publicaciones, eventos y asesorías, ademas de
+                    Be Time centraliza la gestión de los servicios ofrecidos por Bienestar
+                    al Aprendiz, permitiendo consultar publicaciones, eventos y asesorías, y
                     administrar las horas de bienestar de manera organizada, trazable y segura.
                 </p>
 
@@ -118,7 +120,7 @@ Be Time | Bienestar al Aprendiz - SENA
 
                             <div class="home-card__media">
                                 {% if publicacion.imagen %}
-                                    <img src="{{ publicacion.imagen.url }}" alt="{{ publicacion.titulo }}">
+                                    <img src="{{ publicacion.imagen|miniatura }}" alt="{{ publicacion.titulo }}" loading="lazy" onerror="this.onerror=null;this.src='{{ publicacion.imagen.url }}'">
                                 {% else %}
                                     <i class="bi bi-image"></i>
                                 {% endif %}
@@ -166,7 +168,7 @@ Be Time | Bienestar al Aprendiz - SENA
                     <div class="home-evento">
 
                         {% if evento.imagen %}
-                            <img src="{{ evento.imagen.url }}" alt="" class="home-evento__img">
+                            <img src="{{ evento.imagen|miniatura }}" alt="" class="home-evento__img" loading="lazy" onerror="this.onerror=null;this.src='{{ evento.imagen.url }}'">
                         {% endif %}
 
                         <div class="home-evento__fecha">
@@ -204,50 +206,48 @@ Be Time | Bienestar al Aprendiz - SENA
 </section>
 
 <!-- ============ SERVICIOS DE BIENESTAR ============ -->
-<section class="home-section">
+<section class="home-section" id="servicios">
     <div class="container">
 
         <div class="text-center mb-5">
             <div class="home-section__eyebrow mb-2">Áreas de apoyo</div>
-            <h2 class="home-section__title mb-0">Servicios de bienestar</h2>
+            <h2 class="home-section__title mb-2">Servicios de bienestar</h2>
+            <p class="text-muted mb-0 mx-auto" style="max-width: 36rem;">
+                Cuatro frentes de trabajo que funcionan juntos para acompañarte durante tu formación.
+            </p>
         </div>
 
         <div class="row g-4">
-
-            <div class="col-6 col-lg-3">
-                <div class="home-servicio">
-                    <div class="home-servicio__icono">
-                        <i class="bi bi-heart-pulse-fill"></i>
-                    </div>
-                    <div class="fw-semibold">Salud</div>
-                </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <article class="servicio-card sv-promocion" data-servicio="promocion" tabindex="0">
+                    <div class="servicio-card__icono"><i class="bi bi-heart-pulse-fill"></i></div>
+                    <h3 class="servicio-card__titulo">Promoción y Prevención</h3>
+                    <p class="servicio-card__texto">Hábitos saludables, campañas y acciones para cuidar tu salud y prevenir riesgos.</p>
+                </article>
             </div>
 
-            <div class="col-6 col-lg-3">
-                <div class="home-servicio">
-                    <div class="home-servicio__icono">
-                        <i class="bi bi-mortarboard-fill"></i>
-                    </div>
-                    <div class="fw-semibold">Asesorías</div>
-                </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <article class="servicio-card sv-psicosocial" data-servicio="psicosocial" tabindex="0">
+                    <div class="servicio-card__icono"><i class="bi bi-chat-heart-fill"></i></div>
+                    <h3 class="servicio-card__titulo">Apoyo Psicosocial</h3>
+                    <p class="servicio-card__texto">Acompañamiento y orientación para tu bienestar emocional y tu permanencia en la formación.</p>
+                </article>
             </div>
 
-            <div class="col-6 col-lg-3">
-                <div class="home-servicio">
-                    <div class="home-servicio__icono">
-                        <i class="bi bi-trophy-fill"></i>
-                    </div>
-                    <div class="fw-semibold">Deportes</div>
-                </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <article class="servicio-card sv-deportes" data-servicio="deportes" tabindex="0">
+                    <div class="servicio-card__icono"><i class="bi bi-trophy-fill"></i></div>
+                    <h3 class="servicio-card__titulo">Deportes</h3>
+                    <p class="servicio-card__texto">Actividades deportivas y recreativas para mantenerte activo y compartir con tu grupo.</p>
+                </article>
             </div>
 
-            <div class="col-6 col-lg-3">
-                <div class="home-servicio">
-                    <div class="home-servicio__icono">
-                        <i class="bi bi-palette-fill"></i>
-                    </div>
-                    <div class="fw-semibold">Cultura</div>
-                </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <article class="servicio-card sv-cultura" data-servicio="cultura" tabindex="0">
+                    <div class="servicio-card__icono"><i class="bi bi-palette-fill"></i></div>
+                    <h3 class="servicio-card__titulo">Arte y Cultura</h3>
+                    <p class="servicio-card__texto">Espacios artísticos y culturales para expresar tu talento y ampliar tu mirada.</p>
+                </article>
             </div>
 
         </div>
@@ -263,4 +263,25 @@ Be Time | Bienestar al Aprendiz - SENA
     </div>
 </section>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Resalta a la vez el engranaje, el ícono, la etiqueta y la tarjeta del mismo servicio.
+    document.addEventListener("DOMContentLoaded", function () {
+        const todos = document.querySelectorAll("[data-servicio]");
+        function marcar(clave, activo) {
+            document.querySelectorAll('[data-servicio="' + clave + '"]').forEach(function (el) {
+                el.classList.toggle("is-activo", activo);
+            });
+        }
+        todos.forEach(function (el) {
+            const clave = el.dataset.servicio;
+            el.addEventListener("mouseenter", function () { marcar(clave, true); });
+            el.addEventListener("mouseleave", function () { marcar(clave, false); });
+            el.addEventListener("focus", function () { marcar(clave, true); });
+            el.addEventListener("blur", function () { marcar(clave, false); });
+        });
+    });
+</script>
 {% endblock %}
