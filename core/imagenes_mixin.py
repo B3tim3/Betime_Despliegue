@@ -1,5 +1,5 @@
 """
-Mixin para modelos con imágenes (Evento, Publicacion, MiembroBienestar).
+Mixin para modelos con imágenes (Actividad, Publicacion, MiembroBienestar).
 
 Al guardar:
   * Si se subió una imagen NUEVA -> se reduce/convierte a WebP y se crea su miniatura.

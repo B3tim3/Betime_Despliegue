@@ -13,10 +13,10 @@ from django.core.management.base import BaseCommand
 
 from bienestar.models import MiembroBienestar
 from core.services import imagenes
-from eventos.models import Evento
+from actividades.models import Actividad
 from publicaciones.models import Publicacion
 
-OBJETIVOS = [(Evento, "imagen"), (Publicacion, "imagen"), (MiembroBienestar, "foto")]
+OBJETIVOS = [(Actividad, "imagen"), (Publicacion, "imagen"), (MiembroBienestar, "foto")]
 
 
 def _mb(n):

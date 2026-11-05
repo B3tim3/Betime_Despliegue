@@ -17,7 +17,7 @@ Dar horas de bienestar por mérito | Be Time
 </div></div>
 
 {% if abiertas %}
-    <p class="text-muted">¿En cuál actividad le das las horas?</p>
+    <p class="text-muted">¿Por cuál motivo le das las horas?</p>
     <div class="list-group">
         {% for a in abiertas %}
             <form method="post" class="list-group-item d-flex justify-content-between align-items-center gap-2">
@@ -29,7 +29,7 @@ Dar horas de bienestar por mérito | Be Time
         {% endfor %}
     </div>
 {% else %}
-    <div class="alert alert-warning">No hay actividades abiertas. <a href="{% url 'bienestar:actividad_crear' %}">Crea una</a> primero.</div>
+    <div class="alert alert-warning">No hay motivos abiertos. <a href="{% url 'bienestar:actividad_crear' %}">Crea una</a> primero.</div>
 {% endif %}
 
 {% endblock %}

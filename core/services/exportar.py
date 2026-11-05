@@ -1,6 +1,6 @@
 """
 Utilidades compartidas para exportar cualquier listado del panel
-(Programas, Jornadas, Grupos, Aprendices, Eventos, Publicaciones...)
+(Programas, Jornadas, Grupos, Aprendices, Actividades, Publicaciones...)
 a Excel, Word o PDF, sin duplicar la lógica en cada vista.
 
 Los 3 formatos llevan el mismo "membrete" (logo, software, quién
@@ -45,7 +45,7 @@ def responder_export(request, nombre_archivo, titulo, encabezados, filas, url_er
     petición, tomado directo de request.user -- ninguna vista necesita
     pasarlo a mano, ya llega listo a los 3 formatos.
 
-    url_error: nombre de la url (con namespace, ej. "eventos:panel_lista")
+    url_error: nombre de la url (con namespace, ej. "actividades:panel_lista")
     a la que volver si el formato pedido no es válido.
     """
     formato = request.GET.get("formato")

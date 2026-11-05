@@ -14,12 +14,15 @@ estado). Se guardan juntas, en una transacción: o cambia todo o no cambia nada.
 import re
 
 from django import forms
+from django.db.models import Q
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
 from usuarios.choices import GENERO_CHOICES, TIPO_DOCUMENTO_CHOICES
 from usuarios.models import Aprendiz, Grupo
 from usuarios.models.aprendiz import ESTADO_CHOICES
+from usuarios.models.grupo import vigente_q
+from usuarios.validators import validar_numero_documento
 
 
 class AprendizPanelForm(forms.ModelForm):
@@ -84,12 +87,16 @@ class AprendizPanelForm(forms.ModelForm):
 
         # Cada opción de grupo muestra su programa y su jornada para no
         # equivocarse al reasignar (hay grupos con el mismo número en jornadas distintas).
+        # Solo grupos vigentes (más el que ya tiene el aprendiz, aunque haya terminado) para que
+        # la lista no crezca con los años.
         self.fields["grupo"].queryset = Grupo.objects.select_related(
             "programa_formacion", "jornada"
+        ).filter(
+            vigente_q() | Q(pk=self.instance.grupo_id)
         ).order_by("numero_grupo")
         self.fields["grupo"].label_from_instance = lambda g: (
             f"{g.numero_grupo} — {g.programa_formacion.nombre} · {g.jornada.nombre}"
-            + ("" if g.estado == "activa" else f" ({g.get_estado_display()})")
+            + ("" if g.esta_vigente else f" ({g.vigencia_etiqueta})")
         )
 
     # ---------- Validaciones ----------
@@ -101,9 +108,8 @@ class AprendizPanelForm(forms.ModelForm):
         return " ".join(self.cleaned_data["apellidos"].split())
 
     def clean_numero_documento(self):
-        numero = self.cleaned_data["numero_documento"].strip()
-        if not numero:
-            raise forms.ValidationError("Escribe el número de documento.")
+        tipo = self.cleaned_data.get("tipo_documento") or self.data.get(self.add_prefix("tipo_documento"))
+        numero = validar_numero_documento(tipo or None, self.cleaned_data["numero_documento"])
         Usuario = get_user_model()
         if Usuario.objects.filter(numero_documento=numero).exclude(pk=self.usuario.pk).exists():
             raise forms.ValidationError("Ya existe otra cuenta con este número de documento.")

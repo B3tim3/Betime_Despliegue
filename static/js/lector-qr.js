@@ -1,5 +1,5 @@
 /*
- * Lector de QR de Be Time (lo usan el escáner de eventos y el de actividades por mérito).
+ * Lector de QR de Be Time (lo usan el escáner de actividades y el de actividades por mérito).
  *
  * Por qué existe: el widget "Html5QrcodeScanner" que se usaba antes mostraba su propia
  * pantalla de permisos y un selector de cámara que había que tocar cada vez (y en el

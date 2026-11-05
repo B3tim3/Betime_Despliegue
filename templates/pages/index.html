@@ -28,9 +28,8 @@ Be Time | Bienestar al Aprendiz - SENA
                 </h1>
 
                 <p class="home-hero__lead mb-4">
-                    La plataforma para gestionar el Bienestar al Aprendiz del Servicio Nacional
-                    de Aprendizaje: consulta publicaciones, inscríbete a eventos y lleva el
-                    control de tus horas de bienestar en un solo lugar.
+                    Esta es la plataforma virtual del equipo de Bienestar al Aprendiz, en la que
+                    podrás gestionar tus horas de bienestar de la mejor forma.
                 </p>
 
                 <div class="d-flex flex-wrap gap-3">
@@ -92,7 +91,7 @@ Be Time | Bienestar al Aprendiz - SENA
 
                 <p class="lead text-muted">
                     Be Time centraliza la gestión de los servicios ofrecidos por Bienestar
-                    al Aprendiz, permitiendo consultar publicaciones, eventos y asesorías, y
+                    al Aprendiz, permitiendo consultar publicaciones, actividades y asesorías, y
                     administrar las horas de bienestar de manera organizada, trazable y segura.
                 </p>
 
@@ -151,40 +150,40 @@ Be Time | Bienestar al Aprendiz - SENA
     </div>
 </section>
 
-<!-- ============ PRÓXIMOS EVENTOS ============ -->
-<section id="eventos" class="home-section bg-bt-alt">
+<!-- ============ PRÓXIMOS ACTIVIDADES ============ -->
+<section id="actividades" class="home-section bg-bt-alt">
     <div class="container">
 
         <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
             <div>
                 <div class="home-section__eyebrow mb-1">Agenda</div>
-                <h2 class="home-section__title mb-0">Próximos eventos</h2>
+                <h2 class="home-section__title mb-0">Próximas actividades</h2>
             </div>
         </div>
 
-        {% if eventos %}
+        {% if actividades %}
             <div class="mb-4">
-                {% for evento in eventos %}
-                    <div class="home-evento">
+                {% for actividad in actividades %}
+                    <div class="home-actividad">
 
-                        {% if evento.imagen %}
-                            <img src="{{ evento.imagen|miniatura }}" alt="" class="home-evento__img" loading="lazy" onerror="this.onerror=null;this.src='{{ evento.imagen.url }}'">
+                        {% if actividad.imagen %}
+                            <img src="{{ actividad.imagen|miniatura }}" alt="" class="home-actividad__img" loading="lazy" onerror="this.onerror=null;this.src='{{ actividad.imagen.url }}'">
                         {% endif %}
 
-                        <div class="home-evento__fecha">
-                            <span class="dia">{{ evento.fecha_inicio|date:"d" }}</span>
-                            <span class="mes">{{ evento.fecha_inicio|date:"M" }}</span>
+                        <div class="home-actividad__fecha">
+                            <span class="dia">{{ actividad.fecha_inicio|date:"d" }}</span>
+                            <span class="mes">{{ actividad.fecha_inicio|date:"M" }}</span>
                         </div>
 
                         <div class="flex-grow-1">
-                            <div class="fw-semibold">{{ evento.titulo }}</div>
+                            <div class="fw-semibold">{{ actividad.titulo }}</div>
                             <div class="text-muted small">
-                                <i class="bi bi-geo-alt"></i> {{ evento.lugar }}
+                                <i class="bi bi-geo-alt"></i> {{ actividad.lugar }}
                             </div>
                         </div>
 
-                        <div class="home-evento__horas">
-                            {{ evento.horas_otorgadas }} horas
+                        <div class="home-actividad__horas">
+                            {{ actividad.horas_otorgadas }} horas
                         </div>
 
                     </div>
@@ -192,13 +191,13 @@ Be Time | Bienestar al Aprendiz - SENA
             </div>
 
             <div class="text-center">
-                <a href="{% url 'eventos:lista' %}" class="btn btn-outline-success">
+                <a href="{% url 'actividades:lista' %}" class="btn btn-outline-success">
                     Ver todos
                 </a>
             </div>
         {% else %}
             <div class="home-card p-4 text-center text-muted">
-                No hay eventos programados por el momento.
+                No hay actividades programadas por el momento.
             </div>
         {% endif %}
 

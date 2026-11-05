@@ -6,8 +6,8 @@ resto del proyecto sigan usando `from usuarios import views` / `views.nombre` si
 """
 
 from .autenticacion import (  # noqa: F401
-    jornadas_por_programa,
     grupos_por_programa,
+    grupo_por_numero,
     registro_aprendiz,
     login_view,
     logout_view,
@@ -56,8 +56,8 @@ from .exportaciones import (  # noqa: F401
 )
 
 __all__ = [
-    "jornadas_por_programa",
     "grupos_por_programa",
+    "grupo_por_numero",
     "registro_aprendiz",
     "login_view",
     "logout_view",

@@ -1,5 +1,5 @@
 """
-Vistas de las horas de bienestar por mérito (fuera de eventos).
+Vistas de las horas de bienestar por mérito (fuera de actividades).
 
 Aprendiz:  "Recibir horas de bienestar por mérito" -> ingresa un código o muestra su QR.
 Bienestar: crea la actividad, comparte el código, asigna horas con checklist
@@ -20,7 +20,7 @@ from bienestar.models import ActividadExtracurricular, ParticipacionExtracurricu
 from bienestar.services import extracurriculares as svc
 from core.services import periodos
 from core.services.auditoria import registrar as auditar
-from eventos.services.qr import generar_imagen_qr
+from actividades.services.qr import generar_imagen_qr
 from usuarios.decorators import personal_bienestar_requerido
 from usuarios.models import Aprendiz
 
@@ -97,7 +97,7 @@ def _solo_personal(request, destino):
     """Administrador puede MIRAR, pero las horas las asigna Personal de Bienestar."""
     if hasattr(request.user, "personal_bienestar"):
         return None
-    messages.error(request, "Solo Personal de Bienestar puede crear actividades y asignar horas.")
+    messages.error(request, "Solo Personal de Bienestar puede crear motivos y asignar horas.")
     return redirect(destino)
 
 
@@ -111,17 +111,17 @@ def actividad_crear(request):
         actividad = form.save(commit=False)
         actividad.creado_por = request.user.personal_bienestar
         actividad.save()
-        messages.success(request, f"Actividad creada. El código para los aprendices es {actividad.codigo}.")
+        messages.success(request, f"Listo. El código para los aprendices es {actividad.codigo}.")
         return redirect("bienestar:actividad_detalle", actividad_id=actividad.id)
     return render(request, "bienestar/extracurriculares/form.html", {
-        "form": form, "titulo_pagina": "Crear actividad por mérito"})
+        "form": form, "titulo_pagina": "Nuevo motivo de horas por mérito"})
 
 
 @personal_bienestar_requerido
 def actividad_editar(request, actividad_id):
     actividad = get_object_or_404(ActividadExtracurricular, id=actividad_id)
     if not hasattr(request.user, "personal_bienestar"):
-        messages.error(request, "Solo Personal de Bienestar puede editar actividades.")
+        messages.error(request, "Solo Personal de Bienestar puede editar motivos.")
         return redirect("bienestar:actividad_detalle", actividad_id=actividad.id)
     form = ActividadExtracurricularForm(request.POST or None, instance=actividad)
     if request.method == "POST" and form.is_valid():
@@ -129,7 +129,7 @@ def actividad_editar(request, actividad_id):
         messages.success(request, "Actividad actualizada. Las horas ya otorgadas no cambian.")
         return redirect("bienestar:actividad_detalle", actividad_id=actividad.id)
     return render(request, "bienestar/extracurriculares/form.html", {
-        "form": form, "titulo_pagina": "Editar actividad por mérito", "actividad": actividad})
+        "form": form, "titulo_pagina": "Editar motivo de horas por mérito", "actividad": actividad})
 
 
 @personal_bienestar_requerido
@@ -137,12 +137,12 @@ def actividad_editar(request, actividad_id):
 def actividad_estado(request, actividad_id):
     actividad = get_object_or_404(ActividadExtracurricular, id=actividad_id)
     if not hasattr(request.user, "personal_bienestar"):
-        messages.error(request, "Solo Personal de Bienestar puede abrir o cerrar actividades.")
+        messages.error(request, "Solo Personal de Bienestar puede abrir o cerrar motivos.")
         return redirect("bienestar:actividad_detalle", actividad_id=actividad.id)
     actividad.estado = "cerrada" if actividad.abierta else "abierta"
     actividad.save(update_fields=["estado"])
-    messages.success(request, "Actividad cerrada: ya no recibe participantes." if not actividad.abierta
-                     else "Actividad reabierta.")
+    messages.success(request, "Motivo cerrado: ya no recibe participantes." if not actividad.abierta
+                     else "Motivo reabierto.")
     return redirect("bienestar:actividad_detalle", actividad_id=actividad.id)
 
 
@@ -151,12 +151,12 @@ def actividad_estado(request, actividad_id):
 def actividad_eliminar(request, actividad_id):
     actividad = get_object_or_404(ActividadExtracurricular, id=actividad_id)
     if not hasattr(request.user, "personal_bienestar"):
-        messages.error(request, "Solo Personal de Bienestar puede eliminar actividades.")
+        messages.error(request, "Solo Personal de Bienestar puede eliminar motivos.")
         return redirect("bienestar:actividad_detalle", actividad_id=actividad.id)
     if actividad.participaciones.filter(horas__isnull=False).exists():
         messages.error(
             request,
-            "Esta actividad ya dio horas y es parte del historial de los aprendices, no se puede "
+            "Este motivo ya dio horas y es parte del historial de los aprendices, no se puede "
             "eliminar. Ciérrala para que no reciba más participantes.")
         return redirect("bienestar:actividad_detalle", actividad_id=actividad.id)
     try:
@@ -200,7 +200,7 @@ def actividad_detalle(request, actividad_id):
             horas = int(texto) if texto.isdigit() else actividad.horas
             horas = max(1, min(horas, 40))
 
-            # Misma idea que el checklist de eventos: la fila trae cómo estaba al
+            # Misma idea que el checklist de actividades: la fila trae cómo estaba al
             # abrir la página; si no se tocó se salta, para no pisar lo que otra
             # persona hizo con el QR mientras tanto.
             inicial = request.POST.get(f"inicial_{p.id}")
@@ -243,7 +243,7 @@ def actividad_agregar(request, actividad_id):
     if aprendiz is None:
         messages.error(request, "No hay ningún aprendiz con ese número de documento.")
     elif not actividad.abierta:
-        messages.error(request, "La actividad está cerrada. Reábrela para agregar participantes.")
+        messages.error(request, "Este motivo está cerrado. Reábrelo para agregar participantes.")
     else:
         _, creada = ParticipacionExtracurricular.objects.get_or_create(
             actividad=actividad, aprendiz=aprendiz, defaults={"metodo": "manual"})
@@ -286,7 +286,7 @@ def actividad_qr_rapido(request, actividad_id):
 
     if not actividad.abierta:
         return JsonResponse({"ok": False, "estado": "rechazado", **datos,
-                             "mensaje": "La actividad está cerrada."}, status=409)
+                             "mensaje": "Este motivo está cerrado."}, status=409)
 
     _, cambio = svc.otorgar_horas(
         actividad=actividad, aprendiz=aprendiz, horas=actividad.horas,
@@ -319,7 +319,7 @@ def extracurricular_qr(request, token):
             return redirect("bienestar:extracurricular_qr", token=token)
         actividad = abiertas.filter(pk=request.POST.get("actividad") or 0).first()
         if actividad is None:
-            messages.error(request, "Elige una actividad abierta.")
+            messages.error(request, "Elige un motivo abierto.")
             return redirect("bienestar:extracurricular_qr", token=token)
         _, cambio = svc.otorgar_horas(
             actividad=actividad, aprendiz=aprendiz, horas=actividad.horas,

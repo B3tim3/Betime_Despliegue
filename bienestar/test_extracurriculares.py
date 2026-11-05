@@ -14,7 +14,7 @@ from bienestar.services import extracurriculares as svc
 from bienestar.services.constancia import emitir_constancia, generar_pdf_constancia
 from bienestar.services.historial import historial_extracurricular_de
 from bienestar.services.progreso import horas_de, total_horas_de
-from eventos.models import Evento, Inscripcion
+from actividades.models import Actividad, Inscripcion
 from notificaciones.models import Notificacion
 from usuarios.models import (
     Aprendiz, Grupo, Jornada, NivelFormacion, PersonalBienestar, ProgramaFormacion, Usuario,
@@ -196,18 +196,18 @@ class QrTests(Base):
 
 class ConteoUnificadoTests(Base):
 
-    def _evento_con_horas(self, horas):
+    def _actividad_con_horas(self, horas):
         ini = timezone.now() - timedelta(days=3)
-        ev = Evento.objects.create(
+        ev = Actividad.objects.create(
             titulo="Yoga", lugar="X", horas_otorgadas=horas, creado_por=self.u_personal,
             fecha_inicio=ini, fecha_fin=ini + timedelta(hours=2))
-        ins = Inscripcion.objects.create(evento=ev, aprendiz=self.ap)
+        ins = Inscripcion.objects.create(actividad=ev, aprendiz=self.ap)
         from bienestar.services.asistencia import registrar_asistencia_y_horas
         registrar_asistencia_y_horas(inscripcion=ins, asistio=True, cantidad_horas=horas,
                                      motivo="x", asignado_por=self.personal)
 
-    def test_suma_eventos_y_extracurriculares(self):
-        self._evento_con_horas(4)
+    def test_suma_actividades_y_extracurriculares(self):
+        self._actividad_con_horas(4)
         svc.otorgar_horas(actividad=self.act, aprendiz=self.ap, horas=2,
                           asignado_por=self.personal, metodo="qr")
         self.assertEqual(total_horas_de(self.ap), 6)

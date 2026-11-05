@@ -38,7 +38,7 @@ def validar_peso(archivo):
 
 
 def nombre_mini(nombre):
-    """'eventos/foto.webp' -> 'eventos/foto_mini.webp'."""
+    """'actividades/foto.webp' -> 'actividades/foto_mini.webp'."""
     raiz, _ = os.path.splitext(nombre)
     return f"{raiz}_mini.webp"
 

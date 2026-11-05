@@ -2,6 +2,8 @@
 Catálogos de formación: programas, niveles, jornadas y grupos (listar, crear, editar, eliminar).
 """
 
+from urllib.parse import urlencode
+
 from django.contrib import messages
 from django.db.models import Count
 from django.db.models.deletion import ProtectedError
@@ -18,6 +20,7 @@ from usuarios.forms import (
 )
 from usuarios.mixins import AdministradorRequeridoMixin, PersonalBienestarRequeridoMixin
 from usuarios.models import Grupo, Jornada, NivelFormacion, ProgramaFormacion
+from usuarios.services.grupos import filtrar_grupos
 
 
 # ==========================================================
@@ -232,39 +235,65 @@ class JornadaDeleteView(EliminarProtegidoMixin, AdministradorRequeridoMixin, Del
 # filtra y se agrega al contexto para la miga de pan y la exportación.
 
 class GrupoListView(PersonalBienestarRequeridoMixin, ListView):
+    """
+    Dos pestañas para que la lista de trabajo siga corta con los años:
+      · Vigentes (por defecto): grupos que no se han cerrado y cuya fecha de fin no pasó.
+      · Historial: los que terminaron o se cerraron, con búsqueda, año y paginación.
+    """
     model = Grupo
     template_name = "usuarios/grupos_list.html"
     context_object_name = "grupos"
     paginate_by = 15
 
     def get_queryset(self):
-        queryset = Grupo.objects.select_related(
-            "programa_formacion", "jornada"
-        ).order_by("-fecha_creacion")
-
-        programa_id = self.kwargs.get("programa_id")
-        if programa_id:
-            queryset = queryset.filter(programa_formacion_id=programa_id)
-
-        jornada_id = self.kwargs.get("jornada_id")
-        if jornada_id:
-            queryset = queryset.filter(jornada_id=jornada_id)
-
-        return queryset
+        grupos, self.vista = filtrar_grupos(
+            self.request.GET,
+            programa_id=self.kwargs.get("programa_id"),
+            jornada_id=self.kwargs.get("jornada_id"),
+        )
+        return grupos
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
+        params = self.request.GET
         programa_id = self.kwargs.get("programa_id")
+        jornada_id = self.kwargs.get("jornada_id")
+
+        base = Grupo.objects.all()
+        if programa_id:
+            base = base.filter(programa_formacion_id=programa_id)
+        if jornada_id:
+            base = base.filter(jornada_id=jornada_id)
+
+        historial = base.historial()
+        context["vista"] = self.vista
+        context["total_vigentes"] = base.vigentes().count()
+        context["total_historial"] = historial.count()
+        context["anios"] = sorted(
+            {f.year for f in historial.dates("fecha_fin", "year")}, reverse=True
+        )
+        context["q"] = (params.get("q") or "").strip()
+        context["anio"] = params.get("anio", "")
+        context["estado_filtro"] = params.get("estado", "")
+
+        # Para que la paginación y la exportación conserven pestaña, búsqueda y año.
+        filtros = {"vista": self.vista, "q": context["q"]}
+        if self.vista == "historial":
+            filtros["anio"] = context["anio"]
+            filtros["estado"] = context["estado_filtro"]
+        filtros = {k: v for k, v in filtros.items() if v}
+        context["extra_query"] = ("&" + urlencode(filtros)) if filtros else ""
+
+        extra = []
         if programa_id:
             context["programa"] = get_object_or_404(ProgramaFormacion, pk=programa_id)
-            context["export_extra_params"] = f"programa_id={programa_id}"
-
-        jornada_id = self.kwargs.get("jornada_id")
+            extra.append(f"programa_id={programa_id}")
         if jornada_id:
             context["jornada"] = get_object_or_404(Jornada, pk=jornada_id)
-            context["export_extra_params"] = f"jornada_id={jornada_id}"
-
+            extra.append(f"jornada_id={jornada_id}")
+        if filtros:
+            extra.append(urlencode(filtros))
+        context["export_extra_params"] = "&".join(extra)
         return context
 
 
