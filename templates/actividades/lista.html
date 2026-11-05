@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load imagenes %}
+
+{% block title %}
+Actividades | Be Time
+{% endblock %}
+
+{% block content %}
+
+<section class="home-section">
+    <div class="container">
+
+        <div class="mb-4">
+            <div class="home-section__eyebrow mb-1">Agenda</div>
+            <h1 class="home-section__title mb-0">Próximas actividades</h1>
+        </div>
+
+        {% if actividades %}
+            <div>
+                {% for actividad in actividades %}
+                    <a href="{% url 'actividades:detalle' actividad.id %}" class="text-decoration-none text-reset">
+                        <div class="home-actividad">
+
+                            {% if actividad.imagen %}
+                                <img src="{{ actividad.imagen|miniatura }}" alt="" class="home-actividad__img" loading="lazy" onerror="this.onerror=null;this.src='{{ actividad.imagen.url }}'">
+                            {% endif %}
+
+                            <div class="home-actividad__fecha">
+                                <span class="dia">{{ actividad.fecha_inicio|date:"d" }}</span>
+                                <span class="mes">{{ actividad.fecha_inicio|date:"M" }}</span>
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">{{ actividad.titulo }}</div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-geo-alt"></i> {{ actividad.lugar }}
+                                </div>
+                            </div>
+
+                            <div class="home-actividad__horas">
+                                {{ actividad.horas_otorgadas }} horas
+                                {% if actividad.cupo_maximo %}
+                                    <span class="d-block small {% if actividad.esta_lleno %}text-danger fw-semibold{% else %}text-muted{% endif %}">
+                                        {% if actividad.esta_lleno %}Cupos agotados{% else %}{{ actividad.cupos_disponibles }} cupo{{ actividad.cupos_disponibles|pluralize }}{% endif %}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="home-card p-4 text-center text-muted">
+                No hay actividades programadas por el momento.
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}

@@ -1,7 +1,7 @@
 """
 Periodos de los paneles: un periodo = un AÑO calendario (sin configuración).
 
-Para qué sirve: los paneles (eventos, publicaciones, actividades) muestran por defecto
+Para qué sirve: los paneles (actividades, publicaciones, actividades) muestran por defecto
 SOLO el año vigente, así la consulta trabaja sobre unos cientos de filas aunque la tabla
 acumule años de historia. Cuando llega el 1 de enero el año nuevo aparece solo, por la
 fecha: no hay nada que crear ni mantener. Quien necesite lo viejo lo elige en el selector.

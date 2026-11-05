@@ -16,7 +16,7 @@ urlpatterns = [
     path("nosotros/panel/crear/", views.crear_miembro, name="crear_miembro"),
     path("nosotros/panel/<int:miembro_id>/editar/", views.editar_miembro, name="editar_miembro"),
     path("nosotros/panel/<int:miembro_id>/eliminar/", views.eliminar_miembro, name="eliminar_miembro"),
-    # Horas de bienestar por mérito (fuera de eventos)
+    # Horas de bienestar por mérito (fuera de actividades)
     path("extracurriculares/recibir/", extra.recibir_extracurriculares, name="recibir_extracurriculares"),
     path("extracurriculares/mi-qr/imagen/", extra.qr_extracurricular_imagen, name="qr_extracurricular_imagen"),
     path("extracurriculares/qr/<str:token>/", extra.extracurricular_qr, name="extracurricular_qr"),

@@ -1,11 +1,11 @@
 """
-Recordatorios de eventos: avisa (campanita + correo) a los aprendices
-inscritos en eventos que empiezan pronto.
+Recordatorios de actividades: avisa (campanita + correo) a los aprendices
+inscritos en actividades que empiezan pronto.
 
 Cada inscripción se recuerda UNA sola vez (campo recordatorio_enviado),
 así que es seguro ejecutar esto cada hora, cada día o varias veces al
-día: nunca repite un aviso. Si el evento cambia de fecha, el campo se
-reinicia (ver eventos/services/avisos.py) y el aprendiz recibe un
+día: nunca repite un aviso. Si la actividad cambia de fecha, el campo se
+reinicia (ver actividades/services/avisos.py) y el aprendiz recibe un
 recordatorio nuevo para la fecha nueva.
 """
 
@@ -17,8 +17,8 @@ from django.conf import settings
 from django.core.mail import EmailMessage, get_connection
 from django.utils import timezone
 
-from eventos.models import Inscripcion
-from eventos.services.estados import sincronizar_estados
+from actividades.models import Inscripcion
+from actividades.services.estados import sincronizar_estados
 from notificaciones.services import notificar
 
 logger = logging.getLogger(__name__)
@@ -33,19 +33,19 @@ def _cuando(fecha):
 
 
 def _cuerpo_correo(inscripcion):
-    evento = inscripcion.evento
+    actividad = inscripcion.actividad
     nombre = inscripcion.aprendiz.usuario.nombres
     sitio = os.environ.get("SITE_URL", "").rstrip("/")
-    enlace = f"\n\nVer el evento: {sitio}/eventos/{evento.id}/" if sitio else ""
+    enlace = f"\n\nVer la actividad: {sitio}/actividades/{actividad.id}/" if sitio else ""
     horas = (
-        f"\nHoras de bienestar que otorga: {evento.horas_otorgadas}"
-        if evento.horas_otorgadas else ""
+        f"\nHoras de bienestar que otorga: {actividad.horas_otorgadas}"
+        if actividad.horas_otorgadas else ""
     )
     return (
         f"Hola, {nombre}.\n\n"
-        f"Te recordamos que estás inscrito en el evento \"{evento.titulo}\".\n\n"
-        f"Cuándo: {_cuando(evento.fecha_inicio)}\n"
-        f"Dónde: {evento.lugar}"
+        f"Te recordamos que estás inscrito en la actividad \"{actividad.titulo}\".\n\n"
+        f"Cuándo: {_cuando(actividad.fecha_inicio)}\n"
+        f"Dónde: {actividad.lugar}"
         f"{horas}\n\n"
         f"Recuerda llevar tu código QR (lo encuentras en Be Time, en \"Mis inscripciones\") "
         f"para registrar tu asistencia. Si ya no puedes asistir, cancela tu inscripción "
@@ -56,7 +56,7 @@ def _cuerpo_correo(inscripcion):
 
 def enviar_recordatorios(horas=HORAS_POR_DEFECTO, ahora=None, enviar_correo=True):
     """
-    Busca las inscripciones activas de eventos programados que empiezan
+    Busca las inscripciones activas de actividades programados que empiezan
     dentro de las próximas `horas` horas y todavía no se han recordado.
 
     Devuelve un diccionario con el resumen:
@@ -73,10 +73,10 @@ def enviar_recordatorios(horas=HORAS_POR_DEFECTO, ahora=None, enviar_correo=True
         Inscripcion.objects.filter(
             estado="inscrito",
             recordatorio_enviado=False,
-            evento__estado="programado",
-            evento__fecha_inicio__gt=ahora,
-            evento__fecha_inicio__lte=limite,
-        ).select_related("evento", "aprendiz__usuario").order_by("evento__fecha_inicio")
+            actividad__estado="programado",
+            actividad__fecha_inicio__gt=ahora,
+            actividad__fecha_inicio__lte=limite,
+        ).select_related("actividad", "aprendiz__usuario").order_by("actividad__fecha_inicio")
     )
 
     resumen = {"recordatorios": 0, "correos": 0, "sin_correo": 0, "fallidos": 0}
@@ -86,15 +86,15 @@ def enviar_recordatorios(horas=HORAS_POR_DEFECTO, ahora=None, enviar_correo=True
     conexion = get_connection() if enviar_correo else None
 
     for insc in pendientes:
-        evento = insc.evento
+        actividad = insc.actividad
         usuario = insc.aprendiz.usuario
 
         notificar(
             usuario,
-            f"Recordatorio: {evento.titulo}",
-            f"Tu evento empieza el {_cuando(evento.fecha_inicio)} en {evento.lugar}. "
+            f"Recordatorio: {actividad.titulo}",
+            f"Tu actividad empieza el {_cuando(actividad.fecha_inicio)} en {actividad.lugar}. "
             f"Lleva tu código QR para registrar la asistencia.",
-            url=f"/eventos/{evento.id}/",
+            url=f"/actividades/{actividad.id}/",
             tipo="recordatorio",
         )
         resumen["recordatorios"] += 1
@@ -105,7 +105,7 @@ def enviar_recordatorios(horas=HORAS_POR_DEFECTO, ahora=None, enviar_correo=True
             else:
                 try:
                     EmailMessage(
-                        subject=f"Recordatorio: {evento.titulo}",
+                        subject=f"Recordatorio: {actividad.titulo}",
                         body=_cuerpo_correo(insc),
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         to=[usuario.email],

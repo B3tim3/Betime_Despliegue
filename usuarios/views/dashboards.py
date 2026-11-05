@@ -10,8 +10,8 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from bienestar.services.progreso import calcular_progreso, horas_de
-from eventos.models import Evento, Inscripcion
-from eventos.services.estados import sincronizar_estados
+from actividades.models import Actividad, Inscripcion
+from actividades.services.estados import sincronizar_estados
 from publicaciones.models import Publicacion
 from usuarios.models import Aprendiz
 
@@ -46,30 +46,30 @@ def dashboard_aprendiz(request):
 
     aprendiz = request.user.aprendiz
 
-    # Solo cuentan las horas de eventos con asistencia marcada como "asistió"
+    # Solo cuentan las horas de actividades con asistencia marcada como "asistió"
     # (misma regla que el historial y la constancia en PDF).
     horas = horas_de(aprendiz).select_related(
-        "asistencia__inscripcion__evento", "participacion__actividad"
+        "asistencia__inscripcion__actividad", "participacion__actividad"
     ).order_by("-fecha")
 
     total_horas = horas.aggregate(total=Sum("cantidad_horas"))["total"] or 0
 
     inscripciones = Inscripcion.objects.filter(
         aprendiz=aprendiz
-    ).select_related("evento").order_by("-fecha_inscripcion")
+    ).select_related("actividad").order_by("-fecha_inscripcion")
 
-    # Eventos abiertos a los que todavía no está inscrito (una inscripción
+    # Actividades abiertos a los que todavía no está inscrito (una inscripción
     # cancelada no cuenta: puede volver a inscribirse).
-    proximos_eventos = Evento.objects.filter(
+    proximas_actividades = Actividad.objects.filter(
         estado="programado", fecha_inicio__gt=timezone.now()
     ).exclude(
         id__in=Inscripcion.objects.filter(aprendiz=aprendiz).exclude(
             estado="cancelada"
-        ).values("evento_id")
+        ).values("actividad_id")
     ).order_by("fecha_inicio")[:6]
 
     return render(request, "dashboard/aprendiz.html", {
-        "proximos_eventos": proximos_eventos,
+        "proximas_actividades": proximas_actividades,
         "aprendiz": aprendiz,
         "horas": horas,
         "total_horas": total_horas,
@@ -79,14 +79,14 @@ def dashboard_aprendiz(request):
 
 
 def _resumen_del_panel():
-    """Números y próximos eventos que se ven en el inicio de Bienestar y del administrador."""
+    """Números y próximas actividades que se ven en el inicio de Bienestar y del administrador."""
     sincronizar_estados()
-    vigentes = Evento.objects.filter(estado__in=["programado", "en_curso"])
+    vigentes = Actividad.objects.filter(estado__in=["programado", "en_curso"])
     return {
         "total_aprendices_activos": Aprendiz.objects.filter(estado="activo").count(),
-        "total_eventos_vigentes": vigentes.count(),
+        "total_actividades_vigentes": vigentes.count(),
         "total_publicaciones": Publicacion.objects.filter(estado="publicado").count(),
-        "eventos_vigentes": vigentes.annotate(
+        "actividades_vigentes": vigentes.annotate(
             total_inscritos=Count("inscripciones", filter=~Q(inscripciones__estado="cancelada"))
         ).order_by("fecha_inicio")[:5],
     }

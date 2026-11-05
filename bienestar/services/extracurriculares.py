@@ -1,8 +1,8 @@
 """
-Horas de bienestar por mérito: horas de bienestar que se dan FUERA de los eventos
+Horas de bienestar por mérito: horas de bienestar que se dan FUERA de las actividades
 (por portar bien el uniforme, prestar atención en una charla, etc.).
 
-Reglas (iguales a las de los eventos para que se sientan parecidas):
+Reglas (iguales a las de las actividades para que se sientan parecidas):
   * Una participación = un aprendiz dentro de una actividad (único).
   * Dar horas dos veces no duplica nada: se actualiza el mismo registro.
   * Quitar las horas NO borra el registro (queda el historial); simplemente
@@ -66,7 +66,7 @@ def unirse_con_codigo(aprendiz, codigo):
     if actividad is None:
         raise ExtracurricularError("Ese código no existe. Revísalo e inténtalo de nuevo.")
     if not actividad.abierta:
-        raise ExtracurricularError("Esa actividad ya está cerrada, no recibe más participantes.")
+        raise ExtracurricularError("Ese motivo ya está cerrado, no recibe más participantes.")
 
     participacion, creada = ParticipacionExtracurricular.objects.get_or_create(
         actividad=actividad, aprendiz=aprendiz, defaults={"metodo": "codigo"},

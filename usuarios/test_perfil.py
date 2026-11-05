@@ -217,7 +217,8 @@ class PersonalBienestarCambiaElGrupoTests(PerfilBase):
         self.client.force_login(self.bienestar)
         r = self.client.get(self.url_editar)
         self.assertContains(r, "3171693 — Análisis y Desarrollo de Software · Diurna")
-        self.assertContains(r, "3000000 — Análisis y Desarrollo de Software · Nocturna (Cerrado)")
+        # Los grupos cerrados no se ofrecen: la lista no debe crecer con los años.
+        self.assertNotContains(r, "3000000 — Análisis y Desarrollo de Software · Nocturna")
 
     def test_la_pantalla_dice_a_quien_se_edita(self):
         self.client.force_login(self.bienestar)

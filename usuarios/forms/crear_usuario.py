@@ -4,6 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 
 from usuarios.choices import TIPO_DOCUMENTO_CHOICES
 from usuarios.models import Grupo, ProgramaFormacion
+from usuarios.validators import validar_numero_documento
 
 TIPO_PERFIL_CHOICES = [
     ("aprendiz", "Aprendiz"),
@@ -119,12 +120,14 @@ class CrearUsuarioAdminForm(forms.Form):
         programa_id = self.data.get("programa_formacion") if self.data else None
 
         if programa_id:
-            self.fields["grupo"].queryset = Grupo.objects.filter(
+            self.fields["grupo"].queryset = Grupo.objects.vigentes().filter(
                 programa_formacion_id=programa_id
             ).order_by("numero_grupo")
 
     def clean_numero_documento(self):
-        numero_documento = self.cleaned_data["numero_documento"]
+        numero_documento = validar_numero_documento(
+            self.cleaned_data.get("tipo_documento"), self.cleaned_data["numero_documento"]
+        )
 
         Usuario = get_user_model()
         if Usuario.objects.filter(numero_documento=numero_documento).exists():

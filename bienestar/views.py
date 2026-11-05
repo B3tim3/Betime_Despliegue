@@ -149,7 +149,7 @@ def _aprendiz_o_none(request):
 
 @login_required(login_url="usuarios:login")
 def mi_historial(request):
-    """Historial completo de asistencia del aprendiz: todos sus eventos y sus horas."""
+    """Historial completo de asistencia del aprendiz: todas sus actividades y sus horas."""
 
     aprendiz = _aprendiz_o_none(request)
     if aprendiz is None:
@@ -163,7 +163,7 @@ def mi_historial(request):
         "filas": filas,
         "resumen": resumen,
         "extracurriculares": extracurriculares,
-        # El progreso suma eventos + extracurriculares (misma fuente que el panel y la constancia).
+        # El progreso suma actividades + extracurriculares (misma fuente que el panel y la constancia).
         "progreso": calcular_progreso(total_horas_de(aprendiz)),
     })
 
@@ -179,14 +179,14 @@ def mi_historial_exportar(request):
     q = request.GET.get("q", "").strip().lower()
     estado = request.GET.get("estado", "").strip()
 
-    encabezados = ["Evento", "Lugar", "Fecha", "Estado", "Horas"]
+    encabezados = ["Actividad", "Lugar", "Fecha", "Estado", "Horas"]
     filas = []
     for f in historial_de(aprendiz):
         if estado and f.estado_codigo != estado:
             continue
-        if q and q not in f"{f.evento} {f.lugar} {f.estado}".lower():
+        if q and q not in f"{f.actividad} {f.lugar} {f.estado}".lower():
             continue
-        filas.append([f.evento, f.lugar, f.fecha.strftime("%d/%m/%Y %I:%M %p"), f.estado, f.horas])
+        filas.append([f.actividad, f.lugar, f.fecha.strftime("%d/%m/%Y %I:%M %p"), f.estado, f.horas])
     for x in historial_extracurricular_de(aprendiz):
         if estado and estado != "extracurricular":
             continue

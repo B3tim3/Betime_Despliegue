@@ -7,7 +7,7 @@ from django.db import transaction
 
 from bienestar.models import HorasBienestar
 from core.services.auditoria import registrar as auditar
-from eventos.models import Asistencia, Inscripcion
+from actividades.models import Asistencia, Inscripcion
 from notificaciones.services import notificar
 
 
@@ -63,11 +63,11 @@ def registrar_asistencia_y_horas(*, inscripcion, asistio, cantidad_horas, motivo
         # Avisar solo si las horas son nuevas o cambiaron: guardar el
         # checklist dos veces con lo mismo no debe llenar la campanita.
         if previas != cantidad_horas:
-            evento = inscripcion.evento
+            actividad = inscripcion.actividad
             notificar(
                 inscripcion.aprendiz.usuario,
                 f"Se registraron {cantidad_horas} hora{'s' if cantidad_horas != 1 else ''} de bienestar",
-                f"Por tu asistencia a «{evento.titulo}». Puedes verlas en tu historial.",
+                f"Por tu asistencia a «{actividad.titulo}». Puedes verlas en tu historial.",
                 url="/bienestar/mi-historial/",
                 tipo="horas",
             )
@@ -80,7 +80,7 @@ def registrar_asistencia_y_horas(*, inscripcion, asistio, cantidad_horas, motivo
         auditar(
             "asistencia",
             f"{'Asistió' if asistio else 'No asistió'}: {aprendiz.get_full_name()} "
-            f"({aprendiz.numero_documento}) al evento «{inscripcion.evento.titulo}»"
+            f"({aprendiz.numero_documento}) a la actividad «{inscripcion.actividad.titulo}»"
             + (f", {horas_ahora} horas." if asistio and horas_ahora else "."),
             usuario=asignado_por.usuario,
             detalles={

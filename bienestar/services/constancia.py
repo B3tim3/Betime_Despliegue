@@ -58,16 +58,16 @@ def emitir_constancia(aprendiz):
 
 
 def _qr_imagen(url):
-    from eventos.services.qr import generar_imagen_qr
+    from actividades.services.qr import generar_imagen_qr
     return generar_imagen_qr(url)
 
 
 def _fecha_de(registro):
-    """Fecha de lo que dio las horas: el evento o el día de la actividad por mérito."""
+    """Fecha de lo que dio las horas: la actividad o el día de la actividad por mérito."""
     if registro.participacion_id:
         fecha = registro.participacion.actividad.fecha
         return timezone.make_aware(datetime.combine(fecha, datetime.min.time()))
-    return timezone.localtime(registro.asistencia.inscripcion.evento.fecha_inicio)
+    return timezone.localtime(registro.asistencia.inscripcion.actividad.fecha_inicio)
 
 
 def generar_pdf_constancia(constancia, url_verificacion):
@@ -124,7 +124,7 @@ def generar_pdf_constancia(constancia, url_verificacion):
     pequeno = ParagraphStyle("p", fontName="Helvetica", fontSize=8.5, leading=11,
                              textColor=colors.HexColor(COLOR_GRIS))
 
-    e = escape  # los datos del aprendiz y los eventos nunca se interpretan como marcado
+    e = escape  # los datos del aprendiz y las actividades nunca se interpretan como marcado
     elementos = [
         Spacer(1, 6),
         Paragraph("CONSTANCIA DE HORAS DE BIENESTAR", titulo),
@@ -142,12 +142,12 @@ def generar_pdf_constancia(constancia, url_verificacion):
     if constancia.total_horas >= constancia.meta_horas:
         elementos.append(Paragraph("El aprendiz <b>cumplió la meta</b> de horas de bienestar.", cuerpo))
 
-    # ---------- Detalle por evento ----------
+    # ---------- Detalle por actividad ----------
     registros = list(
         horas_de(aprendiz)
-        .select_related("asistencia__inscripcion__evento", "participacion__actividad")
+        .select_related("asistencia__inscripcion__actividad", "participacion__actividad")
     )
-    # Eventos y actividades por mérito juntos, por fecha de la actividad.
+    # Actividades y actividades por mérito juntos, por fecha de la actividad.
     registros.sort(key=lambda r: _fecha_de(r))
     # Solo lo que se certificó ese día: horas registradas hasta la emisión.
     registros = [r for r in registros if r.fecha <= constancia.fecha_emision]

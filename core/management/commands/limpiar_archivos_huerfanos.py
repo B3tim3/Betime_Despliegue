@@ -1,7 +1,7 @@
 """
 python manage.py limpiar_archivos_huerfanos [--borrar]
 
-Busca en la carpeta de imágenes (eventos/, publicaciones/, bienestar/equipo/) archivos
+Busca en la carpeta de imágenes (actividades/, publicaciones/, bienestar/equipo/) archivos
 que NINGÚN registro usa (por ejemplo, fotos viejas de antes de que se borraran solas).
 Por defecto solo los LISTA; con --borrar los elimina. Las miniaturas se consideran
 usadas si su imagen grande lo está.
@@ -11,10 +11,10 @@ from django.core.management.base import BaseCommand
 
 from bienestar.models import MiembroBienestar
 from core.services import imagenes
-from eventos.models import Evento
+from actividades.models import Actividad
 from publicaciones.models import Publicacion
 
-OBJETIVOS = [(Evento, "imagen"), (Publicacion, "imagen"), (MiembroBienestar, "foto")]
+OBJETIVOS = [(Actividad, "imagen"), (Publicacion, "imagen"), (MiembroBienestar, "foto")]
 
 
 def _archivos(storage, carpeta):

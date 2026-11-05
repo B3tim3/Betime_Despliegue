@@ -13,10 +13,10 @@ def generar_codigo():
 
 class ActividadExtracurricular(models.Model):
     """
-    Una forma de dar horas de bienestar FUERA de los eventos: por portar
+    Una forma de dar horas de bienestar FUERA de las actividades: por portar
     bien el uniforme, por atender una charla en el aula, etc.
 
-    No aparece en la sección pública de Eventos. Cada actividad tiene un
+    No aparece en la sección pública de Actividades. Cada actividad tiene un
     código corto que Bienestar comparte; los aprendices lo ingresan en
     "Recibir horas de bienestar por mérito" y quedan en la lista de la actividad
     (modo código). También se puede escanear el QR personal del aprendiz
@@ -39,8 +39,8 @@ class ActividadExtracurricular(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Actividad por mérito"
-        verbose_name_plural = "Actividades por mérito"
+        verbose_name = "Motivo de horas por mérito"
+        verbose_name_plural = "Motivos de horas por mérito"
         ordering = ["-fecha", "-id"]
 
     def save(self, *args, **kwargs):

@@ -12,7 +12,7 @@ Recibir horas de bienestar por mérito | Be Time
 
 <h1 class="h3 fw-bold mb-1">Recibir horas de bienestar por mérito</h1>
 <p class="text-muted mb-4">
-    A veces Bienestar da horas fuera de los eventos: por portar bien el uniforme,
+    A veces Bienestar da horas fuera de las actividades: por portar bien el uniforme,
     prestar atención en una charla, etc. Hay dos formas de recibirlas; Bienestar te dirá cuál usar.
 </p>
 
@@ -21,7 +21,7 @@ Recibir horas de bienestar por mérito | Be Time
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body p-4">
                 <h2 class="h6 fw-bold"><span class="badge bg-success me-1">1</span> Tengo un código</h2>
-                <p class="text-muted small">Escribe el código que te dio Bienestar. Quedarás en la lista de la actividad y ellos te asignarán las horas.</p>
+                <p class="text-muted small">Escribe el código que te dio Bienestar. Quedarás en la lista y Bienestar te asignará las horas.</p>
                 <form method="post" class="d-flex gap-2" autocomplete="off">
                     {% csrf_token %}
                     <input type="text" name="codigo" class="form-control form-control-lg text-uppercase text-center fw-bold"
@@ -40,17 +40,17 @@ Recibir horas de bienestar por mérito | Be Time
                 <p class="text-muted small text-start">Muéstraselo a quien de Bienestar lo pida: al escanearlo recibes las horas al instante.</p>
                 <img src="{% url 'bienestar:qr_extracurricular_imagen' %}" alt="Mi código QR de horas por mérito"
                      class="img-fluid" style="max-width: 240px;">
-                <p class="small text-muted mt-2 mb-0">Es tu QR personal: sirve para todas las actividades.</p>
+                <p class="small text-muted mt-2 mb-0">Es tu QR personal: sirve para todos los motivos.</p>
             </div>
         </div>
     </div>
 </div>
 
-<h2 class="h5 fw-bold mt-4 mb-2">Mis últimas actividades</h2>
+<h2 class="h5 fw-bold mt-4 mb-2">Mis últimas horas por mérito</h2>
 {% if participaciones %}
     <div class="table-responsive">
         <table class="table align-middle bg-white">
-            <thead><tr><th>Actividad</th><th>Fecha</th><th>Estado</th><th class="text-end">Horas</th></tr></thead>
+            <thead><tr><th>Motivo</th><th>Fecha</th><th>Estado</th><th class="text-end">Horas</th></tr></thead>
             <tbody>
                 {% for p in participaciones %}
                     <tr>
@@ -64,7 +64,7 @@ Recibir horas de bienestar por mérito | Be Time
         </table>
     </div>
 {% else %}
-    <p class="text-muted small">Todavía no has participado en ninguna actividad por mérito.</p>
+    <p class="text-muted small">Todavía no has recibido horas por mérito.</p>
 {% endif %}
 
 {% endblock %}

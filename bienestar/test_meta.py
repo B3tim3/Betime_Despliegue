@@ -14,7 +14,7 @@ from django.utils import timezone
 from bienestar.models import ConfiguracionBienestar, HorasBienestar
 from bienestar.services import registrar_asistencia_y_horas
 from bienestar.services.progreso import calcular_progreso
-from eventos.models import Evento, Inscripcion
+from actividades.models import Actividad, Inscripcion
 from usuarios.models import (
     Administrador, Grupo, Jornada, NivelFormacion, PersonalBienestar, ProgramaFormacion, Usuario,
 )
@@ -84,11 +84,11 @@ class VistasBase(TestCase):
         cls.personal = PersonalBienestar.objects.create(
             usuario=cls.bienestar_user, cargo="Profesional", fecha_ingreso=date(2026, 1, 1))
 
-        cls.evento = Evento.objects.create(
+        cls.actividad = Actividad.objects.create(
             titulo="Taller", descripcion="x", lugar="Aula",
             fecha_inicio=timezone.now(), fecha_fin=timezone.now() + timezone.timedelta(hours=2),
             horas_otorgadas=10, creado_por=cls.bienestar_user)
-        cls.inscripcion = Inscripcion.objects.create(evento=cls.evento, aprendiz=cls.aprendiz)
+        cls.inscripcion = Inscripcion.objects.create(actividad=cls.actividad, aprendiz=cls.aprendiz)
 
 
 class ConfiguracionVistaTests(VistasBase):

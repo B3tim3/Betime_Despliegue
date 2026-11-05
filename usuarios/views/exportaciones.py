@@ -7,13 +7,14 @@ from django.db.models import Count, Q
 from core.services.exportar import responder_export
 from usuarios.decorators import administrador_requerido, personal_bienestar_requerido
 from usuarios.filters import AprendizFilter
+from usuarios.services.grupos import filtrar_grupos
 from usuarios.models import Aprendiz, Grupo, Jornada, NivelFormacion, ProgramaFormacion
 from usuarios.services.datos_aprendiz import DatosAprendiz, SELECT_RELATED_APRENDIZ
 
 
 # ---------- Exportar catálogos (Excel / Word / PDF) ----------
 # El helper que decide el formato vive en core/services/exportar.py
-# (responder_export), compartido con eventos y publicaciones.
+# (responder_export), compartido con actividades y publicaciones.
 
 @administrador_requerido
 def exportar_programas(request):
@@ -66,31 +67,15 @@ def exportar_jornadas(request):
 
 @personal_bienestar_requerido
 def exportar_grupos(request):
-    grupos = Grupo.objects.select_related("programa_formacion", "jornada").order_by("-fecha_creacion")
-
-    programa_id = request.GET.get("programa_id")
-    if programa_id:
-        grupos = grupos.filter(programa_formacion_id=programa_id)
-
-    jornada_id = request.GET.get("jornada_id")
-    if jornada_id:
-        grupos = grupos.filter(jornada_id=jornada_id)
-
-    q = request.GET.get("q", "").strip()
-    if q:
-        grupos = grupos.filter(
-            Q(numero_grupo__icontains=q) |
-            Q(programa_formacion__nombre__icontains=q) |
-            Q(jornada__nombre__icontains=q)
-        )
-
-    estado = request.GET.get("estado", "").strip()
-    if estado:
-        grupos = grupos.filter(estado=estado)
+    grupos, _vista = filtrar_grupos(
+        request.GET,
+        programa_id=request.GET.get("programa_id"),
+        jornada_id=request.GET.get("jornada_id"),
+    )
 
     encabezados = ["Número de grupo", "Programa", "Jornada", "Fecha inicio", "Fecha fin", "Estado"]
     filas = [
-        [f.numero_grupo, f.programa_formacion.nombre, f.jornada.nombre, f.fecha_inicio, f.fecha_fin, f.estado]
+        [f.numero_grupo, f.programa_formacion.nombre, f.jornada.nombre, f.fecha_inicio, f.fecha_fin, f.vigencia_etiqueta]
         for f in grupos
     ]
 
@@ -111,7 +96,7 @@ def exportar_aprendices(request):
     # así "Exportar" nunca se puede desalinear de lo que se ve filtrado.
     aprendices = AprendizFilter(request.GET, queryset=queryset).qs
 
-    # Los mismos datos que el listado de asistencia de los eventos
+    # Los mismos datos que el listado de asistencia de las actividades
     # (usuarios/services/datos_aprendiz.py): una sola definición.
     encabezados = [*DatosAprendiz.ENCABEZADOS, "Estado"]
     filas = [

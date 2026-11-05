@@ -5,7 +5,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
 from usuarios.choices import GENERO_CHOICES, TIPO_DOCUMENTO_CHOICES
-from usuarios.models import Grupo, Jornada, ProgramaFormacion
+from usuarios.models import Grupo
+from usuarios.services.grupos import GrupoNoDisponible, buscar_grupo_vigente
+from usuarios.validators import validar_numero_documento
 
 
 class RegistroAprendizForm(forms.Form):
@@ -14,7 +16,7 @@ class RegistroAprendizForm(forms.Form):
     muestran en pantalla, en tres bloques:
 
       1. Datos personales
-      2. Programa de formación  (programa -> jornada -> grupo)
+      2. Grupo  (número de grupo; de él salen programa, jornada y nivel)
       3. Contraseña
 
     El nivel de formación NO se pide: sale del programa elegido
@@ -83,36 +85,20 @@ class RegistroAprendizForm(forms.Form):
         })
     )
 
-    # ---------- 2. Programa de formación ----------
+    # ---------- 2. Grupo ----------
+    # El aprendiz escribe su número de grupo (ficha). El programa, la jornada y el nivel
+    # salen del grupo: no hay tres listas que recorrer ni forma de combinarlos mal.
 
-    programa_formacion = forms.ModelChoiceField(
-        queryset=ProgramaFormacion.objects.filter(estado="activo").order_by("nombre"),
-        label="Programa de formación",
-        widget=forms.Select(attrs={
-            "class": "form-select",
-            "id": "id_programa_formacion",
-        }),
-        empty_label="Selecciona tu programa de formación"
-    )
-
-    jornada = forms.ModelChoiceField(
-        queryset=Jornada.objects.none(),
-        label="Jornada de formación",
-        widget=forms.Select(attrs={
-            "class": "form-select",
-            "id": "id_jornada",
-        }),
-        empty_label="Selecciona primero tu programa de formación"
-    )
-
-    grupo = forms.ModelChoiceField(
-        queryset=Grupo.objects.none(),
+    numero_grupo = forms.CharField(
         label="Número de grupo",
-        widget=forms.Select(attrs={
-            "class": "form-select",
-            "id": "id_grupo",
-        }),
-        empty_label="Selecciona primero tu jornada"
+        max_length=20,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "id": "id_numero_grupo",
+            "inputmode": "numeric",
+            "autocomplete": "off",
+            "placeholder": "Ej. 2900001",
+        })
     )
 
     # ---------- 3. Contraseña ----------
@@ -137,33 +123,13 @@ class RegistroAprendizForm(forms.Form):
     PASOS = {
         1: ["nombres", "apellidos", "tipo_documento", "numero_documento",
             "genero", "email", "telefono"],
-        2: ["programa_formacion", "jornada", "grupo"],
+        2: ["numero_grupo"],
         3: ["password", "password_confirm"],
     }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Los <select> de jornada y grupo empiezan vacíos y se llenan por
-        # JavaScript. Al reenviar el POST (por ejemplo tras un error de
-        # validación) los llenamos aquí con lo que corresponde al programa
-        # y la jornada ya elegidos, para que la opción enviada siga siendo
-        # válida y el formulario no pierda lo que la persona seleccionó.
-        programa_id = self.data.get("programa_formacion") if self.data else None
-        jornada_id = self.data.get("jornada") if self.data else None
-
-        if programa_id and str(programa_id).isdigit():
-            self.fields["jornada"].queryset = Jornada.objects.filter(
-                grupos__programa_formacion_id=programa_id,
-                grupos__estado="activa",
-            ).distinct().order_by("nombre")
-
-            if jornada_id and str(jornada_id).isdigit():
-                self.fields["grupo"].queryset = Grupo.objects.filter(
-                    programa_formacion_id=programa_id,
-                    jornada_id=jornada_id,
-                    estado="activa",
-                ).order_by("numero_grupo")
+    @property
+    def hay_grupos_vigentes(self):
+        return Grupo.objects.vigentes().exists()
 
     # ---------- Validaciones de campo ----------
 
@@ -174,7 +140,9 @@ class RegistroAprendizForm(forms.Form):
         return " ".join(self.cleaned_data["apellidos"].split())
 
     def clean_numero_documento(self):
-        numero_documento = self.cleaned_data["numero_documento"].strip()
+        numero_documento = validar_numero_documento(
+            self.cleaned_data.get("tipo_documento"), self.cleaned_data["numero_documento"]
+        )
 
         Usuario = get_user_model()
         if Usuario.objects.filter(numero_documento=numero_documento).exists():
@@ -183,6 +151,13 @@ class RegistroAprendizForm(forms.Form):
             )
 
         return numero_documento
+
+    def clean_numero_grupo(self):
+        try:
+            self._grupo = buscar_grupo_vigente(self.cleaned_data["numero_grupo"])
+        except GrupoNoDisponible as error:
+            raise forms.ValidationError(str(error))
+        return self._grupo.numero_grupo
 
     def clean_email(self):
         email = self.cleaned_data["email"].strip()
@@ -223,24 +198,9 @@ class RegistroAprendizForm(forms.Form):
         if password and password_confirm and password != password_confirm:
             self.add_error("password_confirm", "Las contraseñas no coinciden.")
 
-        # Defensa en el servidor: aunque el <select> filtre por JavaScript,
-        # alguien podría enviar a mano un grupo que no corresponde. Se
-        # comprueba que el grupo realmente pertenezca al programa y a la
-        # jornada elegidos, y que siga activo.
-        programa = cleaned_data.get("programa_formacion")
-        jornada = cleaned_data.get("jornada")
-        grupo = cleaned_data.get("grupo")
-
-        if programa and jornada and grupo:
-            if (
-                grupo.programa_formacion_id != programa.id
-                or grupo.jornada_id != jornada.id
-                or grupo.estado != "activa"
-            ):
-                self.add_error(
-                    "grupo",
-                    "El grupo seleccionado no corresponde al programa y la jornada elegidos."
-                )
+        # El grupo se resolvió (y se comprobó que sigue vigente) en clean_numero_grupo.
+        if getattr(self, "_grupo", None) is not None and "numero_grupo" in cleaned_data:
+            cleaned_data["grupo"] = self._grupo
 
         return cleaned_data
 

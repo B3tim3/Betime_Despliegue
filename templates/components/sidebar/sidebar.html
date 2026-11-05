@@ -25,12 +25,12 @@
     {% endif %}
 
     {% if request.user.personal_bienestar or request.user.administrador %}
-        <a href="{% url 'eventos:panel_lista' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-calendar-event"></i> Eventos
+        <a href="{% url 'actividades:panel_lista' %}" class="list-group-item list-group-item-action">
+            <i class="bi bi-calendar-event"></i> Actividades
         </a>
 
         <a href="{% url 'bienestar:actividades_lista' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-stars"></i> Actividades por mérito
+            <i class="bi bi-stars"></i> Horas por mérito
         </a>
 
         <a href="{% url 'publicaciones:panel_lista' %}" class="list-group-item list-group-item-action">

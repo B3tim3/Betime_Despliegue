@@ -8,14 +8,14 @@ class HorasBienestar(models.Model):
     # ---------- Relaciones ----------
 
     asistencia = models.ForeignKey(
-        "eventos.Asistencia",
+        "actividades.Asistencia",
         on_delete=models.PROTECT,
         related_name="horas_bienestar",
         null=True,
         blank=True,
     )
 
-    # Horas de bienestar por mérito (fuera de eventos): cada registro viene de UNA
+    # Horas de bienestar por mérito (fuera de actividades): cada registro viene de UNA
     # de las dos fuentes, nunca de las dos ni de ninguna (ver Meta.constraints).
     participacion = models.OneToOneField(
         "bienestar.ParticipacionExtracurricular",
@@ -65,10 +65,10 @@ class HorasBienestar(models.Model):
 
     @property
     def concepto(self):
-        """Nombre de lo que dio las horas: el evento o la actividad por mérito."""
+        """Nombre de lo que dio las horas: la actividad o la actividad por mérito."""
         if self.participacion_id:
             return f"{self.participacion.actividad.titulo} (por mérito)"
-        return self.asistencia.inscripcion.evento.titulo
+        return self.asistencia.inscripcion.actividad.titulo
 
     def __str__(self):
         return f"{self.cantidad_horas}h - {self.asistencia or self.participacion}"

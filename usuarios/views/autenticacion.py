@@ -10,7 +10,8 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from usuarios.forms import LoginForm, RegistroAprendizForm
-from usuarios.models import Grupo, Jornada, ProgramaFormacion
+from usuarios.models import Grupo
+from usuarios.services.grupos import GrupoNoDisponible, buscar_grupo_vigente
 from usuarios.services import registrar_aprendiz
 from usuarios.services.bloqueo import (
     ip_del_cliente,
@@ -18,37 +19,6 @@ from usuarios.services.bloqueo import (
     minutos_de_bloqueo,
     registrar_fallo,
 )
-
-
-def jornadas_por_programa(request):
-    """
-    Devuelve en JSON las jornadas en las que el programa elegido tiene
-    grupos activos, junto con el nivel de formación del programa.
-    Es el segundo escalón de la cascada del registro:
-    programa -> jornada -> grupo.
-    """
-
-    programa_id = request.GET.get("programa_formacion")
-
-    if not programa_id or not programa_id.isdigit():
-        return JsonResponse({"nivel": "", "jornadas": []})
-
-    programa = ProgramaFormacion.objects.select_related("nivel_formacion").filter(
-        pk=programa_id, estado="activo"
-    ).first()
-
-    if programa is None:
-        return JsonResponse({"nivel": "", "jornadas": []})
-
-    jornadas = Jornada.objects.filter(
-        grupos__programa_formacion=programa,
-        grupos__estado="activa",
-    ).distinct().order_by("nombre").values("id", "nombre")
-
-    return JsonResponse({
-        "nivel": programa.nivel_formacion.nombre,
-        "jornadas": list(jornadas),
-    })
 
 
 def grupos_por_programa(request):
@@ -66,10 +36,7 @@ def grupos_por_programa(request):
     if not programa_id or not programa_id.isdigit():
         return JsonResponse([], safe=False)
 
-    grupos = Grupo.objects.filter(
-        programa_formacion_id=programa_id,
-        estado="activa"
-    )
+    grupos = Grupo.objects.vigentes().filter(programa_formacion_id=programa_id)
 
     if jornada_id and jornada_id.isdigit():
         grupos = grupos.filter(jornada_id=jornada_id)
@@ -79,6 +46,25 @@ def grupos_por_programa(request):
     )
 
     return JsonResponse(list(grupos), safe=False)
+
+
+def grupo_por_numero(request):
+    """
+    Registro por número de grupo: el aprendiz escribe su número y devolvemos a qué programa,
+    jornada y nivel corresponde, para que lo confirme. Solo grupos vigentes.
+    """
+    try:
+        grupo = buscar_grupo_vigente(request.GET.get("numero"))
+    except GrupoNoDisponible as error:
+        return JsonResponse({"encontrado": False, "mensaje": str(error)})
+
+    return JsonResponse({
+        "encontrado": True,
+        "numero": grupo.numero_grupo,
+        "programa": grupo.programa_formacion.nombre,
+        "jornada": grupo.jornada.nombre,
+        "nivel": grupo.programa_formacion.nivel_formacion.nombre,
+    })
 
 
 def registro_aprendiz(request):
