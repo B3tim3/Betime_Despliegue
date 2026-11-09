@@ -14,7 +14,7 @@ Mi historial | Be Time
     <h1 class="h3 fw-bold mb-0">Mi historial de asistencia</h1>
     <div class="d-flex gap-2">
         {% include 'components/exportar/botones.html' with base_url='bienestar:mi_historial_exportar' tabla_id='tabla-historial' %}
-        {% if resumen.horas > 0 %}
+        {% if progreso.total > 0 %}
             <a href="{% url 'bienestar:constancia' %}" class="btn btn-success">
                 <i class="bi bi-file-earmark-pdf"></i> Constancia
             </a>
@@ -25,7 +25,7 @@ Mi historial | Be Time
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
         <div class="card border-0 shadow-sm h-100"><div class="card-body py-3">
-            <div class="text-muted small">Eventos inscritos</div>
+            <div class="text-muted small">Actividades inscritas</div>
             <div class="fs-3 fw-bold">{{ resumen.inscritos }}</div>
         </div></div>
     </div>
@@ -52,7 +52,7 @@ Mi historial | Be Time
 {% if filas %}
     <div class="row g-2 mb-1">
         <div class="col-12 col-md-6">
-            {% include 'components/tabla/buscador.html' with tabla_id='tabla-historial' placeholder='Buscar por evento o lugar...' %}
+            {% include 'components/tabla/buscador.html' with tabla_id='tabla-historial' placeholder='Buscar por actividad o lugar...' %}
         </div>
         <div class="col-12 col-md-4">
             <select class="form-select" data-tabla-filtro-estado="tabla-historial">
@@ -61,7 +61,7 @@ Mi historial | Be Time
                 <option value="no_asistio">No asistió</option>
                 <option value="inscrito">Inscrito (pendiente)</option>
                 <option value="cancelada">Inscripción cancelada</option>
-                <option value="evento_cancelado">Evento cancelado</option>
+                <option value="actividad_cancelado">Actividad cancelada</option>
             </select>
         </div>
     </div>
@@ -70,7 +70,7 @@ Mi historial | Be Time
         <table class="table align-middle bg-white" id="tabla-historial">
             <thead>
                 <tr>
-                    <th>Evento</th>
+                    <th>Actividad</th>
                     <th>Lugar</th>
                     <th>Fecha</th>
                     <th>Estado</th>
@@ -80,7 +80,7 @@ Mi historial | Be Time
             <tbody>
                 {% for fila in filas %}
                     <tr data-estado="{{ fila.estado_codigo }}">
-                        <td>{{ fila.evento }}</td>
+                        <td>{{ fila.actividad }}</td>
                         <td>{{ fila.lugar }}</td>
                         <td>{{ fila.fecha|date:"d/m/Y h:i A" }}</td>
                         <td>
@@ -95,10 +95,38 @@ Mi historial | Be Time
 {% else %}
     <div class="card border-0 shadow-sm">
         <div class="card-body text-center text-muted py-5">
-            Todavía no te has inscrito a ningún evento.
-            <a href="{% url 'eventos:lista' %}">Ver eventos disponibles</a>
+            Todavía no te has inscrito a ninguna actividad.
+            <a href="{% url 'actividades:lista' %}">Ver actividades disponibles</a>
         </div>
     </div>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-center mt-5 mb-2 flex-wrap gap-2">
+    <h2 class="h5 fw-bold mb-0">Horas de bienestar por mérito</h2>
+    <a href="{% url 'bienestar:recibir_extracurriculares' %}" class="btn btn-sm btn-outline-success">
+        <i class="bi bi-stars"></i> Recibir horas de bienestar por mérito
+    </a>
+</div>
+{% if extracurriculares %}
+    <div class="table-responsive">
+        <table class="table align-middle bg-white">
+            <thead>
+                <tr><th>Actividad</th><th>Fecha</th><th>Estado</th><th class="text-end">Horas</th></tr>
+            </thead>
+            <tbody>
+                {% for x in extracurriculares %}
+                    <tr>
+                        <td>{{ x.actividad }}</td>
+                        <td>{{ x.fecha|date:"d/m/Y" }}</td>
+                        <td><span class="badge {% if x.estado_codigo == 'otorgada' %}bg-success{% else %}text-bg-light border{% endif %}">{{ x.estado }}</span></td>
+                        <td class="text-end">{% if x.horas %}{{ x.horas }}{% else %}—{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="text-muted small">Aquí aparecerán las horas que Bienestar te dé fuera de las actividades (uniforme, atención en charlas, etc.).</p>
 {% endif %}
 
 {% endblock %}

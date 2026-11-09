@@ -196,9 +196,19 @@ class PersonalBienestarCambiaElGrupoTests(PerfilBase):
         PersonalBienestar.objects.create(
             usuario=self.bienestar, cargo="Profesional", fecha_ingreso=date(2026, 1, 1))
 
+    def post_completo(self, **cambios):
+        """Lo que envía el formulario de edición: todos los campos tal como están, más los cambios."""
+        datos = {
+            "tipo_documento": "CC", "numero_documento": "1012345678", "nombres": "Juan",
+            "apellidos": "Rodríguez", "genero": "M", "email": "juan@example.com",
+            "telefono": "3001234567", "grupo": self.g_dia.id, "estado": "activo",
+        }
+        datos.update(cambios)
+        return datos
+
     def test_bienestar_cambia_el_grupo_de_un_aprendiz(self):
         self.client.force_login(self.bienestar)
-        r = self.client.post(self.url_editar, {"grupo": self.g_tec.id, "estado": "activo"})
+        r = self.client.post(self.url_editar, self.post_completo(grupo=self.g_tec.id))
         self.assertRedirects(r, reverse("usuarios:aprendices_lista"), fetch_redirect_response=False)
         self.recargar()
         self.assertEqual(self.aprendiz.grupo, self.g_tec)
@@ -207,7 +217,8 @@ class PersonalBienestarCambiaElGrupoTests(PerfilBase):
         self.client.force_login(self.bienestar)
         r = self.client.get(self.url_editar)
         self.assertContains(r, "3171693 — Análisis y Desarrollo de Software · Diurna")
-        self.assertContains(r, "3000000 — Análisis y Desarrollo de Software · Nocturna (Cerrado)")
+        # Los grupos cerrados no se ofrecen: la lista no debe crecer con los años.
+        self.assertNotContains(r, "3000000 — Análisis y Desarrollo de Software · Nocturna")
 
     def test_la_pantalla_dice_a_quien_se_edita(self):
         self.client.force_login(self.bienestar)
@@ -215,7 +226,7 @@ class PersonalBienestarCambiaElGrupoTests(PerfilBase):
         self.assertContains(r, "Editar aprendiz: Juan Rodríguez")
 
     def test_un_aprendiz_no_puede_usar_esa_pantalla(self):
-        r = self.client.post(self.url_editar, {"grupo": self.g_tec.id, "estado": "activo"})
+        r = self.client.post(self.url_editar, self.post_completo(grupo=self.g_tec.id))
         self.assertEqual(r.status_code, 302)
         self.recargar()
         self.assertEqual(self.aprendiz.grupo, self.g_dia)

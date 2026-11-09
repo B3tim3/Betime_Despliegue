@@ -1,0 +1,70 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Recibir horas de bienestar por mérito | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<nav class="mb-2">
+    <a href="{% url 'usuarios:dashboard_aprendiz' %}" class="text-decoration-none">&larr; Mi panel</a>
+</nav>
+
+<h1 class="h3 fw-bold mb-1">Recibir horas de bienestar por mérito</h1>
+<p class="text-muted mb-4">
+    A veces Bienestar da horas fuera de las actividades: por portar bien el uniforme,
+    prestar atención en una charla, etc. Hay dos formas de recibirlas; Bienestar te dirá cuál usar.
+</p>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <h2 class="h6 fw-bold"><span class="badge bg-success me-1">1</span> Tengo un código</h2>
+                <p class="text-muted small">Escribe el código que te dio Bienestar. Quedarás en la lista y Bienestar te asignará las horas.</p>
+                <form method="post" class="d-flex gap-2" autocomplete="off">
+                    {% csrf_token %}
+                    <input type="text" name="codigo" class="form-control form-control-lg text-uppercase text-center fw-bold"
+                           style="letter-spacing: .3em; max-width: 14rem;" maxlength="8"
+                           placeholder="ABC123" required autocapitalize="characters" spellcheck="false">
+                    <button type="submit" class="btn btn-success btn-lg">Enviar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4 text-center">
+                <h2 class="h6 fw-bold text-start"><span class="badge bg-success me-1">2</span> Mi código QR</h2>
+                <p class="text-muted small text-start">Muéstraselo a quien de Bienestar lo pida: al escanearlo recibes las horas al instante.</p>
+                <img src="{% url 'bienestar:qr_extracurricular_imagen' %}" alt="Mi código QR de horas por mérito"
+                     class="img-fluid" style="max-width: 240px;">
+                <p class="small text-muted mt-2 mb-0">Es tu QR personal: sirve para todos los motivos.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="h5 fw-bold mt-4 mb-2">Mis últimas horas por mérito</h2>
+{% if participaciones %}
+    <div class="table-responsive">
+        <table class="table align-middle bg-white">
+            <thead><tr><th>Motivo</th><th>Fecha</th><th>Estado</th><th class="text-end">Horas</th></tr></thead>
+            <tbody>
+                {% for p in participaciones %}
+                    <tr>
+                        <td>{{ p.actividad.titulo }}</td>
+                        <td>{{ p.actividad.fecha|date:"d/m/Y" }}</td>
+                        <td><span class="badge {% if p.estado == 'otorgada' %}bg-success{% else %}text-bg-light border{% endif %}">{{ p.get_estado_display }}</span></td>
+                        <td class="text-end">{% if p.estado == 'otorgada' %}{{ p.horas.cantidad_horas }}{% else %}—{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="text-muted small">Todavía no has recibido horas por mérito.</p>
+{% endif %}
+
+{% endblock %}

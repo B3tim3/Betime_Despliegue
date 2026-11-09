@@ -1,9 +1,11 @@
 from django import forms
 
+from core.forms_imagenes import ValidaImagenesMixin
+
 from publicaciones.models import Publicacion
 
 
-class PublicacionForm(forms.ModelForm):
+class PublicacionForm(ValidaImagenesMixin, forms.ModelForm):
 
     class Meta:
         model = Publicacion

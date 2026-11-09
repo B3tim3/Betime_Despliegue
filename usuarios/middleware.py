@@ -8,7 +8,7 @@ panel de gestión) abierto para el siguiente.
 Tiempos (se pueden cambiar en settings.py):
   INACTIVIDAD_SEGUNDOS            aprendices          (por defecto 30 minutos)
   INACTIVIDAD_PERSONAL_SEGUNDOS   Bienestar y admin   (por defecto 2 horas: en un
-                                  evento el escáner de QR puede pasar ratos sin
+                                  actividad el escáner de QR puede pasar ratos sin
                                   peticiones y no debe sacar a quien escanea)
 
 Para no escribir la sesión en la base de datos en CADA clic, la marca de

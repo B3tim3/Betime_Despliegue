@@ -16,6 +16,8 @@ Gestionar publicaciones | Be Time
     </div>
 </div>
 
+{% include 'components/filtros/periodo.html' %}
+
 {% if publicaciones %}
     <div class="row g-2 mb-1">
         <div class="col-12 col-md-6">
@@ -52,7 +54,7 @@ Gestionar publicaciones | Be Time
                         <td>
                             <span class="badge text-bg-light border">{{ publicacion.get_estado_display|default:publicacion.estado }}</span>
                         </td>
-                        <td>{{ publicacion.fecha_publicacion|date:"d/m/Y H:i"|default:"—" }}</td>
+                        <td>{{ publicacion.fecha_publicacion|date:"d/m/Y h:i A"|default:"—" }}</td>
                         <td class="text-end">
                             <a href="{% url 'publicaciones:editar' publicacion.id %}" class="btn btn-sm btn-outline-success">
                                 Editar
@@ -72,7 +74,7 @@ Gestionar publicaciones | Be Time
 {% else %}
     <div class="card border-0 shadow-sm">
         <div class="card-body text-center text-muted py-5">
-            Todavía no has creado ninguna publicación.
+            No hay publicaciones en este año.{% if not periodo.es_todos %} Cambia el año o elige «Todos los años» para ver el historial.{% endif %}
         </div>
     </div>
 {% endif %}

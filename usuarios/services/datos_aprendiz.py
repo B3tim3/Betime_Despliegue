@@ -1,7 +1,7 @@
 """
 Una sola definición de "qué datos de un aprendiz piden los listados de
-Bienestar" (nombre, documento, género, grupo, programa, jornada, nivel,
-correo y teléfono).
+Bienestar" (nombre, documento, género, grupo, programa, jornada, nivel, centro de
+formación, correo y teléfono).
 
 La usan la pantalla del checklist de asistencia y las exportaciones a
 Excel / Word / PDF. Si mañana hay que agregar o quitar un dato, se cambia
@@ -16,6 +16,11 @@ Uso:
 """
 
 from dataclasses import dataclass
+
+# Todas las personas registradas en Be Time pertenecen al mismo centro, así que
+# es una constante y no una columna de la base de datos. Si algún día hay más
+# de un centro, se vuelve un modelo; mientras tanto se cambia SOLO aquí.
+CENTRO_FORMACION = "Centro de Diseño y Metrología (C.D.M)"
 
 # Relaciones que hay que traer de una vez para no hacer una consulta
 # extra por cada aprendiz al armar un listado largo.
@@ -36,6 +41,7 @@ class DatosAprendiz:
     programa: str
     jornada: str
     nivel: str
+    centro: str
     correo: str
     telefono: str
 
@@ -48,6 +54,7 @@ class DatosAprendiz:
         "Programa de formación",
         "Jornada",
         "Nivel de formación",
+        "Centro de formación",
         "Correo electrónico",
         "Teléfono",
     )
@@ -69,6 +76,7 @@ class DatosAprendiz:
             programa=programa.nombre,
             jornada=grupo.jornada.nombre,
             nivel=programa.nivel_formacion.nombre,
+            centro=CENTRO_FORMACION,
             correo=usuario.email or "",
             telefono=usuario.telefono or "",
         )
@@ -76,7 +84,7 @@ class DatosAprendiz:
     def como_fila(self):
         return [
             self.nombre, self.tipo_documento, self.numero_documento, self.genero,
-            self.grupo, self.programa, self.jornada, self.nivel, self.correo, self.telefono,
+            self.grupo, self.programa, self.jornada, self.nivel, self.centro, self.correo, self.telefono,
         ]
 
     def texto_busqueda(self):

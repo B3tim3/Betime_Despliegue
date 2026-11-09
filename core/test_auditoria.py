@@ -14,7 +14,7 @@ from django.utils import timezone
 from bienestar.models import ConfiguracionBienestar
 from core.models import RegistroAuditoria
 from core.services.auditoria import registrar
-from eventos.models import Evento, Inscripcion
+from actividades.models import Actividad, Inscripcion
 from usuarios.models import (
     Administrador, Aprendiz, Grupo, Jornada, NivelFormacion, PersonalBienestar,
     ProgramaFormacion, Usuario,
@@ -49,13 +49,13 @@ class Base(TestCase):
         cls.u_personal = usuario("2", "Personal")
         cls.personal = PersonalBienestar.objects.create(
             usuario=cls.u_personal, cargo="C", fecha_ingreso=date(2026, 1, 1))
-        cls.u_ap = usuario("3", "Aprendiz")
+        cls.u_ap = usuario("30000", "Aprendiz")
         cls.aprendiz = Aprendiz.objects.create(usuario=cls.u_ap, grupo=cls.g1, fecha_ingreso=date(2026, 1, 1))
         ini = timezone.now() + timedelta(days=3)
-        cls.evento = Evento.objects.create(
+        cls.actividad = Actividad.objects.create(
             titulo="Yoga", lugar="Coliseo", horas_otorgadas=2, creado_por=cls.u_personal,
             fecha_inicio=ini, fecha_fin=ini + timedelta(hours=2), estado="programado")
-        cls.inscripcion = Inscripcion.objects.create(evento=cls.evento, aprendiz=cls.aprendiz)
+        cls.inscripcion = Inscripcion.objects.create(actividad=cls.actividad, aprendiz=cls.aprendiz)
 
     def entrar(self, usuario):
         self.client.force_login(usuario)
@@ -109,21 +109,30 @@ class ServicioTests(Base):
 
 class AccionesAuditadasTests(Base):
 
+    def datos_aprendiz(self, **cambios):
+        datos = {
+            "tipo_documento": "CC", "numero_documento": "30000", "nombres": "Aprendiz",
+            "apellidos": "Prueba", "genero": "", "email": "30000@x.co", "telefono": "",
+            "grupo": self.g1.pk, "estado": "activo",
+        }
+        datos.update(cambios)
+        return datos
+
     def test_editar_aprendiz_guarda_antes_y_despues(self):
         self.entrar(self.u_personal)
         self.client.post(reverse("usuarios:aprendices_editar", args=[self.aprendiz.pk]),
-                         {"grupo": self.g2.pk, "estado": "retirado"})
+                         self.datos_aprendiz(grupo=self.g2.pk, estado="retirado"))
         r = self.acciones("aprendiz_editado").get()
         self.assertEqual(r.usuario, self.u_personal)
         self.assertEqual(set(r.detalles), {"grupo", "estado"})
-        self.assertEqual(r.detalles["estado"], {"antes": "activo", "despues": "retirado"})
+        self.assertEqual(r.detalles["estado"], {"antes": "Activo", "despues": "Retirado"})
         self.assertIn("3000001", r.detalles["grupo"]["antes"])
         self.assertIn("3000002", r.detalles["grupo"]["despues"])
 
     def test_editar_sin_cambios_no_registra(self):
         self.entrar(self.u_personal)
         self.client.post(reverse("usuarios:aprendices_editar", args=[self.aprendiz.pk]),
-                         {"grupo": self.g1.pk, "estado": "activo"})
+                         self.datos_aprendiz())
         self.assertFalse(self.acciones("aprendiz_editado").exists())
 
     def test_eliminar_aprendiz(self):
@@ -131,7 +140,7 @@ class AccionesAuditadasTests(Base):
         self.client.post(reverse("usuarios:aprendices_eliminar", args=[self.aprendiz.pk]))
         r = self.acciones("aprendiz_eliminado").get()
         self.assertIn("Aprendiz Prueba", r.descripcion)
-        self.assertIn("3", r.descripcion)
+        self.assertIn("30000", r.descripcion)
 
     def test_abrir_a_mano_la_url_de_eliminar_aprendiz_ya_no_da_error(self):
         self.entrar(self.u_personal)
@@ -152,7 +161,7 @@ class AccionesAuditadasTests(Base):
     def test_crear_cuenta_no_guarda_la_contrasena(self):
         self.entrar(self.u_admin)
         r = self.client.post(reverse("usuarios:crear_usuario"), {
-            "tipo_perfil": "bienestar", "tipo_documento": "CC", "numero_documento": "555",
+            "tipo_perfil": "bienestar", "tipo_documento": "CC", "numero_documento": "5550000",
             "nombres": "Nueva", "apellidos": "Persona", "email": "n@x.co",
             "cargo": "Psicóloga", "password": "Secreta-Muy-Larga-9", "password_confirm": "Secreta-Muy-Larga-9",
         })
@@ -163,7 +172,7 @@ class AccionesAuditadasTests(Base):
 
     def test_asistencia_por_checklist_solo_registra_cambios(self):
         self.entrar(self.u_personal)
-        url = reverse("eventos:panel_inscritos", args=[self.evento.pk])
+        url = reverse("actividades:panel_inscritos", args=[self.actividad.pk])
         datos = {f"asistio_{self.inscripcion.pk}": "on", f"horas_{self.inscripcion.pk}": "2"}
         self.client.post(url, datos)
         self.assertEqual(self.acciones("asistencia").count(), 1)
@@ -178,22 +187,22 @@ class AccionesAuditadasTests(Base):
 
     def test_asistencia_por_qr_queda_marcada_como_qr(self):
         self.entrar(self.u_personal)
-        self.client.post(reverse("eventos:confirmar_asistencia_qr", args=[self.inscripcion.token]))
+        self.client.post(reverse("actividades:confirmar_asistencia_qr", args=[self.inscripcion.token]))
         r = self.acciones("asistencia").get()
         self.assertEqual(r.detalles["metodo"], "QR")
 
-    def test_cancelar_y_eliminar_evento(self):
+    def test_cancelar_y_eliminar_actividad(self):
         self.entrar(self.u_personal)
         datos = {
             "titulo": "Yoga", "descripcion": "", "lugar": "Coliseo", "horas_otorgadas": 2,
-            "fecha_inicio": timezone.localtime(self.evento.fecha_inicio).strftime("%Y-%m-%d %H:%M"),
-            "fecha_fin": timezone.localtime(self.evento.fecha_fin).strftime("%Y-%m-%d %H:%M"),
+            "fecha_inicio": timezone.localtime(self.actividad.fecha_inicio).strftime("%Y-%m-%d %H:%M"),
+            "fecha_fin": timezone.localtime(self.actividad.fecha_fin).strftime("%Y-%m-%d %H:%M"),
             "estado": "cancelado",
         }
-        self.client.post(reverse("eventos:editar", args=[self.evento.pk]), datos)
-        self.assertEqual(self.acciones("evento_cancelado").count(), 1)
-        self.client.post(reverse("eventos:eliminar", args=[self.evento.pk]))
-        r = self.acciones("evento_eliminado").get()
+        self.client.post(reverse("actividades:editar", args=[self.actividad.pk]), datos)
+        self.assertEqual(self.acciones("actividad_cancelado").count(), 1)
+        self.client.post(reverse("actividades:eliminar", args=[self.actividad.pk]))
+        r = self.acciones("actividad_eliminado").get()
         self.assertIn("Yoga", r.descripcion)
         self.assertIn("1 inscripciones", r.descripcion)
 
@@ -219,9 +228,9 @@ class AccionesAuditadasTests(Base):
     def test_login_bloqueado_se_registra_una_sola_vez(self):
         for _ in range(MAX_INTENTOS + 3):
             self.client.post(reverse("usuarios:login"), {
-                "tipo_documento": "CC", "numero_documento": "3", "password": "mala"})
+                "tipo_documento": "CC", "numero_documento": "30000", "password": "mala"})
         r = self.acciones("login_bloqueado").get()
-        self.assertEqual(r.detalles["documento"], "3")
+        self.assertEqual(r.detalles["documento"], "30000")
         self.assertIsNone(r.usuario)
 
 
@@ -229,14 +238,14 @@ class PaginaAuditoriaTests(Base):
 
     def setUp(self):
         registrar("meta_horas", "Cambio de meta de 40 a 60", usuario=self.u_admin)
-        registrar("evento_eliminado", "Se eliminó el evento «Yoga»", usuario=self.u_personal)
-        registrar("evento_eliminado", "<script>alert(1)</script>", usuario=self.u_personal)
+        registrar("actividad_eliminado", "Se eliminó el actividad «Yoga»", usuario=self.u_personal)
+        registrar("actividad_eliminado", "<script>alert(1)</script>", usuario=self.u_personal)
 
     def test_el_administrador_la_ve(self):
         self.entrar(self.u_admin)
         r = self.client.get(reverse("auditoria"))
         self.assertContains(r, "Cambio de meta de 40 a 60")
-        self.assertContains(r, "Se eliminó el evento")
+        self.assertContains(r, "Se eliminó el actividad")
 
     def test_el_personal_de_bienestar_no_entra(self):
         self.entrar(self.u_personal)
@@ -247,9 +256,9 @@ class PaginaAuditoriaTests(Base):
         self.entrar(self.u_admin)
         r = self.client.get(reverse("auditoria") + "?accion=meta_horas")
         self.assertContains(r, "Cambio de meta")
-        self.assertNotContains(r, "Se eliminó el evento")
+        self.assertNotContains(r, "Se eliminó el actividad")
         r = self.client.get(reverse("auditoria") + "?q=Yoga")
-        self.assertContains(r, "Se eliminó el evento")
+        self.assertContains(r, "Se eliminó el actividad")
         self.assertNotContains(r, "Cambio de meta")
 
     def test_accion_inventada_se_ignora(self):

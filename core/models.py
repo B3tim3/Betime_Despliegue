@@ -17,8 +17,8 @@ class RegistroAuditoria(models.Model):
         ("asistencia", "Asistencia / horas registradas"),
         ("meta_horas", "Meta de horas cambiada"),
         ("usuario_creado", "Cuenta creada por un administrador"),
-        ("evento_cancelado", "Evento cancelado"),
-        ("evento_eliminado", "Evento eliminado"),
+        ("actividad_cancelado", "Actividad cancelada"),
+        ("actividad_eliminado", "Actividad eliminada"),
         ("catalogo_eliminado", "Registro de catálogo eliminado"),
         ("contrasena_cambiada", "Contraseña cambiada"),
         ("login_bloqueado", "Acceso bloqueado por intentos fallidos"),
@@ -44,7 +44,12 @@ class RegistroAuditoria(models.Model):
         verbose_name = "Registro de auditoría"
         verbose_name_plural = "Registros de auditoría"
         ordering = ["-fecha", "-id"]
-        indexes = [models.Index(fields=["accion", "fecha"])]
+        indexes = [
+            models.Index(fields=["accion", "fecha"]),
+            # La pantalla de auditoría lista lo más reciente primero (ORDER BY fecha DESC, id DESC).
+            # Con 200 mil registros pasó de ~31 ms a ~0.06 ms (ver LEEME).
+            models.Index(fields=["-fecha", "-id"], name="auditoria_fecha_id_desc"),
+        ]
 
     def save(self, *args, **kwargs):
         if self.pk is not None:

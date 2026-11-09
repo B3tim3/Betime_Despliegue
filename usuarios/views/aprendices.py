@@ -13,16 +13,18 @@ from django_tables2.views import SingleTableMixin
 
 from core.services.auditoria import registrar as auditar
 from usuarios.filters import AprendizFilter
-from usuarios.forms import AprendizEstadoForm
+from usuarios.forms import AprendizPanelForm
 from usuarios.mixins import PersonalBienestarRequeridoMixin
 from usuarios.models import Aprendiz, Grupo
+from usuarios.services.datos_aprendiz import CENTRO_FORMACION
+from notificaciones.services import notificar
 from usuarios.tables import AprendizTable
 
 
 # ---------- Aprendices (Personal de Bienestar o Administrador) ----------
-# Se crean por auto-registro; aquí solo se consultan y se reasigna
-# su grupo/estado (activo, retirado, egresado). No se crean ni se
-# eliminan desde este panel.
+# Se crean por auto-registro; desde aquí se consultan y se CORRIGEN sus
+# datos (documento, nombre, contacto, grupo y estado). No se crean desde
+# este panel.
 #
 # Igual que GrupoListView: la misma vista sirve para "todos los
 # aprendices" (panel/aprendices/) y para "los aprendices de una
@@ -88,40 +90,83 @@ class AprendizListView(PersonalBienestarRequeridoMixin, SingleTableMixin, Filter
         return context
 
 
+# Cómo se llama cada campo cuando se le explica el cambio a la persona.
+_NOMBRES_CAMPOS = {
+    "tipo_documento": "tipo de documento",
+    "numero_documento": "número de documento",
+    "nombres": "nombres",
+    "apellidos": "apellidos",
+    "genero": "género",
+    "email": "correo electrónico",
+    "telefono": "teléfono",
+    "grupo": "grupo",
+    "estado": "estado",
+}
+
+
 class AprendizUpdateView(PersonalBienestarRequeridoMixin, UpdateView):
+    """
+    Corrección de datos de un aprendiz por Bienestar. Todo lo que cambia queda
+    en la bitácora de auditoría (antes y después) y, si cambió un dato personal,
+    la persona recibe una notificación para que sepa qué se corrigió.
+    """
+
     model = Aprendiz
-    form_class = AprendizEstadoForm
-    template_name = "usuarios/panel_form.html"
+    form_class = AprendizPanelForm
+    template_name = "usuarios/aprendiz_form.html"
     success_url = reverse_lazy("usuarios:aprendices_lista")
-    extra_context = {
-        "titulo_pagina": "Editar aprendiz",
-        "url_cancelar": reverse_lazy("usuarios:aprendices_lista"),
-    }
+    queryset = Aprendiz.objects.select_related(
+        "usuario", "grupo__programa_formacion__nivel_formacion", "grupo__jornada"
+    )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Que quede claro a QUIÉN se está editando (sobre todo al cambiar de grupo).
         context["titulo_pagina"] = f"Editar aprendiz: {self.object.usuario.get_full_name()}"
+        context["centro_formacion"] = CENTRO_FORMACION
         return context
 
     def form_valid(self, form):
-        # form.instance ya trae los valores nuevos; los de antes se leen de la base.
-        anterior = Aprendiz.objects.select_related("grupo").get(pk=self.object.pk)
-        cambios = {}
-        for campo in form.changed_data:
-            antes, despues = getattr(anterior, campo), form.cleaned_data[campo]
-            cambios[campo] = {"antes": str(antes), "despues": str(despues)}
+        # Los valores de antes se leen de la base ANTES de guardar.
+        antes = AprendizPanelForm.valores_actuales(
+            Aprendiz.objects.select_related("usuario", "grupo__programa_formacion", "grupo__jornada").get(pk=self.object.pk)
+        )
+        respuesta = super().form_valid(form)   # guarda Usuario y Aprendiz juntos
+        ahora = AprendizPanelForm.valores_actuales(self.object)
+
+        cambios = {
+            campo: {"antes": antes[campo], "despues": ahora[campo]}
+            for campo in antes if antes[campo] != ahora[campo]
+        }
+        usuario = self.object.usuario
 
         messages.success(self.request, "Aprendiz actualizado correctamente.")
-        respuesta = super().form_valid(form)
+        if "numero_documento" in cambios or "tipo_documento" in cambios:
+            messages.warning(
+                self.request,
+                f"Cambió el documento: {usuario.get_full_name()} debe iniciar sesión con "
+                f"{usuario.tipo_documento} {usuario.numero_documento}."
+            )
 
         if cambios:
             auditar(
                 "aprendiz_editado",
-                f"Se editó al aprendiz {self.object.usuario.get_full_name()} "
-                f"({self.object.usuario.numero_documento}): {', '.join(cambios)}.",
+                f"Se editó al aprendiz {usuario.get_full_name()} "
+                f"({usuario.numero_documento}): {', '.join(cambios)}.",
                 request=self.request, detalles=cambios,
             )
+
+            # Aviso a la persona (el estado lo maneja Bienestar y no se notifica).
+            corregidos = [_NOMBRES_CAMPOS[c] for c in cambios if c != "estado"]
+            if corregidos:
+                notificar(
+                    usuario,
+                    "Bienestar actualizó tus datos",
+                    f"Se corrigió: {', '.join(corregidos)}. Revisa tu perfil y, si algo no es "
+                    f"correcto, acércate a Bienestar.",
+                    url="/usuarios/perfil/",
+                    tipo="general",
+                )
         return respuesta
 
 

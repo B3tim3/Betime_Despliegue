@@ -34,8 +34,8 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 # Por defecto False (seguro). Solo es True si el .env lo dice explícitamente.
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1")
-CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,.trycloudflare.com")
+CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", "https://*.trycloudflare.com")
 
 
 # ---------------------------------------------------------------------------
@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     # Apps propias
     'core',
     'usuarios',
-    'eventos',
+    'actividades',
     'bienestar',
     'publicaciones',
     'notificaciones',
@@ -171,6 +171,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Be Time <betimesena@gmail.com>")
+PASSWORD_RESET_TIMEOUT = 20 * 60  # 20 minutos
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 """
 Único lugar por donde se crean notificaciones. El resto del proyecto
-(inscripciones, horas, cambios de evento, recordatorios) llama a estas
+(inscripciones, horas, cambios de actividad, recordatorios) llama a estas
 dos funciones y no toca el modelo directamente: si mañana se quiere
 mandar también un correo o una notificación push, se cambia aquí.
 """

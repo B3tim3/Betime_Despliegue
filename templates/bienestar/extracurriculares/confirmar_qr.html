@@ -1,0 +1,35 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Dar horas de bienestar por mérito | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<nav class="mb-2">
+    <a href="{% url 'bienestar:actividades_lista' %}" class="text-decoration-none">&larr; Actividades por mérito</a>
+</nav>
+<h1 class="h3 fw-bold mb-3">Dar horas de bienestar por mérito</h1>
+
+<div class="card border-0 shadow-sm mb-3"><div class="card-body p-4">
+    <div class="fw-bold fs-5">{{ aprendiz.usuario.get_full_name }}</div>
+    <div class="text-muted">{{ aprendiz.usuario.tipo_documento }} {{ aprendiz.usuario.numero_documento }} · Grupo {{ aprendiz.grupo.numero_grupo }}</div>
+</div></div>
+
+{% if abiertas %}
+    <p class="text-muted">¿Por cuál motivo le das las horas?</p>
+    <div class="list-group">
+        {% for a in abiertas %}
+            <form method="post" class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="actividad" value="{{ a.id }}">
+                <div><div class="fw-semibold">{{ a.titulo }}</div><div class="small text-muted">{{ a.horas }} hora{{ a.horas|pluralize }} · {{ a.fecha|date:"d/m/Y" }}</div></div>
+                {% if request.user.personal_bienestar %}<button class="btn btn-success btn-sm">Dar horas</button>{% endif %}
+            </form>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-warning">No hay motivos abiertos. <a href="{% url 'bienestar:actividad_crear' %}">Crea una</a> primero.</div>
+{% endif %}
+
+{% endblock %}

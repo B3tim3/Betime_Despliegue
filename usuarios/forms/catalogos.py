@@ -1,6 +1,6 @@
 from django import forms
 
-from usuarios.models import Aprendiz, Grupo, Jornada, NivelFormacion, ProgramaFormacion
+from usuarios.models import Grupo, Jornada, NivelFormacion, ProgramaFormacion
 
 
 class ProgramaFormacionForm(forms.ModelForm):
@@ -88,36 +88,3 @@ class GrupoForm(forms.ModelForm):
             self.add_error("fecha_fin", "La fecha de fin debe ser posterior a la fecha de inicio.")
 
         return cleaned_data
-
-
-class AprendizEstadoForm(forms.ModelForm):
-    """
-    Un aprendiz se crea a través del registro público, no desde este panel.
-    Aquí Bienestar solo puede reasignar su grupo o cambiar su estado
-    (activo, retirado, egresado).
-    """
-
-    class Meta:
-        model = Aprendiz
-        fields = ["grupo", "estado"]
-        widgets = {
-            "grupo": forms.Select(attrs={"class": "form-select"}),
-            "estado": forms.Select(attrs={"class": "form-select"}, choices=[
-                ("activo", "Activo"),
-                ("retirado", "Retirado"),
-                ("egresado", "Egresado"),
-            ]),
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Solo Bienestar / el administrador cambian el grupo de un aprendiz
-        # (el aprendiz no puede). Para no equivocarse, cada opción muestra el
-        # número de grupo junto con su programa y su jornada.
-        self.fields["grupo"].queryset = Grupo.objects.select_related(
-            "programa_formacion", "jornada"
-        ).order_by("numero_grupo")
-        self.fields["grupo"].label_from_instance = lambda g: (
-            f"{g.numero_grupo} — {g.programa_formacion.nombre} · {g.jornada.nombre}"
-            + ("" if g.estado == "activa" else f" ({g.get_estado_display()})")
-        )

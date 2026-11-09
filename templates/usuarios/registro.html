@@ -137,9 +137,9 @@ Crear cuenta | Be Time
                         Completa tus datos en tres pasos sencillos
                     </p>
 
-                    {% if not form.fields.programa_formacion.queryset.exists %}
+                    {% if not form.hay_grupos_vigentes %}
                         <div class="alert alert-warning">
-                            Todavía no hay programas de formación registrados en el sistema. Contacta al área de Bienestar antes de registrarte.
+                            Todavía no hay grupos vigentes registrados en el sistema. Contacta al área de Bienestar antes de registrarte.
                         </div>
                     {% endif %}
 
@@ -218,34 +218,19 @@ Crear cuenta | Be Time
                             </div>
                         </div>
 
-                        {# ================= PASO 2: PROGRAMA DE FORMACIÓN ================= #}
+                        {# ================= PASO 2: GRUPO ================= #}
                         <div class="registro-paso" data-paso="2">
-                            <h2>Programa de formación</h2>
-                            <p class="paso-ayuda">Elige tu programa y las opciones se irán ajustando a lo que corresponde.</p>
+                            <h2>Tu grupo</h2>
+                            <p class="paso-ayuda">Escribe el número de tu grupo (ficha). Te mostraremos tu programa y jornada para que confirmes que es el correcto.</p>
 
                             <div class="mb-3">
-                                <label for="{{ form.programa_formacion.id_for_label }}" class="form-label">{{ form.programa_formacion.label }}</label>
-                                {{ form.programa_formacion }}
-                                {% for error in form.programa_formacion.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                                <label for="{{ form.numero_grupo.id_for_label }}" class="form-label">{{ form.numero_grupo.label }}</label>
+                                {{ form.numero_grupo }}
+                                {% for error in form.numero_grupo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                             </div>
 
-                            <div class="mb-3">
-                                <span class="form-label d-block">Nivel de formación</span>
-                                <div class="nivel-formacion vacio" id="nivel-formacion" aria-live="polite">
-                                    Se completa al elegir tu programa
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="{{ form.jornada.id_for_label }}" class="form-label">{{ form.jornada.label }}</label>
-                                {{ form.jornada }}
-                                {% for error in form.jornada.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="{{ form.grupo.id_for_label }}" class="form-label">{{ form.grupo.label }}</label>
-                                {{ form.grupo }}
-                                {% for error in form.grupo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            <div class="mb-3" id="grupo-resultado" aria-live="polite" hidden>
+                                <div class="nivel-formacion" id="grupo-resultado-caja"></div>
                             </div>
 
                             <div class="registro-acciones" data-solo-js>
@@ -358,120 +343,59 @@ document.addEventListener('DOMContentLoaded', function () {
 
     mostrarPaso(pasoActual);
 
-    // ---------- Cascada: Programa -> Jornada -> Grupo ----------
+    // ---------- Registro por número de grupo ----------
+    // El aprendiz escribe su número de grupo; consultamos el servidor (con una pequeña
+    // espera para no preguntar en cada tecla) y mostramos programa, jornada y nivel.
+    // El servidor vuelve a validar todo al enviar: esto es solo ayuda visual.
 
-    const programaSelect = document.getElementById('id_programa_formacion');
-    const jornadaSelect = document.getElementById('id_jornada');
-    const grupoSelect = document.getElementById('id_grupo');
-    const nivelCaja = document.getElementById('nivel-formacion');
+    const numeroInput = document.getElementById('id_numero_grupo');
+    const resultado = document.getElementById('grupo-resultado');
+    const resultadoCaja = document.getElementById('grupo-resultado-caja');
+    const URL_GRUPO = "{% url 'usuarios:grupo_por_numero' %}";
+    let espera = null;
+    let consulta = 0;
 
-    const URL_JORNADAS = "{% url 'usuarios:jornadas_por_programa' %}";
-    const URL_GRUPOS = "{% url 'usuarios:grupos_por_programa' %}";
-
-    function llenarSelect(select, opciones, textoVacio) {
-        select.innerHTML = '';
-        const vacia = document.createElement('option');
-        vacia.value = '';
-        vacia.textContent = textoVacio;
-        select.appendChild(vacia);
-        opciones.forEach(function (o) {
-            const opcion = document.createElement('option');
-            opcion.value = o.valor;
-            opcion.textContent = o.texto;   // textContent: nunca se interpreta como HTML
-            select.appendChild(opcion);
-        });
+    function mostrarResultado(texto, ok) {
+        resultado.hidden = false;
+        resultadoCaja.textContent = texto;   // textContent: nunca se interpreta como HTML
+        resultadoCaja.classList.toggle('vacio', !ok);
+        resultadoCaja.style.borderStyle = ok ? 'solid' : 'dashed';
     }
 
-    function mostrarNivel(texto) {
-        if (texto) {
-            nivelCaja.textContent = texto;
-            nivelCaja.classList.remove('vacio');
-        } else {
-            nivelCaja.textContent = 'Se completa al elegir tu programa';
-            nivelCaja.classList.add('vacio');
+    function consultarGrupo() {
+        const numero = numeroInput.value.replace(/\s+/g, '');
+        if (!numero) {
+            resultado.hidden = true;
+            numeroInput.setCustomValidity('');
+            return;
         }
-    }
-
-    function reiniciarJornada(texto) {
-        llenarSelect(jornadaSelect, [], texto);
-    }
-
-    function reiniciarGrupo(texto) {
-        llenarSelect(grupoSelect, [], texto);
-    }
-
-    function cargarJornadas(programaId, soloNivel) {
-        return fetch(URL_JORNADAS + '?programa_formacion=' + encodeURIComponent(programaId))
+        const esta = ++consulta;
+        fetch(URL_GRUPO + '?numero=' + encodeURIComponent(numero))
             .then(function (r) { return r.json(); })
-            .then(function (datos) {
-                mostrarNivel(datos.nivel);
-                if (soloNivel) { return; }
-
-                if (datos.jornadas.length === 0) {
-                    reiniciarJornada('Este programa no tiene grupos activos');
-                    return;
+            .then(function (d) {
+                if (esta !== consulta) { return; }   // llegó una respuesta vieja
+                if (d.encontrado) {
+                    numeroInput.setCustomValidity('');
+                    mostrarResultado(d.programa + ' · ' + d.jornada + ' · ' + d.nivel, true);
+                } else {
+                    numeroInput.setCustomValidity(d.mensaje);
+                    mostrarResultado(d.mensaje, false);
                 }
-                llenarSelect(
-                    jornadaSelect,
-                    datos.jornadas.map(function (j) { return { valor: j.id, texto: j.nombre }; }),
-                    'Selecciona tu jornada'
-                );
             })
             .catch(function () {
-                reiniciarJornada('No se pudieron cargar las jornadas. Intenta de nuevo.');
+                if (esta !== consulta) { return; }
+                numeroInput.setCustomValidity('');   // sin red: que decida el servidor al enviar
+                mostrarResultado('No se pudo comprobar el grupo ahora. Puedes continuar y lo revisaremos al enviar.', false);
             });
     }
 
-    function cargarGrupos(programaId, jornadaId) {
-        const url = URL_GRUPOS + '?programa_formacion=' + encodeURIComponent(programaId)
-                  + '&jornada=' + encodeURIComponent(jornadaId);
-
-        fetch(url)
-            .then(function (r) { return r.json(); })
-            .then(function (grupos) {
-                if (grupos.length === 0) {
-                    reiniciarGrupo('No hay grupos activos en esta jornada');
-                    return;
-                }
-                llenarSelect(
-                    grupoSelect,
-                    grupos.map(function (f) { return { valor: f.id, texto: f.numero_grupo }; }),
-                    'Selecciona tu número de grupo'
-                );
-            })
-            .catch(function () {
-                reiniciarGrupo('No se pudieron cargar los grupos. Intenta de nuevo.');
-            });
-    }
-
-    programaSelect.addEventListener('change', function () {
-        reiniciarGrupo('Selecciona primero tu jornada');
-        if (!this.value) {
-            mostrarNivel('');
-            reiniciarJornada('Selecciona primero tu programa de formación');
-            return;
-        }
-        reiniciarJornada('Cargando jornadas...');
-        cargarJornadas(this.value, false);
+    numeroInput.addEventListener('input', function () {
+        numeroInput.setCustomValidity('Comprobando tu grupo...');
+        clearTimeout(espera);
+        espera = setTimeout(consultarGrupo, 350);
     });
 
-    jornadaSelect.addEventListener('change', function () {
-        if (!this.value) {
-            reiniciarGrupo('Selecciona primero tu jornada');
-            return;
-        }
-        reiniciarGrupo('Cargando grupos...');
-        cargarGrupos(programaSelect.value, this.value);
-    });
-
-    // Estado inicial. Si el formulario volvió con errores, los <select> ya
-    // vienen llenos desde el servidor: solo se pide el nivel para mostrarlo.
-    if (programaSelect.value) {
-        cargarJornadas(programaSelect.value, true);
-    } else {
-        reiniciarJornada('Selecciona primero tu programa de formación');
-        reiniciarGrupo('Selecciona primero tu jornada');
-    }
+    if (numeroInput.value) { consultarGrupo(); }
 
 });
 </script>

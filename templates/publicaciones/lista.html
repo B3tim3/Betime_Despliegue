@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static imagenes %}
 
 {% block title %}
 Publicaciones | Be Time
@@ -59,8 +59,8 @@ Publicaciones | Be Time
                     <div class="col-12 col-md-6 col-lg-4">
                         <a href="{% url 'publicaciones:detalle' publicacion.id %}" class="pub-tarjeta">
                             {% if publicacion.imagen %}
-                                <div class="img-marco img-marco--tarjeta" style="--img:url('{{ publicacion.imagen.url }}')">
-                                    <img src="{{ publicacion.imagen.url }}" alt="{{ publicacion.titulo }}" loading="lazy">
+                                <div class="img-marco img-marco--tarjeta" style="--img:url('{{ publicacion.imagen|miniatura }}')">
+                                    <img src="{{ publicacion.imagen|miniatura }}" alt="{{ publicacion.titulo }}" loading="lazy" onerror="this.onerror=null;this.src='{{ publicacion.imagen.url }}'">
                                 </div>
                             {% else %}
                                 <div class="pub-tarjeta__sin-imagen"><i class="bi bi-newspaper"></i></div>

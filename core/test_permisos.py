@@ -21,8 +21,9 @@ from django.test import TestCase
 from django.urls import get_resolver
 from django.utils import timezone
 
-from bienestar.models import ConstanciaHoras, MiembroBienestar
-from eventos.models import Asistencia, Evento, Inscripcion
+from bienestar.models import ActividadExtracurricular, ConstanciaHoras, MiembroBienestar
+from bienestar.services.extracurriculares import token_qr_de
+from actividades.models import Asistencia, Actividad, Inscripcion
 from notificaciones.models import Notificacion
 from publicaciones.models import Publicacion
 from usuarios.models import (
@@ -51,7 +52,7 @@ NIVELES = {
     # --- núcleo público ---
     "": PUBLICA,
     "usuarios/registro/": PUBLICA,
-    "usuarios/ajax/jornadas/": PUBLICA,
+    "usuarios/ajax/grupo/": PUBLICA,
     "usuarios/ajax/grupos/": PUBLICA,
     "usuarios/login/": PUBLICA,
     "usuarios/acceso-personal/": PUBLICA,
@@ -62,16 +63,17 @@ NIVELES = {
     "usuarios/recuperar-contrasena/completado/": PUBLICA,
     "publicaciones/": PUBLICA,
     "publicaciones/<int:publicacion_id>/": PUBLICA,
-    "eventos/": PUBLICA,
-    "eventos/<int:evento_id>/": PUBLICA,
+    "actividades/": PUBLICA,
+    "actividades/<int:actividad_id>/": PUBLICA,
     "bienestar/nosotros/": PUBLICA,
     "bienestar/constancia/verificar/<str:codigo>/": PUBLICA,
     "notificaciones/recordatorios/ejecutar/": PUBLICA,   # protegida por token (ver test aparte)
     # --- cualquier persona con sesión ---
     "usuarios/perfil/contrasena/": LOGUEADO,
     "usuarios/dashboard/": LOGUEADO,
-    "eventos/asistencia/confirmar/<uuid:token>/": LOGUEADO,
-    "eventos/asistencia/confirmar/<uuid:token>/rapido/": PERSONAL,
+    "actividades/asistencia/confirmar/<uuid:token>/": LOGUEADO,
+    "bienestar/extracurriculares/qr/<str:token>/": LOGUEADO,
+    "actividades/asistencia/confirmar/<uuid:token>/rapido/": PERSONAL,
     "notificaciones/": LOGUEADO,
     "notificaciones/marcar-todas/": LOGUEADO,
     "notificaciones/<int:notificacion_id>/abrir/": LOGUEADO,
@@ -79,13 +81,15 @@ NIVELES = {
     # --- solo aprendices ---
     "usuarios/perfil/": APRENDIZ,
     "usuarios/dashboard/aprendiz/": APRENDIZ,
-    "eventos/<int:evento_id>/inscribirse/": APRENDIZ,
-    "eventos/mis-inscripciones/<int:inscripcion_id>/cancelar/": APRENDIZ,
-    "eventos/mis-inscripciones/<int:inscripcion_id>/qr/": APRENDIZ,
-    "eventos/mis-inscripciones/<int:inscripcion_id>/qr/imagen/": APRENDIZ,
+    "actividades/<int:actividad_id>/inscribirse/": APRENDIZ,
+    "actividades/mis-inscripciones/<int:inscripcion_id>/cancelar/": APRENDIZ,
+    "actividades/mis-inscripciones/<int:inscripcion_id>/qr/": APRENDIZ,
+    "actividades/mis-inscripciones/<int:inscripcion_id>/qr/imagen/": APRENDIZ,
     "bienestar/mi-historial/": APRENDIZ,
     "bienestar/mi-historial/exportar/": APRENDIZ,
     "bienestar/constancia/": APRENDIZ,
+    "bienestar/extracurriculares/recibir/": APRENDIZ,
+    "bienestar/extracurriculares/mi-qr/imagen/": APRENDIZ,
     # --- Personal de Bienestar y Administrador ---
     "usuarios/dashboard/bienestar/": PERSONAL,
     "usuarios/panel/grupos/": PERSONAL,
@@ -105,14 +109,23 @@ NIVELES = {
     "publicaciones/panel/crear/": PERSONAL,
     "publicaciones/panel/<int:pk>/editar/": PERSONAL,
     "publicaciones/panel/<int:pk>/eliminar/": PERSONAL,
-    "eventos/panel/": PERSONAL,
-    "eventos/panel/exportar/": PERSONAL,
-    "eventos/panel/crear/": PERSONAL,
-    "eventos/panel/<int:pk>/editar/": PERSONAL,
-    "eventos/panel/<int:pk>/eliminar/": PERSONAL,
-    "eventos/panel/<int:evento_id>/inscritos/": PERSONAL,
-    "eventos/panel/inscritos/exportar/": PERSONAL,
-    "eventos/panel/escanear-qr/": PERSONAL,
+    "actividades/panel/": PERSONAL,
+    "actividades/panel/exportar/": PERSONAL,
+    "actividades/panel/crear/": PERSONAL,
+    "actividades/panel/<int:pk>/editar/": PERSONAL,
+    "actividades/panel/<int:pk>/eliminar/": PERSONAL,
+    "actividades/panel/<int:actividad_id>/inscritos/": PERSONAL,
+    "actividades/panel/inscritos/exportar/": PERSONAL,
+    "actividades/panel/escanear-qr/": PERSONAL,
+    "bienestar/extracurriculares/": PERSONAL,
+    "bienestar/extracurriculares/crear/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/editar/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/estado/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/eliminar/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/agregar/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/escanear/": PERSONAL,
+    "bienestar/extracurriculares/<int:actividad_id>/qr-rapido/": PERSONAL,
     "bienestar/nosotros/panel/": PERSONAL,
     "bienestar/nosotros/panel/exportar/": PERSONAL,
     "bienestar/nosotros/panel/crear/": PERSONAL,
@@ -143,9 +156,13 @@ NIVELES = {
 # Rutas que solo aceptan POST (con GET responden 405 a todos: no se puede
 # juzgar el permiso por GET, así que se juzga solo por POST).
 SOLO_POST = {
+    "bienestar/extracurriculares/<int:actividad_id>/estado/",
+    "bienestar/extracurriculares/<int:actividad_id>/eliminar/",
+    "bienestar/extracurriculares/<int:actividad_id>/agregar/",
+    "bienestar/extracurriculares/<int:actividad_id>/qr-rapido/",
     "usuarios/logout/",
-    "eventos/mis-inscripciones/<int:inscripcion_id>/cancelar/",
-    "eventos/asistencia/confirmar/<uuid:token>/rapido/",
+    "actividades/mis-inscripciones/<int:inscripcion_id>/cancelar/",
+    "actividades/asistencia/confirmar/<uuid:token>/rapido/",
     "notificaciones/marcar-todas/",
     "notificaciones/<int:notificacion_id>/leida/",
 }
@@ -153,13 +170,13 @@ SOLO_POST = {
 # Rutas públicas cuyo POST es legítimo (formularios abiertos) o que no
 # modifican nada: no se ensayan con POST.
 SIN_POST = {
-    "", "usuarios/registro/", "usuarios/ajax/jornadas/", "usuarios/ajax/grupos/",
+    "", "usuarios/registro/", "usuarios/ajax/grupo/", "usuarios/ajax/grupos/",
     "usuarios/login/", "usuarios/acceso-personal/", "usuarios/logout/",
     "usuarios/recuperar-contrasena/", "usuarios/recuperar-contrasena/enviado/",
     "usuarios/recuperar-contrasena/confirmar/<uidb64>/<token>/",
     "usuarios/recuperar-contrasena/completado/",
-    "publicaciones/", "publicaciones/<int:publicacion_id>/", "eventos/",
-    "eventos/<int:evento_id>/", "bienestar/nosotros/",
+    "publicaciones/", "publicaciones/<int:publicacion_id>/", "actividades/",
+    "actividades/<int:actividad_id>/", "bienestar/nosotros/",
     "bienestar/constancia/verificar/<str:codigo>/",
     "notificaciones/recordatorios/ejecutar/",
 }
@@ -210,10 +227,12 @@ class PermisosTests(TestCase):
         cls.otro = Aprendiz.objects.create(usuario=cls.u_otro, grupo=cls.grupo, fecha_ingreso=date(2026, 1, 1))
 
         ini = timezone.now() + timedelta(days=3)
-        cls.evento = Evento.objects.create(
+        cls.una_actividad = Actividad.objects.create(
             titulo="Yoga", lugar="Coliseo", horas_otorgadas=2, creado_por=cls.u_personal,
             fecha_inicio=ini, fecha_fin=ini + timedelta(hours=2), estado="programado")
-        cls.inscripcion = Inscripcion.objects.create(evento=cls.evento, aprendiz=cls.aprendiz)
+        cls.inscripcion = Inscripcion.objects.create(actividad=cls.una_actividad, aprendiz=cls.aprendiz)
+        cls.actividad = ActividadExtracurricular.objects.create(
+            titulo="Uniforme", horas=1, creado_por=cls.u_personal.personal_bienestar)
         cls.publicacion = Publicacion.objects.create(autor=cls.u_personal, titulo="Hola", contenido="x")
         cls.miembro = MiembroBienestar.objects.create(nombre="Ana", cargo="Psicóloga")
         cls.notificacion = Notificacion.objects.create(usuario=cls.u_ap, titulo="t", mensaje="m")
@@ -229,13 +248,17 @@ class PermisosTests(TestCase):
             for clave, objeto in (
                 ("programas", self.programa), ("niveles", self.nivel), ("jornadas", self.jornada),
                 ("grupos", self.grupo), ("aprendices", self.aprendiz),
-                ("publicaciones", self.publicacion), ("eventos", self.evento),
+                ("publicaciones", self.publicacion), ("actividades", self.una_actividad),
             ):
                 if clave in ruta:
                     return objeto.pk
+        if nombre == "token" and "extracurriculares" in ruta:
+            return token_qr_de(self.aprendiz)
+        if nombre == "actividad_id":   # «actividades» y «por mérito» usan el mismo nombre de parámetro
+            return (self.actividad if "extracurriculares" in ruta else self.una_actividad).pk
         return {
             "programa_id": self.programa.pk, "jornada_id": self.jornada.pk, "grupo_id": self.grupo.pk,
-            "evento_id": self.evento.pk, "publicacion_id": self.publicacion.pk,
+            "publicacion_id": self.publicacion.pk,
             "miembro_id": self.miembro.pk, "inscripcion_id": self.inscripcion.pk,
             "notificacion_id": self.notificacion.pk, "token": self.inscripcion.token,
             "codigo": self.constancia.codigo, "uidb64": "MQ", "pk": 1,
@@ -253,7 +276,7 @@ class PermisosTests(TestCase):
         return c
 
     def conteos(self):
-        modelos = (Evento, Inscripcion, Grupo, ProgramaFormacion, Jornada, NivelFormacion,
+        modelos = (Actividad, Inscripcion, Grupo, ProgramaFormacion, Jornada, NivelFormacion,
                    Publicacion, MiembroBienestar, Aprendiz, Usuario, Notificacion, Asistencia)
         return {m.__name__: m.objects.count() for m in modelos}
 
@@ -316,11 +339,11 @@ class PermisosTests(TestCase):
 
     def test_un_aprendiz_no_ve_el_qr_de_otro(self):
         c = self.cliente("otro")
-        self.assertEqual(c.get(f"/eventos/mis-inscripciones/{self.inscripcion.pk}/qr/imagen/").status_code, 403)
-        self.assertEqual(c.get(f"/eventos/mis-inscripciones/{self.inscripcion.pk}/qr/").status_code, 302)
+        self.assertEqual(c.get(f"/actividades/mis-inscripciones/{self.inscripcion.pk}/qr/imagen/").status_code, 403)
+        self.assertEqual(c.get(f"/actividades/mis-inscripciones/{self.inscripcion.pk}/qr/").status_code, 302)
 
     def test_un_aprendiz_no_cancela_la_inscripcion_de_otro(self):
-        r = self.cliente("otro").post(f"/eventos/mis-inscripciones/{self.inscripcion.pk}/cancelar/")
+        r = self.cliente("otro").post(f"/actividades/mis-inscripciones/{self.inscripcion.pk}/cancelar/")
         self.assertEqual(r.status_code, 404)
         self.inscripcion.refresh_from_db()
         self.assertEqual(self.inscripcion.estado, "inscrito")
@@ -335,8 +358,8 @@ class PermisosTests(TestCase):
     def test_aprendiz_no_puede_confirmar_asistencia_por_qr(self):
         """Ver la pantalla del QR no basta: solo Personal de Bienestar registra la asistencia."""
         antes = Asistencia.objects.count()
-        self.cliente("aprendiz").post(f"/eventos/asistencia/confirmar/{self.inscripcion.token}/")
-        self.cliente("admin").post(f"/eventos/asistencia/confirmar/{self.inscripcion.token}/")
+        self.cliente("aprendiz").post(f"/actividades/asistencia/confirmar/{self.inscripcion.token}/")
+        self.cliente("admin").post(f"/actividades/asistencia/confirmar/{self.inscripcion.token}/")
         self.assertEqual(Asistencia.objects.count(), antes)
 
     def test_publicacion_en_borrador_no_es_publica(self):

@@ -74,10 +74,14 @@ Mi perfil | Be Time
             <h2 class="h5 fw-bold mb-1">Formación</h2>
             <p class="text-muted small mb-3">
                 Estos datos solo los modifica el personal de Bienestar. Si cambiaste de grupo
-                o ves un error, acércate a Bienestar para que lo actualicen.
+                o ves un error (incluido tu nombre o documento), acércate a Bienestar para que lo corrijan.
             </p>
 
             <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Centro de formación</label>
+                    <div class="form-control bg-body-secondary h-auto text-break">{{ centro_formacion }}</div>
+                </div>
                 <div class="col-12">
                     <label class="form-label">Programa de formación</label>
                     <input type="text" class="form-control" value="{{ aprendiz.grupo.programa_formacion.nombre }}" disabled>

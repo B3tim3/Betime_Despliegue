@@ -4,6 +4,13 @@
 Mi panel | Be Time
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    #pestanas-aprendiz .nav-link { color: #2e7d32; }
+    #pestanas-aprendiz .nav-link.active { background: #2e7d32; color: #fff; }
+</style>
+{% endblock %}
+
 {% block dashboard_content %}
 
 <h1 class="h3 fw-bold mb-1">
@@ -20,6 +27,9 @@ Mi panel | Be Time
     </a>
     <a href="{% url 'bienestar:mi_historial' %}" class="btn btn-sm btn-outline-success">
         <i class="bi bi-clock-history"></i> Mi historial
+    </a>
+    <a href="{% url 'bienestar:recibir_extracurriculares' %}" class="btn btn-sm btn-success">
+        <i class="bi bi-stars"></i> Recibir horas de bienestar por mérito
     </a>
     {% if progreso.total > 0 %}
         <a href="{% url 'bienestar:constancia' %}" class="btn btn-sm btn-outline-success">
@@ -53,25 +63,25 @@ Mi panel | Be Time
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="h5 fw-bold mb-0">Próximos eventos</h2>
-    <a href="{% url 'eventos:lista' %}" class="small">Ver todos</a>
+    <h2 class="h5 fw-bold mb-0">Próximas actividades</h2>
+    <a href="{% url 'actividades:lista' %}" class="small">Ver todos</a>
 </div>
 
-{% if proximos_eventos %}
+{% if proximas_actividades %}
     <div class="row g-3 mb-4">
-        {% for evento in proximos_eventos %}
+        {% for actividad in proximas_actividades %}
             <div class="col-12 col-md-6 col-xl-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body d-flex flex-column">
-                        <p class="text-muted small mb-1">{{ evento.fecha_inicio|date:"d/m/Y h:i A" }}</p>
-                        <h3 class="h6 fw-bold">{{ evento.titulo }}</h3>
+                        <p class="text-muted small mb-1">{{ actividad.fecha_inicio|date:"d/m/Y h:i A" }}</p>
+                        <h3 class="h6 fw-bold">{{ actividad.titulo }}</h3>
                         <p class="small text-muted mb-3">
-                            <i class="bi bi-geo-alt"></i> {{ evento.lugar }}
-                            {% if evento.horas_otorgadas %} · <i class="bi bi-clock"></i> {{ evento.horas_otorgadas }} h{% endif %}
+                            <i class="bi bi-geo-alt"></i> {{ actividad.lugar }}
+                            {% if actividad.horas_otorgadas %} · <i class="bi bi-clock"></i> {{ actividad.horas_otorgadas }} h{% endif %}
                         </p>
                         <div class="d-flex gap-2 mt-auto">
-                            <a href="{% url 'eventos:detalle' evento.id %}" class="btn btn-sm btn-outline-secondary">Ver</a>
-                            <form method="post" action="{% url 'eventos:inscribirse' evento.id %}">
+                            <a href="{% url 'actividades:detalle' actividad.id %}" class="btn btn-sm btn-outline-secondary">Ver</a>
+                            <form method="post" action="{% url 'actividades:inscribirse' actividad.id %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="next" value="{% url 'usuarios:dashboard_aprendiz' %}">
                                 <button type="submit" class="btn btn-sm btn-success">Inscribirme</button>
@@ -85,21 +95,37 @@ Mi panel | Be Time
 {% else %}
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body text-center text-muted py-4">
-            No hay eventos nuevos abiertos por ahora. Te avisaremos en la campanita cuando haya uno.
+            No hay actividades nuevas abiertas por ahora. Te avisaremos en la campanita cuando haya una.
         </div>
     </div>
 {% endif %}
 
-<div class="row g-4">
-    <div class="col-12 col-lg-6">
-        <h2 class="h5 fw-bold mb-3">Mis horas registradas</h2>
+<ul class="nav nav-pills gap-1 mb-3" id="pestanas-aprendiz" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-horas" data-bs-toggle="pill" data-bs-target="#panel-horas"
+                type="button" role="tab" aria-controls="panel-horas" aria-selected="true">
+            <i class="bi bi-clock-history"></i> Mis horas registradas
+            <span class="badge text-bg-light border ms-1">{{ horas|length }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-inscripciones" data-bs-toggle="pill" data-bs-target="#panel-inscripciones"
+                type="button" role="tab" aria-controls="panel-inscripciones" aria-selected="false">
+            <i class="bi bi-calendar-check"></i> Mis inscripciones
+            <span class="badge text-bg-light border ms-1">{{ inscripciones|length }}</span>
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="panel-horas" role="tabpanel" aria-labelledby="tab-horas" tabindex="0">
 
         {% if horas %}
             <div class="table-responsive">
                 <table class="table align-middle bg-white">
                     <thead>
                         <tr>
-                            <th>Evento</th>
+                            <th>Actividad</th>
                             <th>Horas</th>
                             <th>Otorgado por</th>
                             <th>Fecha</th>
@@ -108,7 +134,7 @@ Mi panel | Be Time
                     <tbody>
                         {% for h in horas %}
                             <tr>
-                                <td>{{ h.asistencia.inscripcion.evento.titulo }}</td>
+                                <td>{{ h.concepto }}</td>
                                 <td>{{ h.cantidad_horas }}</td>
                                 <td>{{ h.asignado_por.usuario.get_full_name }}</td>
                                 <td>{{ h.fecha|date:"d/m/Y" }}</td>
@@ -126,15 +152,14 @@ Mi panel | Be Time
         {% endif %}
     </div>
 
-    <div class="col-12 col-lg-6">
-        <h2 class="h5 fw-bold mb-3">Mis inscripciones</h2>
+    <div class="tab-pane fade" id="panel-inscripciones" role="tabpanel" aria-labelledby="tab-inscripciones" tabindex="0">
 
         {% if inscripciones %}
             <div class="table-responsive">
                 <table class="table align-middle bg-white">
                     <thead>
                         <tr>
-                            <th>Evento</th>
+                            <th>Actividad</th>
                             <th>Fecha</th>
                             <th>Estado</th>
                             <th></th>
@@ -144,21 +169,21 @@ Mi panel | Be Time
                         {% for inscripcion in inscripciones %}
                             <tr>
                                 <td>
-                                    <a href="{% url 'eventos:detalle' inscripcion.evento.id %}">
-                                        {{ inscripcion.evento.titulo }}
+                                    <a href="{% url 'actividades:detalle' inscripcion.actividad.id %}">
+                                        {{ inscripcion.actividad.titulo }}
                                     </a>
                                 </td>
-                                <td>{{ inscripcion.evento.fecha_inicio|date:"d/m/Y h:i A" }}</td>
+                                <td>{{ inscripcion.actividad.fecha_inicio|date:"d/m/Y h:i A" }}</td>
                                 <td><span class="badge text-bg-light border">{{ inscripcion.get_estado_display }}</span></td>
                                 <td>
                                     {% if inscripcion.estado == "inscrito" %}
                                         <div class="d-flex flex-wrap gap-1">
-                                            <a href="{% url 'eventos:mi_qr' inscripcion.id %}" class="btn btn-sm btn-outline-success">
+                                            <a href="{% url 'actividades:mi_qr' inscripcion.id %}" class="btn btn-sm btn-outline-success">
                                                 <i class="bi bi-qr-code"></i> Mi QR
                                             </a>
                                             {% if inscripcion.puede_cancelarse %}
-                                                <form method="post" action="{% url 'eventos:cancelar_inscripcion' inscripcion.id %}"
-                                                      data-confirmar-eliminar="Dejarás de estar inscrito en «{{ inscripcion.evento.titulo }}». Podrás volver a inscribirte mientras el evento siga abierto."
+                                                <form method="post" action="{% url 'actividades:cancelar_inscripcion' inscripcion.id %}"
+                                                      data-confirmar-eliminar="Dejarás de estar inscrito en «{{ inscripcion.actividad.titulo }}». Podrás volver a inscribirte mientras la actividad siga abierto."
                                                       data-confirmar-titulo="¿Cancelar tu inscripción?"
                                                       data-confirmar-boton="Sí, cancelar inscripción"
                                                       data-confirmar-volver="No, mantenerla">
@@ -178,12 +203,34 @@ Mi panel | Be Time
         {% else %}
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center text-muted py-4">
-                    Todavía no te has inscrito a ningún evento.
-                    <a href="{% url 'eventos:lista' %}">Ver eventos disponibles</a>
+                    Todavía no te has inscrito a ninguna actividad.
+                    <a href="{% url 'actividades:lista' %}">Ver actividades disponibles</a>
                 </div>
             </div>
         {% endif %}
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script>
+        // Recuerda la pestaña: al cancelar una inscripción la página se recarga
+        // y sin esto volvería a "Mis horas".
+        document.addEventListener("DOMContentLoaded", function () {
+            const clave = "pestana-panel-aprendiz";
+            let guardada = null;
+            try { guardada = sessionStorage.getItem(clave); } catch (e) {}
+            if (guardada === "tab-inscripciones") {
+                const b = document.getElementById("tab-inscripciones");
+                if (b && window.bootstrap) { bootstrap.Tab.getOrCreateInstance(b).show(); }
+            }
+            document.querySelectorAll("#pestanas-aprendiz [data-bs-toggle=pill]").forEach(function (b) {
+                b.addEventListener("shown.bs.tab", function () {
+                    try { sessionStorage.setItem(clave, b.id); } catch (e) {}
+                });
+            });
+        });
+    </script>
 {% endblock %}

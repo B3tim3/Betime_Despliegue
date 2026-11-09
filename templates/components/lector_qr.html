@@ -1,0 +1,25 @@
+{# Lector de QR con botón «Escanear» (cámara trasera). Lo maneja static/js/lector-qr.js #}
+<div id="lector-portada" class="text-center py-3">
+    <i class="bi bi-qr-code-scan text-success" style="font-size: 3rem;"></i>
+    <p class="text-muted small mt-2 mb-3">
+        Pulsa el botón para abrir la cámara trasera. La primera vez el navegador te pedirá permiso.
+    </p>
+    <button type="button" id="lector-iniciar" class="btn btn-success btn-lg w-100" style="max-width: 320px;">
+        <i class="bi bi-camera"></i> Escanear
+    </button>
+</div>
+
+<div id="lector-qr" hidden style="max-width: 420px; margin: 0 auto;"></div>
+
+<div id="lector-controles" hidden>
+    <div class="d-flex justify-content-center gap-2 mt-3">
+        <button type="button" id="lector-cambiar" class="btn btn-outline-secondary btn-sm" hidden>
+            <i class="bi bi-arrow-repeat"></i> Cambiar cámara
+        </button>
+        <button type="button" id="lector-detener" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-stop-circle"></i> Detener
+        </button>
+    </div>
+</div>
+
+<p id="lector-qr-estado" class="text-muted text-center small mt-3 mb-0" aria-live="polite"></p>

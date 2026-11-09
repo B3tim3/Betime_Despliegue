@@ -8,8 +8,8 @@ app_name = "usuarios"
 
 urlpatterns = [
     path("registro/", views.registro_aprendiz, name="registro"),
-    path("ajax/jornadas/", views.jornadas_por_programa, name="jornadas_por_programa"),
     path("ajax/grupos/", views.grupos_por_programa, name="grupos_por_programa"),
+    path("ajax/grupo/", views.grupo_por_numero, name="grupo_por_numero"),
     path("login/", views.login_view, name="login"),
     path("acceso-personal/", views.login_view, name="login_personal"),
     path("logout/", views.logout_view, name="logout"),
@@ -74,6 +74,7 @@ urlpatterns = [
             form_class=RecuperarContrasenaForm,
             template_name="usuarios/password_reset.html",
             email_template_name="usuarios/password_reset_email.html",
+            html_email_template_name="usuarios/password_reset_email_html.html",
             subject_template_name="usuarios/password_reset_subject.txt",
             success_url=reverse_lazy("usuarios:password_reset_done"),
         ),

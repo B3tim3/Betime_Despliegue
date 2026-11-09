@@ -15,7 +15,7 @@ Uso típico en un ModelAdmin:
     from django.db import models
     from core.widgets import AdminSplitDateTimeSinSegundos
 
-    class EventoAdmin(admin.ModelAdmin):
+    class ActividadAdmin(admin.ModelAdmin):
         formfield_overrides = {
             models.DateTimeField: {"widget": AdminSplitDateTimeSinSegundos},
         }
@@ -24,7 +24,7 @@ Uso típico en un ModelForm:
 
     from core.widgets import DateTimeLocalInput
 
-    class EventoForm(forms.ModelForm):
+    class ActividadForm(forms.ModelForm):
         class Meta:
             widgets = {
                 "fecha_inicio": DateTimeLocalInput(attrs={"class": "form-control"}),

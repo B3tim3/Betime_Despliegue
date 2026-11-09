@@ -5,7 +5,7 @@ TIPO_CHOICES = [
     ("cancelacion", "Cancelación"),
     ("recordatorio", "Recordatorio"),
     ("horas", "Horas de bienestar"),
-    ("evento", "Evento"),
+    ("actividad", "Actividad"),
     ("general", "General"),
 ]
 
@@ -37,7 +37,7 @@ class Notificacion(models.Model):
         default="general"
     )
 
-    # Adónde lleva la notificación al abrirla (ruta interna, ej. "/eventos/3/").
+    # Adónde lleva la notificación al abrirla (ruta interna, ej. "/actividades/3/").
     # Vacío = no lleva a ningún lado en particular.
     url = models.CharField(
         max_length=200,

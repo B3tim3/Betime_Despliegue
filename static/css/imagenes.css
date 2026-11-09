@@ -1,5 +1,5 @@
 /* ==========================================================
-   Imágenes sin recortar (eventos y publicaciones)
+   Imágenes sin recortar (actividades y publicaciones)
    Archivo propio: se carga DESPUÉS de pages.css para ganarle a
    sus reglas "object-fit: cover", que recortaban las fotos.
 
@@ -59,11 +59,11 @@
 /* ---------- 2) Miniaturas ya existentes: entera, no recortada ---------- */
 
 .home-card__media img,
-.home-evento-card__media img {
+.home-actividad-card__media img {
     object-fit: contain;
 }
 
-.home-evento__img {
+.home-actividad__img {
     object-fit: contain;
     background-color: var(--bt-fondo-alt, #f3f8f0);
 }

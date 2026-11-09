@@ -19,7 +19,7 @@ from bienestar.services import registrar_asistencia_y_horas
 from bienestar.services.constancia import SinHorasError, emitir_constancia, generar_pdf_constancia
 from bienestar.services.historial import historial_de, resumen_historial
 from bienestar.services.progreso import horas_de, total_horas_de
-from eventos.models import Evento, Inscripcion
+from actividades.models import Actividad, Inscripcion
 from usuarios.models import (
     Administrador, Grupo, Jornada, NivelFormacion, PersonalBienestar, ProgramaFormacion, Usuario,
 )
@@ -59,15 +59,15 @@ class Base(TestCase):
             nombres="Admin", apellidos="Be Time", email="admin@example.com")
         Administrador.objects.create(usuario=cls.admin, fecha_ingreso=date(2026, 1, 1))
 
-    def evento(self, titulo="Taller", dias=0, horas=4, estado="finalizado"):
+    def actividad(self, titulo="Taller", dias=0, horas=4, estado="finalizado"):
         inicio = timezone.now() + timedelta(days=dias)
-        return Evento.objects.create(
+        return Actividad.objects.create(
             titulo=titulo, descripcion="x", lugar="Aula", fecha_inicio=inicio,
             fecha_fin=inicio + timedelta(hours=2), horas_otorgadas=horas,
             creado_por=self.staff_user, estado=estado)
 
-    def inscribir(self, evento, aprendiz=None):
-        return Inscripcion.objects.create(evento=evento, aprendiz=aprendiz or self.aprendiz)
+    def inscribir(self, actividad, aprendiz=None):
+        return Inscripcion.objects.create(actividad=actividad, aprendiz=aprendiz or self.aprendiz)
 
     def dar_horas(self, inscripcion, horas=4, asistio=True):
         registrar_asistencia_y_horas(
@@ -78,8 +78,8 @@ class Base(TestCase):
 class ReglaDeHorasTests(Base):
 
     def test_solo_cuentan_las_horas_de_asistencia_marcada(self):
-        a = self.inscribir(self.evento("A", -3))
-        b = self.inscribir(self.evento("B", -2))
+        a = self.inscribir(self.actividad("A", -3))
+        b = self.inscribir(self.actividad("B", -2))
         self.dar_horas(a, 4)
         self.dar_horas(b, 6)
         self.assertEqual(total_horas_de(self.aprendiz), 10)
@@ -89,11 +89,11 @@ class ReglaDeHorasTests(Base):
         self.assertEqual(horas_de(self.aprendiz).count(), 1)
 
     def test_no_mezcla_aprendices(self):
-        self.dar_horas(self.inscribir(self.evento("A", -3)), 4)
+        self.dar_horas(self.inscribir(self.actividad("A", -3)), 4)
         self.assertEqual(total_horas_de(self.otro), 0)
 
     def test_dashboard_usa_la_misma_regla(self):
-        a = self.inscribir(self.evento("A", -3))
+        a = self.inscribir(self.actividad("A", -3))
         self.dar_horas(a, 4)
         self.dar_horas(a, 4, asistio=False)
         self.client.force_login(self.usuario)
@@ -109,14 +109,14 @@ class EmisionTests(Base):
         self.assertEqual(ConstanciaHoras.objects.count(), 0)
 
     def test_guarda_la_foto_de_lo_certificado(self):
-        self.dar_horas(self.inscribir(self.evento("A", -3)), 12)
+        self.dar_horas(self.inscribir(self.actividad("A", -3)), 12)
         c = emitir_constancia(self.aprendiz)
         self.assertEqual((c.nombre, c.numero_documento, c.programa, c.grupo, c.total_horas, c.meta_horas),
                          ("Juan Rodríguez", "1012345678", "Análisis y Desarrollo de Software", "3171693", 12, 40))
         self.assertRegex(c.codigo, r"^BT-[A-Z2-9]{4}-[A-Z2-9]{4}$")
 
     def test_la_constancia_vieja_no_cambia_aunque_cambien_los_datos(self):
-        self.dar_horas(self.inscribir(self.evento("A", -3)), 12)
+        self.dar_horas(self.inscribir(self.actividad("A", -3)), 12)
         c = emitir_constancia(self.aprendiz)
         self.usuario.nombres = "Cambiado"
         self.usuario.save()
@@ -125,22 +125,22 @@ class EmisionTests(Base):
         self.assertEqual((c.nombre, c.meta_horas), ("Juan Rodríguez", 40))
 
     def test_mismo_dia_y_mismas_horas_reutiliza_el_codigo(self):
-        self.dar_horas(self.inscribir(self.evento("A", -3)), 12)
+        self.dar_horas(self.inscribir(self.actividad("A", -3)), 12)
         c1 = emitir_constancia(self.aprendiz)
         c2 = emitir_constancia(self.aprendiz)
         self.assertEqual(c1.pk, c2.pk)
         self.assertEqual(ConstanciaHoras.objects.count(), 1)
 
     def test_si_cambian_las_horas_se_emite_una_nueva(self):
-        self.dar_horas(self.inscribir(self.evento("A", -3)), 12)
+        self.dar_horas(self.inscribir(self.actividad("A", -3)), 12)
         c1 = emitir_constancia(self.aprendiz)
-        self.dar_horas(self.inscribir(self.evento("B", -2)), 4)
+        self.dar_horas(self.inscribir(self.actividad("B", -2)), 4)
         c2 = emitir_constancia(self.aprendiz)
         self.assertNotEqual(c1.codigo, c2.codigo)
         self.assertEqual(c2.total_horas, 16)
 
     def test_documento_oculto(self):
-        self.dar_horas(self.inscribir(self.evento("A", -3)), 12)
+        self.dar_horas(self.inscribir(self.actividad("A", -3)), 12)
         self.assertEqual(emitir_constancia(self.aprendiz).documento_oculto, "••••••5678")
 
 
@@ -150,7 +150,7 @@ class DescargaPdfTests(Base):
         self.url = reverse("bienestar:constancia")
 
     def test_aprendiz_con_horas_descarga_el_pdf(self):
-        self.dar_horas(self.inscribir(self.evento("A", -3)), 12)
+        self.dar_horas(self.inscribir(self.actividad("A", -3)), 12)
         self.client.force_login(self.usuario)
         r = self.client.get(self.url)
         self.assertEqual(r.status_code, 200)
@@ -159,15 +159,15 @@ class DescargaPdfTests(Base):
         c = ConstanciaHoras.objects.get()
         self.assertIn(c.codigo, r["Content-Disposition"])
 
-    def test_titulo_de_evento_con_caracteres_raros_no_rompe_el_pdf(self):
-        self.dar_horas(self.inscribir(self.evento("Taller <b>& \"pausas\" > 3", -3)), 12)
+    def test_titulo_de_actividad_con_caracteres_raros_no_rompe_el_pdf(self):
+        self.dar_horas(self.inscribir(self.actividad("Taller <b>& \"pausas\" > 3", -3)), 12)
         self.client.force_login(self.usuario)
         r = self.client.get(self.url)
         self.assertTrue(r.content.startswith(b"%PDF"))
 
-    def test_muchos_eventos_ocupan_varias_paginas_sin_error(self):
+    def test_muchos_actividades_ocupan_varias_paginas_sin_error(self):
         for i in range(60):
-            self.dar_horas(self.inscribir(self.evento(f"Evento {i}", -i - 1)), 1)
+            self.dar_horas(self.inscribir(self.actividad(f"Actividad {i}", -i - 1)), 1)
         c = emitir_constancia(self.aprendiz)
         pdf = generar_pdf_constancia(c, "http://testserver/x/")
         self.assertTrue(pdf.startswith(b"%PDF"))
@@ -190,7 +190,7 @@ class DescargaPdfTests(Base):
         self.assertIn(reverse("usuarios:login"), r["Location"])
 
     def test_la_constancia_siempre_es_la_del_usuario_de_la_sesion(self):
-        self.dar_horas(self.inscribir(self.evento("A", -3), self.otro), 8)
+        self.dar_horas(self.inscribir(self.actividad("A", -3), self.otro), 8)
         self.client.force_login(self.usuario)      # Juan no tiene horas; la otra sí
         r = self.client.get(self.url)
         self.assertEqual(r.status_code, 302)
@@ -200,7 +200,7 @@ class DescargaPdfTests(Base):
 class VerificacionTests(Base):
 
     def setUp(self):
-        self.dar_horas(self.inscribir(self.evento("A", -3)), 12)
+        self.dar_horas(self.inscribir(self.actividad("A", -3)), 12)
         self.c = emitir_constancia(self.aprendiz)
 
     def url(self, codigo):
@@ -237,29 +237,29 @@ class HistorialTests(Base):
         self.url = reverse("bienestar:mi_historial")
 
     def armar(self):
-        self.i_asistio = self.inscribir(self.evento("Asistido", -5))
+        self.i_asistio = self.inscribir(self.actividad("Asistido", -5))
         self.dar_horas(self.i_asistio, 4)
-        self.i_no = self.inscribir(self.evento("Faltado", -4))
+        self.i_no = self.inscribir(self.actividad("Faltado", -4))
         self.dar_horas(self.i_no, 0, asistio=False)
-        self.i_pend = self.inscribir(self.evento("Pendiente", 3, estado="programado"))
-        self.i_canc = self.inscribir(self.evento("Cancelada", 4, estado="programado"))
+        self.i_pend = self.inscribir(self.actividad("Pendiente", 3, estado="programado"))
+        self.i_canc = self.inscribir(self.actividad("Cancelada", 4, estado="programado"))
         Inscripcion.objects.filter(pk=self.i_canc.pk).update(estado="cancelada")
-        self.inscribir(self.evento("Evento cancelado", 5, estado="cancelado"))
-        self.inscribir(self.evento("De otra", -2), self.otro)
+        self.inscribir(self.actividad("Actividad cancelado", 5, estado="cancelado"))
+        self.inscribir(self.actividad("De otra", -2), self.otro)
 
     def test_filas_estados_y_orden(self):
         self.armar()
         filas = historial_de(self.aprendiz)
-        self.assertEqual([f.evento for f in filas],
-                         ["Evento cancelado", "Cancelada", "Pendiente", "Faltado", "Asistido"])
-        estados = {f.evento: f.estado_codigo for f in filas}
+        self.assertEqual([f.actividad for f in filas],
+                         ["Actividad cancelado", "Cancelada", "Pendiente", "Faltado", "Asistido"])
+        estados = {f.actividad: f.estado_codigo for f in filas}
         self.assertEqual(estados, {
-            "Evento cancelado": "evento_cancelado", "Cancelada": "cancelada",
+            "Actividad cancelado": "actividad_cancelado", "Cancelada": "cancelada",
             "Pendiente": "inscrito", "Faltado": "no_asistio", "Asistido": "asistio"})
 
     def test_horas_solo_si_asistio(self):
         self.armar()
-        horas = {f.evento: f.horas for f in historial_de(self.aprendiz)}
+        horas = {f.actividad: f.horas for f in historial_de(self.aprendiz)}
         self.assertEqual(horas["Asistido"], 4)
         self.assertEqual(horas["Faltado"], 0)
 
@@ -272,9 +272,9 @@ class HistorialTests(Base):
         self.armar()
         r = self.client.get(self.url)
         self.assertEqual(r.status_code, 200)
-        for t in ("Asistido", "Faltado", "Pendiente", "Evento cancelado", "Constancia"):
+        for t in ("Asistido", "Faltado", "Pendiente", "Actividad cancelado", "Constancia"):
             self.assertContains(r, t)
-        self.assertNotContains(r, "De otra")          # nunca eventos de otro aprendiz
+        self.assertNotContains(r, "De otra")          # nunca actividades de otro aprendiz
         self.assertEqual(r.context["resumen"]["horas"], 4)
 
     def test_pagina_vacia(self):
@@ -282,14 +282,14 @@ class HistorialTests(Base):
         self.assertContains(r, "Todavía no te has inscrito")
         self.assertNotContains(r, reverse("bienestar:constancia"))   # sin horas no hay botón
 
-    def test_consultas_no_crecen_con_los_eventos(self):
+    def test_consultas_no_crecen_con_los_actividades(self):
         for i in range(3):
-            self.dar_horas(self.inscribir(self.evento(f"E{i}", -i - 1)), 1)
+            self.dar_horas(self.inscribir(self.actividad(f"E{i}", -i - 1)), 1)
         self.client.get(self.url)    # calienta (crea la configuración la primera vez)
         with CaptureQueriesContext(connection) as pocas:
             self.client.get(self.url)
         for i in range(3, 13):
-            self.dar_horas(self.inscribir(self.evento(f"E{i}", -i - 1)), 1)
+            self.dar_horas(self.inscribir(self.actividad(f"E{i}", -i - 1)), 1)
         with CaptureQueriesContext(connection) as muchas:
             self.client.get(self.url)
         self.assertEqual(len(pocas), len(muchas))
@@ -302,7 +302,7 @@ class HistorialTests(Base):
         self.assertEqual(self.client.get(self.url).status_code, 302)
 
     def test_enlaces_en_dashboard_y_menu(self):
-        self.dar_horas(self.inscribir(self.evento("A", -3)), 4)
+        self.dar_horas(self.inscribir(self.actividad("A", -3)), 4)
         r = self.client.get(reverse("usuarios:dashboard_aprendiz"))
         self.assertContains(r, self.url)
         self.assertContains(r, reverse("bienestar:constancia"))
@@ -313,9 +313,9 @@ class ExportarHistorialTests(Base):
     def setUp(self):
         self.client.force_login(self.usuario)
         self.url = reverse("bienestar:mi_historial_exportar")
-        self.dar_horas(self.inscribir(self.evento("Asistido", -5)), 4)
-        self.dar_horas(self.inscribir(self.evento("Faltado", -4)), 0, asistio=False)
-        self.inscribir(self.evento("De otra", -2), self.otro)
+        self.dar_horas(self.inscribir(self.actividad("Asistido", -5)), 4)
+        self.dar_horas(self.inscribir(self.actividad("Faltado", -4)), 0, asistio=False)
+        self.inscribir(self.actividad("De otra", -2), self.otro)
 
     def filas_excel(self, **params):
         from openpyxl import load_workbook
@@ -324,12 +324,12 @@ class ExportarHistorialTests(Base):
         hoja = load_workbook(BytesIO(r.content)).active
         return [[c.value for c in fila] for fila in hoja.iter_rows()]
 
-    def test_excel_con_las_columnas_y_solo_mis_eventos(self):
+    def test_excel_con_las_columnas_y_solo_mis_actividades(self):
         filas = self.filas_excel()
-        i = next(n for n, f in enumerate(filas) if f and f[0] == "Evento")
-        self.assertEqual(filas[i], ["Evento", "Lugar", "Fecha", "Estado", "Horas"])
-        eventos = [f[0] for f in filas[i + 1:] if f and f[0]]
-        self.assertCountEqual(eventos, ["Asistido", "Faltado"])
+        i = next(n for n, f in enumerate(filas) if f and f[0] == "Actividad")
+        self.assertEqual(filas[i], ["Actividad", "Lugar", "Fecha", "Estado", "Horas"])
+        actividades = [f[0] for f in filas[i + 1:] if f and f[0]]
+        self.assertCountEqual(actividades, ["Asistido", "Faltado"])
 
     def test_filtros(self):
         filas = self.filas_excel(estado="asistio")

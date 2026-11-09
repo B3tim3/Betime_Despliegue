@@ -1,12 +1,14 @@
 from django.db import models
 
+from core.imagenes_mixin import ImagenOptimizadaMixin
+
 ESTADO_CHOICES = [
     ("borrador", "Borrador"),
     ("publicado", "Publicado"),
 ]
 
 
-class Publicacion(models.Model):
+class Publicacion(ImagenOptimizadaMixin, models.Model):
 
     id = models.BigAutoField(primary_key=True)
 
@@ -58,6 +60,10 @@ class Publicacion(models.Model):
     class Meta:
         verbose_name = "Publicación"
         verbose_name_plural = "Publicaciones"
+        indexes = [
+            # El panel filtra por periodo y ordena por esta fecha.
+            models.Index(fields=["fecha_creacion"], name="publicacion_fecha_creacion_idx"),
+        ]
 
     def __str__(self):
         return self.titulo

@@ -1,0 +1,147 @@
+/* ==========================================================================
+   Index: ilustración de engranajes + tarjetas de servicios.
+   Se carga DESPUÉS de pages.css, así que sus reglas tienen la última palabra
+   sin tener que tocar pages.css (que comparten otras pantallas).
+   ========================================================================== */
+
+/* ---------- Colores por servicio (se reutilizan en engranaje, ícono, etiqueta y tarjeta) ---------- */
+.sv-promocion  { --c: #43a047; --c-suave: #e6f4e7; }
+.sv-psicosocial{ --c: #2b9686; --c-suave: #e2f3f0; }
+.sv-deportes   { --c: #d98f1f; --c-suave: #fbf0da; }
+.sv-cultura    { --c: #76a935; --c-suave: #eef6df; }
+
+/* ---------- Lienzo: más ancho para que las etiquetas queden FUERA del círculo ---------- */
+.home-hero__art { max-width: 460px; }
+
+/* El círculo, los engranajes y los íconos van dentro de un "escenario" con margen:
+   así las etiquetas de las esquinas tienen sitio y no se montan sobre el borde. */
+.home-hero__stage { position: absolute; inset: 11%; }
+
+.home-hero__ring {
+    background: radial-gradient(circle at 32% 26%, #ffffff 0%, var(--bt-fondo-alt) 62%, #e6efe0 100%);
+    box-shadow: inset 0 0 0 1px var(--bt-borde), 0 24px 40px -28px rgba(22, 36, 26, .45);
+}
+/* Anillo punteado exterior, muy lento: da sensación de "sistema" sin distraer. */
+.home-hero__ring::after {
+    content: "";
+    position: absolute;
+    inset: -3.5%;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(46, 139, 61, .35);
+    animation: hero-anillo 90s linear infinite;
+}
+@keyframes hero-anillo { to { transform: rotate(360deg); } }
+
+/* ---------- Engranajes ---------- */
+.home-hero__svg { filter: drop-shadow(0 6px 7px rgba(22, 36, 26, .28)); }
+
+/* El eje de giro es el centro de la rueda (cada grupo trae un círculo invisible del
+   tamaño exacto de la rueda, así la caja de giro queda centrada y no "baila"). */
+.gear { transform-box: fill-box; transform-origin: center; }
+/* Velocidades proporcionales al número de dientes (16 y 10): al girar, los dientes
+   siguen encajando en cada instante. Por eso NO se cambia la velocidad al pasar el mouse. */
+.gear--centro { animation: gear-giro 16s linear infinite; }
+.gear--sat    { animation: gear-giro 10s linear infinite reverse; }
+
+.gear path { stroke: rgba(15, 45, 22, .28); stroke-width: .8; stroke-linejoin: round; }
+.gear__aro  { fill: none; stroke: rgba(255, 255, 255, .38); stroke-width: 1.2; }
+.gear__hole { fill: rgba(255, 255, 255, .6); }
+.gear--centro .gear__hole { fill: rgba(255, 255, 255, .32); }
+
+/* Halo que se enciende al resaltar un servicio (más compatible que filtros CSS en SVG). */
+.gear__halo {
+    fill: none;
+    stroke: var(--c);
+    stroke-width: 2.6;
+    stroke-dasharray: 3 5;
+    opacity: 0;
+    transition: opacity .2s ease;
+}
+.gear-wrap.is-activo .gear__halo { opacity: .95; }
+
+@media (prefers-reduced-motion: reduce) {
+    .gear, .home-hero__ring::after { animation: none; }
+}
+
+/* ---------- Íconos sobre los engranajes ---------- */
+.home-hero__nodo {
+    width: 14%;
+    font-size: 1.1rem;
+    color: var(--c, var(--bt-verde-oscuro));
+    box-shadow: 0 4px 10px -3px rgba(22, 36, 26, .45), inset 0 0 0 2px var(--c-suave, #fff);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.home-hero__nodo.is-activo {
+    transform: translate(-50%, -50%) scale(1.14);
+    box-shadow: 0 8px 16px -4px rgba(22, 36, 26, .5), 0 0 0 3px var(--c);
+}
+
+/* ---------- Etiquetas en las esquinas (fuera del círculo) ---------- */
+.hero-chip {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    max-width: 38%;
+    padding: .3rem .75rem .3rem .45rem;
+    background: #fff;
+    border: 1px solid var(--bt-borde);
+    border-left: 4px solid var(--c);
+    border-radius: 12px;
+    font-size: .76rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--bt-tinta);
+    box-shadow: 0 10px 20px -14px rgba(22, 36, 26, .45);
+    transition: background-color .2s ease, color .2s ease, transform .2s ease;
+}
+.hero-chip i { color: var(--c); font-size: .95rem; flex: none; }
+.hero-chip--tl { left: 0;  top: 1%; }
+.hero-chip--tr { right: 0; top: 1%; }
+.hero-chip--bl { left: 0;  bottom: 1%; }
+.hero-chip--br { right: 0; bottom: 1%; }
+.hero-chip.is-activo { background: var(--c); color: #fff; border-color: var(--c); transform: translateY(-2px); }
+.hero-chip.is-activo i { color: #fff; }
+
+/* ---------- Tarjetas de "Servicios de bienestar" ---------- */
+.servicio-card {
+    height: 100%;
+    padding: 1.6rem 1.4rem 1.5rem;
+    text-align: center;
+    background: #fff;
+    border: 1px solid var(--bt-borde);
+    border-top: 5px solid var(--c);
+    border-radius: 16px;
+    box-shadow: 0 14px 28px -24px rgba(22, 36, 26, .5);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    outline: none;
+}
+.servicio-card:hover, .servicio-card:focus-visible, .servicio-card.is-activo {
+    transform: translateY(-6px);
+    box-shadow: 0 22px 34px -22px rgba(22, 36, 26, .55), 0 0 0 2px var(--c-suave);
+}
+.servicio-card:focus-visible { box-shadow: 0 0 0 3px var(--c); }
+
+.servicio-card__icono {
+    width: 4.2rem;
+    height: 4.2rem;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    color: var(--c);
+    background: var(--c-suave);
+    transition: transform .25s ease, background-color .25s ease, color .25s ease;
+}
+.servicio-card:hover .servicio-card__icono,
+.servicio-card.is-activo .servicio-card__icono { background: var(--c); color: #fff; transform: rotate(-8deg) scale(1.06); }
+
+.servicio-card__titulo { font-size: 1.08rem; font-weight: 700; margin-bottom: .45rem; color: var(--bt-tinta); }
+.servicio-card__texto  { font-size: .9rem; line-height: 1.55; color: #5a695c; margin: 0; }
+
+@media (max-width: 575.98px) {
+    .home-hero__art { max-width: 360px; }
+    .hero-chip { font-size: .7rem; padding: .25rem .55rem .25rem .4rem; }
+}

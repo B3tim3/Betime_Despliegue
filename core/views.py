@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from core.models import RegistroAuditoria
-from eventos.models import Evento
+from actividades.models import Actividad
 from publicaciones.models import Publicacion
 from usuarios.decorators import administrador_requerido
 
@@ -15,13 +15,13 @@ def index(request):
         estado="publicado"
     ).order_by("-fecha_publicacion")[:3]
 
-    eventos = Evento.objects.filter(
+    actividades = Actividad.objects.filter(
         fecha_inicio__gte=timezone.now()
     ).order_by("fecha_inicio")[:3]
 
     return render(request, "pages/index.html", {
         "publicaciones": publicaciones,
-        "eventos": eventos,
+        "actividades": actividades,
     })
 
 
