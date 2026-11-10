@@ -1,0 +1,61 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Archivar grupo | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<nav class="mb-2">
+    <a href="{% url 'usuarios:grupos_lista' %}" class="text-decoration-none">&larr; Grupos</a>
+</nav>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+
+        <h1 class="h4 fw-bold mb-3">Archivar grupo {{ grupo.numero_grupo }}</h1>
+
+        <div class="alert alert-warning mb-4">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            <strong>¿Estás seguro?</strong> Al archivar este grupo:
+            <ul class="mb-0 mt-2">
+                <li>El grupo dejará de aparecer en el panel de grupos.</li>
+                <li>Se <strong>desactivarán {{ total_aprendices }} cuenta(s)</strong> de aprendiz (ya no podrán iniciar sesión).</li>
+                <li>Todos los registros de asistencia y horas se conservan.</li>
+                <li>Podrás restaurar el grupo más adelante desde el panel de archivados.</li>
+            </ul>
+        </div>
+
+        <table class="table table-sm mb-4" style="max-width: 400px;">
+            <tr>
+                <th class="text-muted">Grupo</th>
+                <td>{{ grupo.numero_grupo }}</td>
+            </tr>
+            <tr>
+                <th class="text-muted">Programa</th>
+                <td>{{ grupo.programa_formacion.nombre }}</td>
+            </tr>
+            <tr>
+                <th class="text-muted">Jornada</th>
+                <td>{{ grupo.jornada.nombre }}</td>
+            </tr>
+            <tr>
+                <th class="text-muted">Aprendices</th>
+                <td>{{ total_aprendices }}</td>
+            </tr>
+        </table>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-warning">
+                    <i class="bi bi-archive"></i> Sí, archivar
+                </button>
+                <a href="{% url 'usuarios:grupos_lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

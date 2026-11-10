@@ -26,7 +26,7 @@ class CorreoRecuperacionTests(TestCase):
         self.assertIn("cid:logo-betime", html)
         self.assertIn("••••567", html)
         self.assertNotIn("1234567", html)
-        self.assertIn("3 días", html)      # vigencia por defecto de Django
+        self.assertIn("20 minutos", html)   # PASSWORD_RESET_TIMEOUT = 20 * 60
         # el logo viaja adjunto, embebido
         mime = m.message().as_string()
         self.assertIn("Content-ID: <logo-betime>", mime)

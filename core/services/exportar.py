@@ -70,6 +70,12 @@ def responder_export(request, nombre_archivo, titulo, encabezados, filas, url_er
 def _valor_a_texto(valor):
     if valor is None:
         return ""
+    # Fechas y horas en formato legible (dd/mm/aaaa) en vez de ISO 8601
+    import datetime as _dt
+    if isinstance(valor, _dt.datetime):
+        return timezone.localtime(valor).strftime("%d/%m/%Y %I:%M %p")
+    if isinstance(valor, _dt.date):
+        return valor.strftime("%d/%m/%Y")
     return str(valor)
 
 

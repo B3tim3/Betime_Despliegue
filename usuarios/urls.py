@@ -56,6 +56,10 @@ urlpatterns = [
     path("panel/grupos/crear/", views.GrupoCreateView.as_view(), name="grupos_crear"),
     path("panel/grupos/<int:pk>/editar/", views.GrupoUpdateView.as_view(), name="grupos_editar"),
     path("panel/grupos/<int:pk>/eliminar/", views.GrupoDeleteView.as_view(), name="grupos_eliminar"),
+    path("panel/grupos/<int:pk>/archivar/", views.archivar_grupo_view, name="grupos_archivar"),
+    path("panel/grupos/archivados/", views.GrupoArchivadosListView.as_view(), name="grupos_archivados"),
+    path("panel/grupos/<int:pk>/restaurar/", views.restaurar_grupo_view, name="grupos_restaurar"),
+    path("panel/grupos/<int:pk>/eliminar-definitivo/", views.eliminar_grupo_definitivo_view, name="grupos_eliminar_definitivo"),
     path("panel/grupos/<int:grupo_id>/aprendices/", views.AprendizListView.as_view(), name="aprendices_de_grupo"),
 
     # ---------- Panel: Aprendices (Bienestar / Administrador) ----------

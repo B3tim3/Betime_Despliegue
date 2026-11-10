@@ -5,6 +5,7 @@ from django.utils import timezone
 ESTADO_CHOICES = [
     ("activa", "Activo"),
     ("cerrada", "Cerrado"),
+    ("archivada", "Archivado"),
 ]
 
 
@@ -23,15 +24,22 @@ def vigente_q(prefijo="", hoy=None):
 
 class GrupoQuerySet(models.QuerySet):
 
+    def _sin_archivados(self):
+        return self.exclude(estado="archivada")
+
     def vigentes(self, hoy=None):
-        return self.filter(vigente_q(hoy=hoy))
+        return self._sin_archivados().filter(vigente_q(hoy=hoy))
 
     def historial(self, hoy=None):
         """Los que ya no están vigentes: terminaron por fecha o se cerraron a mano."""
-        return self.exclude(vigente_q(hoy=hoy))
+        return self._sin_archivados().exclude(vigente_q(hoy=hoy))
+
+    def archivados(self):
+        """Grupos archivados: sacados del panel principal, cuentas desactivadas."""
+        return self.filter(estado="archivada")
 
     def con_vigencia(self, codigo, hoy=None):
-        """Filtra por «vigente», «finalizado» (terminó por fecha) o «cerrado» (a mano)."""
+        """Filtra por «vigente», «finalizado» (terminó por fecha), «cerrado» o «archivado»."""
         hoy = hoy or timezone.localdate()
         if codigo == "vigente":
             return self.vigentes(hoy)
@@ -39,10 +47,15 @@ class GrupoQuerySet(models.QuerySet):
             return self.filter(estado="activa", fecha_fin__lt=hoy)
         if codigo == "cerrado":
             return self.filter(estado="cerrada")
+        if codigo == "archivado":
+            return self.archivados()
         return self
 
 
-VIGENCIA_ETIQUETAS = {"vigente": "Vigente", "finalizado": "Finalizado", "cerrado": "Cerrado"}
+VIGENCIA_ETIQUETAS = {
+    "vigente": "Vigente", "finalizado": "Finalizado",
+    "cerrado": "Cerrado", "archivado": "Archivado",
+}
 
 
 class Grupo(models.Model):
@@ -97,8 +110,10 @@ class Grupo(models.Model):
 
     @property
     def vigencia(self):
-        """'vigente', 'finalizado' (pasó su fecha de fin) o 'cerrado' (cerrado a mano)."""
-        if self.estado != "activa":
+        """'vigente', 'finalizado', 'cerrado' o 'archivado'."""
+        if self.estado == "archivada":
+            return "archivado"
+        if self.estado == "cerrada":
             return "cerrado"
         return "vigente" if self.fecha_fin >= timezone.localdate() else "finalizado"
 
