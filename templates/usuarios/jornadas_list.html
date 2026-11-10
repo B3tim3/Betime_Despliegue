@@ -20,7 +20,7 @@ Jornadas | Be Time
     {% include 'components/tabla/buscador.html' with tabla_id='tabla-jornadas' placeholder='Buscar por nombre...' %}
 
     <div class="table-responsive">
-        <table class="table align-middle bg-white" id="tabla-jornadas" data-tabla-ordenable>
+        <table class="table align-middle bg-white" id="tabla-jornadas" data-tabla-ordenable data-tabla-paginada>
             <thead>
                 <tr>
                     <th data-ordenar-columna="0">Nombre</th>
@@ -32,11 +32,17 @@ Jornadas | Be Time
                     <tr>
                         <td>{{ jornada.nombre }}</td>
                         <td class="text-end">
-                            <a href="{% url 'usuarios:grupos_de_jornada' jornada.id %}" class="btn btn-sm btn-outline-primary">Ver grupos</a>
-                            <a href="{% url 'usuarios:jornadas_editar' jornada.id %}" class="btn btn-sm btn-outline-success">Editar</a>
+                            <a href="{% url 'usuarios:grupos_de_jornada' jornada.id %}" class="tabla-btn-accion tabla-btn-ver" title="Ver grupos">
+                                <i class="bi bi-collection"></i> Grupos
+                            </a>
+                            <a href="{% url 'usuarios:jornadas_editar' jornada.id %}" class="tabla-btn-accion tabla-btn-editar" title="Editar">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
                             <form method="post" action="{% url 'usuarios:jornadas_eliminar' jornada.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar la jornada {{ jornada.nombre }}? Esta acción no se puede deshacer.">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                <button type="submit" class="tabla-btn-accion tabla-btn-eliminar" title="Eliminar">
+                                    <i class="bi bi-trash3"></i> Eliminar
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -45,7 +51,6 @@ Jornadas | Be Time
         </table>
     </div>
 
-    {% include 'components/tabla/paginacion.html' %}
 {% else %}
     <div class="card border-0 shadow-sm">
         <div class="card-body text-center text-muted py-5">

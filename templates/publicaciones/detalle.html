@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static imagenes %}
+{% load static imagenes enlaces %}
 
 {% block title %}
 {{ publicacion.titulo }} | Be Time
@@ -38,7 +38,7 @@
                 </div>
             {% endif %}
 
-            <div class="pub-contenido">{{ publicacion.contenido }}</div>
+            <div class="pub-contenido">{{ publicacion.contenido|enlazar }}</div>
 
             <div class="pub-acciones">
                 <a href="{% url 'publicaciones:lista' %}" class="pub-boton"><i class="bi bi-arrow-left"></i> Todas las publicaciones</a>

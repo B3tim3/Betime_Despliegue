@@ -28,51 +28,22 @@ Grupos | Be Time
     </div>
 </div>
 
-{# Pestañas: la lista de trabajo son los grupos vigentes; los terminados quedan en el historial. #}
-<ul class="nav nav-pills gap-1 mb-3">
-    <li class="nav-item">
-        <a class="nav-link {% if vista == 'vigentes' %}active{% endif %}" href="?vista=vigentes">
-            Vigentes <span class="badge text-bg-light border ms-1">{{ total_vigentes }}</span>
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {% if vista == 'historial' %}active{% endif %}" href="?vista=historial">
-            Historial <span class="badge text-bg-light border ms-1">{{ total_historial }}</span>
-        </a>
-    </li>
-</ul>
-
-<form method="get" class="row g-2 mb-3">
-    <input type="hidden" name="vista" value="{{ vista }}">
-    <div class="col-12 col-md-5">
-        <div class="input-group">
-            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por número, programa o jornada...">
+{% if grupos %}
+    <div class="row g-2 mb-1">
+        <div class="col-12 col-md-6">
+            {% include 'components/tabla/buscador.html' with tabla_id='tabla-grupos' placeholder='Buscar por número, programa o jornada...' %}
         </div>
-    </div>
-    {% if vista == 'historial' %}
-        {% if anios %}
-            <div class="col-6 col-md-2">
-                <select name="anio" class="form-select" aria-label="Año de fin" onchange="this.form.submit()">
-                    <option value="">Todos los años</option>
-                    {% for a in anios %}<option value="{{ a }}" {% if anio == a|stringformat:"s" %}selected{% endif %}>{{ a }}</option>{% endfor %}
-                </select>
-            </div>
-        {% endif %}
-        <div class="col-6 col-md-3">
-            <select name="estado" class="form-select" aria-label="Estado" onchange="this.form.submit()">
-                <option value="">Finalizados y cerrados</option>
-                <option value="finalizado" {% if estado_filtro == 'finalizado' %}selected{% endif %}>Finalizado (terminó por fecha)</option>
-                <option value="cerrado" {% if estado_filtro == 'cerrado' %}selected{% endif %}>Cerrado a mano</option>
+        <div class="col-12 col-md-4">
+            <select class="form-select" data-tabla-filtro-estado="tabla-grupos">
+                <option value="">Todos los estados</option>
+                <option value="activa">Activo</option>
+                <option value="cerrada">Cerrado</option>
             </select>
         </div>
-    {% endif %}
-    <div class="col-auto"><button class="btn btn-outline-secondary">Buscar</button></div>
-</form>
+    </div>
 
-{% if grupos %}
     <div class="table-responsive">
-        <table class="table align-middle bg-white" id="tabla-grupos">
+        <table class="table align-middle bg-white" id="tabla-grupos" data-tabla-ordenable data-tabla-paginada>
             <thead>
                 <tr>
                     <th data-ordenar-columna="0">Número</th>
@@ -86,19 +57,25 @@ Grupos | Be Time
             </thead>
             <tbody>
                 {% for grupo in grupos %}
-                    <tr>
+                    <tr data-estado="{{ grupo.estado }}">
                         <td>{{ grupo.numero_grupo }}</td>
                         <td>{{ grupo.programa_formacion.nombre }}</td>
                         <td>{{ grupo.jornada.nombre }}</td>
                         <td>{{ grupo.fecha_inicio|date:"d/m/Y" }}</td>
                         <td>{{ grupo.fecha_fin|date:"d/m/Y" }}</td>
-                        <td><span class="badge {% if grupo.vigencia == 'vigente' %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ grupo.vigencia_etiqueta }}</span></td>
+                        <td><span class="badge text-bg-light border">{{ grupo.get_estado_display }}</span></td>
                         <td class="text-end">
-                            <a href="{% url 'usuarios:aprendices_de_grupo' grupo.id %}" class="btn btn-sm btn-outline-primary">Ver aprendices</a>
-                            <a href="{% url 'usuarios:grupos_editar' grupo.id %}" class="btn btn-sm btn-outline-success">Editar</a>
+                            <a href="{% url 'usuarios:aprendices_de_grupo' grupo.id %}" class="tabla-btn-accion tabla-btn-ver" title="Ver aprendices">
+                                <i class="bi bi-people"></i> Aprendices
+                            </a>
+                            <a href="{% url 'usuarios:grupos_editar' grupo.id %}" class="tabla-btn-accion tabla-btn-editar" title="Editar">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
                             <form method="post" action="{% url 'usuarios:grupos_eliminar' grupo.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar el grupo {{ grupo.numero_grupo }}? Esta acción no se puede deshacer.">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                <button type="submit" class="tabla-btn-accion tabla-btn-eliminar" title="Eliminar">
+                                    <i class="bi bi-trash3"></i> Eliminar
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -107,13 +84,10 @@ Grupos | Be Time
         </table>
     </div>
 
-    {% include 'components/tabla/paginacion.html' %}
 {% else %}
     <div class="card border-0 shadow-sm">
         <div class="card-body text-center text-muted py-5">
-            {% if q or anio or estado_filtro %}No hay grupos con esos filtros.
-            {% elif vista == 'historial' %}Todavía no hay grupos en el historial.
-            {% else %}No hay grupos vigentes. Crea uno con «Nuevo grupo».{% endif %}
+            Todavía no hay grupos registrados.
         </div>
     </div>
 {% endif %}

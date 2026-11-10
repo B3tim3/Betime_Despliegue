@@ -61,7 +61,7 @@ class ProgramaFormacionListView(AdministradorRequeridoMixin, ListView):
     template_name = "usuarios/programas_list.html"
     context_object_name = "programas"
     ordering = ["nombre"]
-    paginate_by = 15
+    paginate_by = 500
 
 
 class ProgramaFormacionCreateView(AdministradorRequeridoMixin, CreateView):
@@ -116,7 +116,7 @@ class NivelFormacionListView(AdministradorRequeridoMixin, ListView):
     model = NivelFormacion
     template_name = "usuarios/niveles_list.html"
     context_object_name = "niveles"
-    paginate_by = 15
+    paginate_by = 500
 
     def get_queryset(self):
         return NivelFormacion.objects.annotate(
@@ -180,7 +180,7 @@ class JornadaListView(AdministradorRequeridoMixin, ListView):
     template_name = "usuarios/jornadas_list.html"
     context_object_name = "jornadas"
     ordering = ["nombre"]
-    paginate_by = 15
+    paginate_by = 500
 
 
 class JornadaCreateView(AdministradorRequeridoMixin, CreateView):
@@ -243,7 +243,7 @@ class GrupoListView(PersonalBienestarRequeridoMixin, ListView):
     model = Grupo
     template_name = "usuarios/grupos_list.html"
     context_object_name = "grupos"
-    paginate_by = 15
+    paginate_by = 500
 
     def get_queryset(self):
         grupos, self.vista = filtrar_grupos(
