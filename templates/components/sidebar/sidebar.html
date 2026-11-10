@@ -1,79 +1,164 @@
-<div class="list-group">
+{% load static %}
 
-    <a href="/" class="list-group-item list-group-item-action text-muted">
-        <i class="bi bi-box-arrow-left"></i> Volver al sitio
+{# ── Resuelve la URL actual para marcar el item activo ── #}
+{% url 'usuarios:dashboard' as url_inicio %}
+{% url 'actividades:panel_lista' as url_actividades %}
+{% url 'bienestar:actividades_lista' as url_horas %}
+{% url 'publicaciones:panel_lista' as url_publicaciones %}
+{% url 'bienestar:panel_nosotros' as url_nosotros %}
+{% url 'usuarios:grupos_lista' as url_grupos %}
+{% url 'usuarios:grupos_archivados' as url_archivados %}
+{% url 'usuarios:aprendices_lista' as url_aprendices %}
+
+{% if request.user.aprendiz %}
+    {% url 'usuarios:perfil' as url_perfil %}
+    {% url 'bienestar:mi_historial' as url_historial %}
+    {% url 'bienestar:recibir_extracurriculares' as url_extracurriculares %}
+{% endif %}
+
+{% if request.user.administrador %}
+    {% url 'usuarios:crear_usuario' as url_crear_usuario %}
+    {% url 'usuarios:programas_lista' as url_programas %}
+    {% url 'bienestar:configuracion' as url_configuracion %}
+    {% url 'auditoria' as url_auditoria %}
+    {% url 'usuarios:niveles_lista' as url_niveles %}
+    {% url 'usuarios:jornadas_lista' as url_jornadas %}
+{% endif %}
+
+<nav class="sidebar-nav" aria-label="Menú del panel">
+
+    {# ── Volver al sitio ── #}
+    <a href="/" class="sidebar-link sidebar-back">
+        <i class="bi bi-box-arrow-left"></i>
+        <span>Volver al sitio</span>
     </a>
 
-    <hr class="my-2">
+    <div class="sidebar-divider"></div>
 
-    <a href="{% url 'usuarios:dashboard' %}" class="list-group-item list-group-item-action">
-        <i class="bi bi-house"></i> Inicio
+    {# ── Inicio ── #}
+    <a href="{{ url_inicio }}" class="sidebar-link {% if request.path == url_inicio %}active{% endif %}">
+        <i class="bi bi-house"></i>
+        <span>Inicio</span>
     </a>
 
+    {# ══════════ Aprendiz ══════════ #}
     {% if request.user.aprendiz %}
-        <a href="{% url 'usuarios:perfil' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-person-circle"></i> Mi perfil
+
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-section-label">Mi cuenta</div>
+
+        <a href="{{ url_perfil }}" class="sidebar-link {% if request.path == url_perfil %}active{% endif %}">
+            <i class="bi bi-person-circle"></i>
+            <span>Mi perfil</span>
         </a>
 
-        <a href="{% url 'bienestar:mi_historial' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-clock-history"></i> Mi historial
+        <a href="{{ url_historial }}" class="sidebar-link {% if request.path == url_historial %}active{% endif %}">
+            <i class="bi bi-clock-history"></i>
+            <span>Mi historial</span>
         </a>
 
-        <a href="{% url 'bienestar:recibir_extracurriculares' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-stars"></i> Horas de bienestar por mérito
+        <a href="{{ url_extracurriculares }}" class="sidebar-link {% if request.path == url_extracurriculares %}active{% endif %}">
+            <i class="bi bi-stars"></i>
+            <span>Horas por mérito</span>
         </a>
     {% endif %}
 
+    {# ══════════ Bienestar / Administrador ══════════ #}
     {% if request.user.personal_bienestar or request.user.administrador %}
-        <a href="{% url 'actividades:panel_lista' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-calendar-event"></i> Actividades
+
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-section-label">Gestión</div>
+
+        <a href="{{ url_actividades }}" class="sidebar-link {% if request.path == url_actividades %}active{% endif %}">
+            <i class="bi bi-calendar-event"></i>
+            <span>Actividades</span>
         </a>
 
-        <a href="{% url 'bienestar:actividades_lista' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-stars"></i> Horas por mérito
+        <a href="{{ url_horas }}" class="sidebar-link {% if request.path == url_horas %}active{% endif %}">
+            <i class="bi bi-stars"></i>
+            <span>Horas por mérito</span>
         </a>
 
-        <a href="{% url 'publicaciones:panel_lista' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-file-earmark-text"></i> Publicaciones
+        <a href="{{ url_publicaciones }}" class="sidebar-link {% if request.path == url_publicaciones %}active{% endif %}">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>Publicaciones</span>
         </a>
 
-        <a href="{% url 'bienestar:panel_nosotros' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-people-fill"></i> Nosotros
+        <a href="{{ url_nosotros }}" class="sidebar-link {% if request.path == url_nosotros %}active{% endif %}">
+            <i class="bi bi-people-fill"></i>
+            <span>Nosotros</span>
         </a>
 
-        <a href="{% url 'usuarios:grupos_lista' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-journal-bookmark"></i> Grupos
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-section-label">Académico</div>
+
+        {# ── Grupos con submenú colapsable ── #}
+        <a class="sidebar-link sidebar-toggle {% if 'grupos' in request.path %}active{% endif %}"
+           data-bs-toggle="collapse"
+           href="#submenuGrupos"
+           role="button"
+           aria-expanded="{% if 'grupos' in request.path %}true{% else %}false{% endif %}"
+           aria-controls="submenuGrupos">
+            <i class="bi bi-journal-bookmark"></i>
+            <span>Grupos</span>
+            <i class="bi bi-chevron-down sidebar-chevron"></i>
         </a>
 
-        <a href="{% url 'usuarios:aprendices_lista' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-people"></i> Aprendices
+        <div class="collapse {% if 'grupos' in request.path %}show{% endif %}" id="submenuGrupos">
+            <a href="{{ url_grupos }}" class="sidebar-link sidebar-sublink {% if request.path == url_grupos %}active{% endif %}">
+                <i class="bi bi-list-ul"></i>
+                <span>Todos los grupos</span>
+            </a>
+            <a href="{{ url_archivados }}" class="sidebar-link sidebar-sublink {% if request.path == url_archivados %}active{% endif %}">
+                <i class="bi bi-archive"></i>
+                <span>Archivados</span>
+            </a>
+        </div>
+
+        <a href="{{ url_aprendices }}" class="sidebar-link {% if 'aprendices' in request.path %}active{% endif %}">
+            <i class="bi bi-people"></i>
+            <span>Aprendices</span>
         </a>
     {% endif %}
 
+    {# ══════════ Solo Administrador ══════════ #}
     {% if request.user.administrador %}
-        <a href="{% url 'usuarios:crear_usuario' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-person-plus"></i> Crear usuario
+
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-section-label">Administración</div>
+
+        <a href="{{ url_crear_usuario }}" class="sidebar-link {% if request.path == url_crear_usuario %}active{% endif %}">
+            <i class="bi bi-person-plus"></i>
+            <span>Crear usuario</span>
         </a>
 
-        <a href="{% url 'usuarios:programas_lista' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-mortarboard"></i> Programas de formación
+        <a href="{{ url_programas }}" class="sidebar-link {% if request.path == url_programas %}active{% endif %}">
+            <i class="bi bi-mortarboard"></i>
+            <span>Programas</span>
         </a>
 
-        <a href="{% url 'bienestar:configuracion' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-sliders"></i> Configuración
+        <a href="{{ url_niveles }}" class="sidebar-link {% if request.path == url_niveles %}active{% endif %}">
+            <i class="bi bi-layers"></i>
+            <span>Niveles</span>
         </a>
 
-        <a href="{% url 'auditoria' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-journal-text"></i> Auditoría
+        <a href="{{ url_jornadas }}" class="sidebar-link {% if request.path == url_jornadas %}active{% endif %}">
+            <i class="bi bi-clock-history"></i>
+            <span>Jornadas</span>
         </a>
 
-        <a href="{% url 'usuarios:niveles_lista' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-layers"></i> Niveles de formación
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-section-label">Sistema</div>
+
+        <a href="{{ url_configuracion }}" class="sidebar-link {% if request.path == url_configuracion %}active{% endif %}">
+            <i class="bi bi-sliders"></i>
+            <span>Configuración</span>
         </a>
 
-        <a href="{% url 'usuarios:jornadas_lista' %}" class="list-group-item list-group-item-action">
-            <i class="bi bi-clock-history"></i> Jornadas
+        <a href="{{ url_auditoria }}" class="sidebar-link {% if request.path == url_auditoria %}active{% endif %}">
+            <i class="bi bi-journal-text"></i>
+            <span>Auditoría</span>
         </a>
     {% endif %}
 
-</div>
+</nav>

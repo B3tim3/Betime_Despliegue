@@ -132,6 +132,108 @@ a {
 
 /* ---------- Sidebar del panel ---------- */
 
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0.25rem 0;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.55rem 1rem;
+    border-radius: 10px;
+    color: var(--bt-tinta);
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    position: relative;
+}
+
+.sidebar-link i:first-child {
+    font-size: 1.05rem;
+    width: 1.25rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.sidebar-link:hover {
+    background-color: var(--bt-fondo-alt);
+    color: var(--bt-verde-oscuro);
+    text-decoration: none;
+}
+
+.sidebar-link.active {
+    background-color: var(--bt-verde);
+    color: #fff;
+}
+
+.sidebar-link.active:hover {
+    background-color: var(--bt-verde-oscuro);
+    color: #fff;
+}
+
+/* Volver al sitio — más tenue */
+.sidebar-back {
+    color: #8a9a8e;
+    font-weight: 400;
+    font-size: 0.85rem;
+}
+
+/* Separadores sutiles */
+.sidebar-divider {
+    height: 1px;
+    background: var(--bt-borde);
+    margin: 0.5rem 0.75rem;
+    opacity: 0.6;
+}
+
+/* Etiquetas de sección */
+.sidebar-section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9aaa9e;
+    padding: 0.2rem 1rem 0.15rem;
+    text-align: center;
+    user-select: none;
+}
+
+/* Submenú colapsable — flecha */
+.sidebar-toggle {
+    cursor: pointer;
+    position: relative;
+}
+
+.sidebar-chevron {
+    font-size: 0.7rem;
+    position: absolute;
+    right: 0.75rem;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-toggle[aria-expanded="true"] .sidebar-chevron {
+    transform: rotate(180deg);
+}
+
+/* Submenú: items hijos */
+.sidebar-sublink {
+    font-size: 0.84rem;
+    padding: 0.4rem 1rem;
+    font-weight: 400;
+    justify-content: center;
+}
+
+.sidebar-sublink i:first-child {
+    font-size: 0.9rem;
+}
+
+/* Compatibilidad: list-group-item sigue funcionando en otras páginas */
 .list-group-item {
     background-color: transparent;
     border: none !important;

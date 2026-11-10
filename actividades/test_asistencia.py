@@ -121,6 +121,7 @@ class ChecklistPantallaTests(AsistenciaBase):
     def test_pocas_consultas_a_la_base(self):
         # Sin N+1: con 3 aprendices o con 13, la cantidad de consultas es la misma.
         url = reverse("actividades:panel_inscritos", args=[self.actividad.id])
+        self.client.get(url)  # calentamiento: la primera petición cachea sesión/auth
         with CaptureQueriesContext(connection) as pocas:
             self.client.get(url)
 

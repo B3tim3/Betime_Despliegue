@@ -36,8 +36,9 @@ Grupos | Be Time
         <div class="col-12 col-md-4">
             <select class="form-select" data-tabla-filtro-estado="tabla-grupos">
                 <option value="">Todos los estados</option>
-                <option value="activa">Activo</option>
-                <option value="cerrada">Cerrado</option>
+                <option value="vigente">Vigente</option>
+                <option value="finalizado">Finalizado</option>
+                <option value="cerrado">Cerrado</option>
             </select>
         </div>
     </div>
@@ -57,13 +58,13 @@ Grupos | Be Time
             </thead>
             <tbody>
                 {% for grupo in grupos %}
-                    <tr data-estado="{{ grupo.estado }}">
+                    <tr data-estado="{{ grupo.vigencia }}">
                         <td>{{ grupo.numero_grupo }}</td>
                         <td>{{ grupo.programa_formacion.nombre }}</td>
                         <td>{{ grupo.jornada.nombre }}</td>
                         <td>{{ grupo.fecha_inicio|date:"d/m/Y" }}</td>
                         <td>{{ grupo.fecha_fin|date:"d/m/Y" }}</td>
-                        <td><span class="badge text-bg-light border">{{ grupo.get_estado_display }}</span></td>
+                        <td><span class="badge text-bg-light border">{{ grupo.vigencia_etiqueta }}</span></td>
                         <td class="text-end">
                             <a href="{% url 'usuarios:aprendices_de_grupo' grupo.id %}" class="tabla-btn-accion tabla-btn-ver" title="Ver aprendices">
                                 <i class="bi bi-people"></i> Aprendices
@@ -71,6 +72,11 @@ Grupos | Be Time
                             <a href="{% url 'usuarios:grupos_editar' grupo.id %}" class="tabla-btn-accion tabla-btn-editar" title="Editar">
                                 <i class="bi bi-pencil"></i> Editar
                             </a>
+                            {% if grupo.vigencia == "finalizado" or grupo.vigencia == "cerrado" %}
+                            <a href="{% url 'usuarios:grupos_archivar' grupo.id %}" class="tabla-btn-accion" title="Archivar grupo" style="color: #6c757d;">
+                                <i class="bi bi-archive"></i> Archivar
+                            </a>
+                            {% endif %}
                             <form method="post" action="{% url 'usuarios:grupos_eliminar' grupo.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar el grupo {{ grupo.numero_grupo }}? Esta acción no se puede deshacer.">
                                 {% csrf_token %}
                                 <button type="submit" class="tabla-btn-accion tabla-btn-eliminar" title="Eliminar">
@@ -83,6 +89,8 @@ Grupos | Be Time
             </tbody>
         </table>
     </div>
+
+    {% include 'components/tabla/paginacion.html' %}
 
 {% else %}
     <div class="card border-0 shadow-sm">

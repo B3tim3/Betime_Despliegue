@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.db.models import Count
 from django.db.models.deletion import ProtectedError
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
@@ -18,8 +18,10 @@ from usuarios.forms import (
     NivelFormacionForm,
     ProgramaFormacionForm,
 )
+from usuarios.decorators import personal_bienestar_requerido
 from usuarios.mixins import AdministradorRequeridoMixin, PersonalBienestarRequeridoMixin
 from usuarios.models import Grupo, Jornada, NivelFormacion, ProgramaFormacion
+from usuarios.services.archivado import archivar_grupo, eliminar_grupo_definitivamente, restaurar_grupo
 from usuarios.services.grupos import filtrar_grupos
 
 
@@ -61,7 +63,7 @@ class ProgramaFormacionListView(AdministradorRequeridoMixin, ListView):
     template_name = "usuarios/programas_list.html"
     context_object_name = "programas"
     ordering = ["nombre"]
-    paginate_by = 500
+    paginate_by = 15
 
 
 class ProgramaFormacionCreateView(AdministradorRequeridoMixin, CreateView):
@@ -116,7 +118,7 @@ class NivelFormacionListView(AdministradorRequeridoMixin, ListView):
     model = NivelFormacion
     template_name = "usuarios/niveles_list.html"
     context_object_name = "niveles"
-    paginate_by = 500
+    paginate_by = 15
 
     def get_queryset(self):
         return NivelFormacion.objects.annotate(
@@ -180,7 +182,7 @@ class JornadaListView(AdministradorRequeridoMixin, ListView):
     template_name = "usuarios/jornadas_list.html"
     context_object_name = "jornadas"
     ordering = ["nombre"]
-    paginate_by = 500
+    paginate_by = 15
 
 
 class JornadaCreateView(AdministradorRequeridoMixin, CreateView):
@@ -243,7 +245,7 @@ class GrupoListView(PersonalBienestarRequeridoMixin, ListView):
     model = Grupo
     template_name = "usuarios/grupos_list.html"
     context_object_name = "grupos"
-    paginate_by = 500
+    paginate_by = 15
 
     def get_queryset(self):
         grupos, self.vista = filtrar_grupos(
@@ -339,3 +341,101 @@ class GrupoDeleteView(EliminarProtegidoMixin, PersonalBienestarRequeridoMixin, D
     mensaje_protegido = (
         "No se puede eliminar: el grupo tiene aprendices registrados. Reasigna a los aprendices a otro grupo primero."
     )
+
+
+# ---------- Archivado de grupos egresados ----------
+
+class GrupoArchivadosListView(PersonalBienestarRequeridoMixin, ListView):
+    """Panel de grupos archivados: los que ya se sacaron del historial."""
+    model = Grupo
+    template_name = "usuarios/grupos_archivados.html"
+    context_object_name = "grupos"
+    paginate_by = 15
+
+    def get_queryset(self):
+        grupos = Grupo.objects.archivados().select_related("programa_formacion", "jornada")
+        q = (self.request.GET.get("q") or "").strip()
+        if q:
+            from django.db.models import Q
+            grupos = grupos.filter(
+                Q(numero_grupo__icontains=q)
+                | Q(programa_formacion__nombre__icontains=q)
+            )
+        return grupos.order_by("-fecha_fin", "numero_grupo")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["q"] = (self.request.GET.get("q") or "").strip()
+        return context
+
+
+@personal_bienestar_requerido
+def archivar_grupo_view(request, pk):
+    """
+    POST: archiva el grupo y desactiva las cuentas de sus aprendices.
+    Solo funciona con grupos del historial (finalizados o cerrados).
+    """
+    grupo = get_object_or_404(Grupo, pk=pk)
+
+    if grupo.estado == "archivada":
+        messages.info(request, f"El grupo {grupo.numero_grupo} ya está archivado.")
+        return redirect("usuarios:grupos_lista")
+
+    if grupo.esta_vigente:
+        messages.error(request, "No se puede archivar un grupo vigente. Espera a que termine o ciérralo primero.")
+        return redirect("usuarios:grupos_lista")
+
+    if request.method == "POST":
+        desactivados = archivar_grupo(grupo)
+        auditar(request.user, "archivar_grupo", f"Grupo {grupo.numero_grupo}: {desactivados} cuentas desactivadas")
+        messages.success(
+            request,
+            f"Grupo {grupo.numero_grupo} archivado. "
+            f"Se desactivaron {desactivados} cuenta(s) de aprendiz."
+        )
+        return redirect("usuarios:grupos_lista")
+
+    # GET: muestra confirmación
+    total_aprendices = grupo.aprendices.count()
+    return render(request, "usuarios/grupo_archivar_confirmar.html", {
+        "grupo": grupo,
+        "total_aprendices": total_aprendices,
+    })
+
+
+@personal_bienestar_requerido
+def restaurar_grupo_view(request, pk):
+    """POST: saca el grupo del archivo y reactiva las cuentas."""
+    grupo = get_object_or_404(Grupo, pk=pk, estado="archivada")
+
+    if request.method == "POST":
+        reactivados = restaurar_grupo(grupo)
+        auditar(request.user, "restaurar_grupo", f"Grupo {grupo.numero_grupo}: {reactivados} cuentas reactivadas")
+        messages.success(
+            request,
+            f"Grupo {grupo.numero_grupo} restaurado. "
+            f"Se reactivaron {reactivados} cuenta(s)."
+        )
+    return redirect("usuarios:grupos_archivados")
+
+
+@personal_bienestar_requerido
+def eliminar_grupo_definitivo_view(request, pk):
+    """POST: elimina permanentemente un grupo archivado y todas sus cuentas."""
+    grupo = get_object_or_404(Grupo, pk=pk, estado="archivada")
+
+    if request.method == "POST":
+        numero = grupo.numero_grupo
+        eliminados = eliminar_grupo_definitivamente(grupo)
+        auditar(request.user, "eliminar_grupo_definitivo", f"Grupo {numero}: {eliminados} cuentas eliminadas")
+        messages.success(
+            request,
+            f"Grupo {numero} eliminado definitivamente junto con {eliminados} cuenta(s)."
+        )
+        return redirect("usuarios:grupos_archivados")
+
+    total_aprendices = grupo.aprendices.count()
+    return render(request, "usuarios/grupo_eliminar_definitivo_confirmar.html", {
+        "grupo": grupo,
+        "total_aprendices": total_aprendices,
+    })
