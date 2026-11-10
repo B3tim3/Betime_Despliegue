@@ -132,7 +132,7 @@ class ActividadListView(PeriodoListMixin, PersonalBienestarRequeridoMixin, ListV
     context_object_name = "actividades"
     queryset = Actividad.objects.con_cupos().select_related("creado_por")
     ordering = ["-fecha_inicio"]
-    paginate_by = 500
+    paginate_by = 15
     campo_periodo = "fecha_inicio"      # por defecto solo el periodo vigente (ver core/services/periodos.py)
 
     def get_queryset(self):

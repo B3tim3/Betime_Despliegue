@@ -36,8 +36,9 @@ Grupos | Be Time
         <div class="col-12 col-md-4">
             <select class="form-select" data-tabla-filtro-estado="tabla-grupos">
                 <option value="">Todos los estados</option>
-                <option value="activa">Activo</option>
-                <option value="cerrada">Cerrado</option>
+                <option value="vigente">Vigente</option>
+                <option value="finalizado">Finalizado</option>
+                <option value="cerrado">Cerrado</option>
             </select>
         </div>
     </div>
@@ -57,13 +58,13 @@ Grupos | Be Time
             </thead>
             <tbody>
                 {% for grupo in grupos %}
-                    <tr data-estado="{{ grupo.estado }}">
+                    <tr data-estado="{{ grupo.vigencia }}">
                         <td>{{ grupo.numero_grupo }}</td>
                         <td>{{ grupo.programa_formacion.nombre }}</td>
                         <td>{{ grupo.jornada.nombre }}</td>
                         <td>{{ grupo.fecha_inicio|date:"d/m/Y" }}</td>
                         <td>{{ grupo.fecha_fin|date:"d/m/Y" }}</td>
-                        <td><span class="badge text-bg-light border">{{ grupo.get_estado_display }}</span></td>
+                        <td><span class="badge text-bg-light border">{{ grupo.vigencia_etiqueta }}</span></td>
                         <td class="text-end">
                             <a href="{% url 'usuarios:aprendices_de_grupo' grupo.id %}" class="tabla-btn-accion tabla-btn-ver" title="Ver aprendices">
                                 <i class="bi bi-people"></i> Aprendices
@@ -83,6 +84,8 @@ Grupos | Be Time
             </tbody>
         </table>
     </div>
+
+    {% include 'components/tabla/paginacion.html' %}
 
 {% else %}
     <div class="card border-0 shadow-sm">
