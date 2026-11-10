@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load imagenes %}
+{% load static imagenes %}
 
 {% block title %}
 Actividades | Be Time
@@ -11,42 +11,66 @@ Actividades | Be Time
     <div class="container">
 
         <div class="mb-4">
+            <a href="/" class="text-muted small text-decoration-none d-inline-block mb-3">
+                <i class="bi bi-arrow-left"></i> Volver al inicio
+            </a>
             <div class="home-section__eyebrow mb-1">Agenda</div>
             <h1 class="home-section__title mb-0">Próximas actividades</h1>
         </div>
 
         {% if actividades %}
-            <div>
+            <div class="mb-4">
                 {% for actividad in actividades %}
-                    <a href="{% url 'actividades:detalle' actividad.id %}" class="text-decoration-none text-reset">
-                        <div class="home-actividad">
+                    <a href="{% url 'actividades:detalle' actividad.id %}" class="home-actividad{% if actividad.estado == 'finalizado' or actividad.estado == 'cancelado' %} home-actividad--pasada{% endif %}">
 
+                        <div class="home-actividad__img{% if not actividad.imagen %} home-actividad__img--placeholder{% endif %}">
                             {% if actividad.imagen %}
-                                <img src="{{ actividad.imagen|miniatura }}" alt="" class="home-actividad__img" loading="lazy" onerror="this.onerror=null;this.src='{{ actividad.imagen.url }}'">
+                                <img src="{{ actividad.imagen|miniatura }}" alt="{{ actividad.titulo }}" loading="lazy" onerror="this.onerror=null;this.src='{{ actividad.imagen.url }}'">
+                            {% else %}
+                                <i class="bi bi-calendar-event"></i>
                             {% endif %}
-
-                            <div class="home-actividad__fecha">
-                                <span class="dia">{{ actividad.fecha_inicio|date:"d" }}</span>
-                                <span class="mes">{{ actividad.fecha_inicio|date:"M" }}</span>
+                            <div class="home-actividad__fecha-badge">
+                                <span class="home-actividad__fecha-dia">{{ actividad.fecha_inicio|date:"d" }}</span>
+                                <span class="home-actividad__fecha-mes">{{ actividad.fecha_inicio|date:"M" }}</span>
                             </div>
+                        </div>
 
-                            <div class="flex-grow-1">
-                                <div class="fw-semibold">{{ actividad.titulo }}</div>
-                                <div class="text-muted small">
-                                    <i class="bi bi-geo-alt"></i> {{ actividad.lugar }}
-                                </div>
+                        <div class="home-actividad__body">
+                            <div class="home-actividad__titulo">{{ actividad.titulo }}</div>
+                            <div class="home-actividad__meta">
+                                <span><i class="bi bi-geo-alt"></i>{{ actividad.lugar }}</span>
+                                <span><i class="bi bi-clock"></i>{{ actividad.fecha_inicio|date:"h:i A" }} — {{ actividad.fecha_fin|date:"h:i A" }}</span>
                             </div>
-
-                            <div class="home-actividad__horas">
-                                {{ actividad.horas_otorgadas }} horas
-                                {% if actividad.cupo_maximo %}
-                                    <span class="d-block small {% if actividad.esta_lleno %}text-danger fw-semibold{% else %}text-muted{% endif %}">
-                                        {% if actividad.esta_lleno %}Cupos agotados{% else %}{{ actividad.cupos_disponibles }} cupo{{ actividad.cupos_disponibles|pluralize }}{% endif %}
+                            {% if actividad.estado == "programado" %}
+                                {% if actividad.esta_lleno %}
+                                    <span class="home-actividad__badge home-actividad__badge--agotado">
+                                        <i class="bi bi-people-fill"></i> Cupos agotados
+                                    </span>
+                                {% else %}
+                                    <span class="home-actividad__badge home-actividad__badge--abierto">
+                                        <i class="bi bi-door-open"></i> Inscripciones abiertas
                                     </span>
                                 {% endif %}
-                            </div>
-
+                            {% elif actividad.estado == "cancelado" %}
+                                <span class="home-actividad__badge home-actividad__badge--cerrado">
+                                    <i class="bi bi-x-circle"></i> Cancelada
+                                </span>
+                            {% elif actividad.estado == "finalizado" %}
+                                <span class="home-actividad__badge home-actividad__badge--cerrado">
+                                    <i class="bi bi-lock"></i> Finalizada
+                                </span>
+                            {% else %}
+                                <span class="home-actividad__badge home-actividad__badge--cerrado">
+                                    <i class="bi bi-play-circle"></i> En curso
+                                </span>
+                            {% endif %}
                         </div>
+
+                        <div class="home-actividad__side">
+                            <span class="home-actividad__horas">{{ actividad.horas_otorgadas }} hora{{ actividad.horas_otorgadas|pluralize }}</span>
+                            <span class="home-actividad__arrow"><i class="bi bi-arrow-right"></i></span>
+                        </div>
+
                     </a>
                 {% endfor %}
             </div>

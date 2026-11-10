@@ -117,13 +117,15 @@ Be Time | Bienestar al Aprendiz - SENA
                     <div class="col-12 col-md-6 col-lg-4">
                         <div class="home-card">
 
-                            <div class="home-card__media">
-                                {% if publicacion.imagen %}
+                            {% if publicacion.imagen %}
+                                <div class="img-marco img-marco--tarjeta" style="--img:url('{{ publicacion.imagen|miniatura }}')">
                                     <img src="{{ publicacion.imagen|miniatura }}" alt="{{ publicacion.titulo }}" loading="lazy" onerror="this.onerror=null;this.src='{{ publicacion.imagen.url }}'">
-                                {% else %}
+                                </div>
+                            {% else %}
+                                <div class="home-card__media">
                                     <i class="bi bi-image"></i>
-                                {% endif %}
-                            </div>
+                                </div>
+                            {% endif %}
 
                             <div class="home-card__body">
                                 <h3 class="h6 fw-bold mb-2">
@@ -164,35 +166,63 @@ Be Time | Bienestar al Aprendiz - SENA
         {% if actividades %}
             <div class="mb-4">
                 {% for actividad in actividades %}
-                    <div class="home-actividad">
+                    <a href="{% url 'actividades:detalle' actividad.id %}" class="home-actividad{% if actividad.estado == 'finalizado' or actividad.estado == 'cancelado' %} home-actividad--pasada{% endif %}">
 
-                        {% if actividad.imagen %}
-                            <img src="{{ actividad.imagen|miniatura }}" alt="" class="home-actividad__img" loading="lazy" onerror="this.onerror=null;this.src='{{ actividad.imagen.url }}'">
-                        {% endif %}
-
-                        <div class="home-actividad__fecha">
-                            <span class="dia">{{ actividad.fecha_inicio|date:"d" }}</span>
-                            <span class="mes">{{ actividad.fecha_inicio|date:"M" }}</span>
-                        </div>
-
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold">{{ actividad.titulo }}</div>
-                            <div class="text-muted small">
-                                <i class="bi bi-geo-alt"></i> {{ actividad.lugar }}
+                        <div class="home-actividad__img{% if not actividad.imagen %} home-actividad__img--placeholder{% endif %}">
+                            {% if actividad.imagen %}
+                                <img src="{{ actividad.imagen|miniatura }}" alt="{{ actividad.titulo }}" loading="lazy" onerror="this.onerror=null;this.src='{{ actividad.imagen.url }}'">
+                            {% else %}
+                                <i class="bi bi-calendar-event"></i>
+                            {% endif %}
+                            <div class="home-actividad__fecha-badge">
+                                <span class="home-actividad__fecha-dia">{{ actividad.fecha_inicio|date:"d" }}</span>
+                                <span class="home-actividad__fecha-mes">{{ actividad.fecha_inicio|date:"M" }}</span>
                             </div>
                         </div>
 
-                        <div class="home-actividad__horas">
-                            {{ actividad.horas_otorgadas }} horas
+                        <div class="home-actividad__body">
+                            <div class="home-actividad__titulo">{{ actividad.titulo }}</div>
+                            <div class="home-actividad__meta">
+                                <span><i class="bi bi-geo-alt"></i>{{ actividad.lugar }}</span>
+                                <span><i class="bi bi-clock"></i>{{ actividad.fecha_inicio|date:"h:i A" }}</span>
+                            </div>
+                            {% if actividad.estado == "programado" %}
+                                {% if actividad.esta_lleno %}
+                                    <span class="home-actividad__badge home-actividad__badge--agotado">
+                                        <i class="bi bi-people-fill"></i> Cupos agotados
+                                    </span>
+                                {% else %}
+                                    <span class="home-actividad__badge home-actividad__badge--abierto">
+                                        <i class="bi bi-door-open"></i> Inscripciones abiertas
+                                    </span>
+                                {% endif %}
+                            {% elif actividad.estado == "cancelado" %}
+                                <span class="home-actividad__badge home-actividad__badge--cerrado">
+                                    <i class="bi bi-x-circle"></i> Cancelada
+                                </span>
+                            {% elif actividad.estado == "finalizado" %}
+                                <span class="home-actividad__badge home-actividad__badge--cerrado">
+                                    <i class="bi bi-lock"></i> Finalizada
+                                </span>
+                            {% else %}
+                                <span class="home-actividad__badge home-actividad__badge--cerrado">
+                                    <i class="bi bi-play-circle"></i> En curso
+                                </span>
+                            {% endif %}
                         </div>
 
-                    </div>
+                        <div class="home-actividad__side">
+                            <span class="home-actividad__horas">{{ actividad.horas_otorgadas }} hora{{ actividad.horas_otorgadas|pluralize }}</span>
+                            <span class="home-actividad__arrow"><i class="bi bi-arrow-right"></i></span>
+                        </div>
+
+                    </a>
                 {% endfor %}
             </div>
 
             <div class="text-center">
-                <a href="{% url 'actividades:lista' %}" class="btn btn-outline-success">
-                    Ver todos
+                <a href="{% url 'actividades:lista' %}" class="home-actividad__ver-todos">
+                    Ver todas las actividades <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
         {% else %}

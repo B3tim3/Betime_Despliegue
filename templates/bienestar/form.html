@@ -4,6 +4,77 @@
 {{ titulo_pagina }} | Be Time
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<style>
+    /* ---------- Modal de recorte ---------- */
+    .crop-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1060;
+        background: rgba(0, 0, 0, 0.7);
+        align-items: center;
+        justify-content: center;
+    }
+    .crop-modal.active { display: flex; }
+
+    .crop-modal__body {
+        background: #fff;
+        border-radius: 14px;
+        padding: 1.5rem;
+        max-width: 540px;
+        width: 92%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    .crop-modal__title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 1.05rem;
+    }
+    .crop-modal__canvas {
+        max-height: 380px;
+        width: 100%;
+    }
+    .crop-modal__canvas img {
+        display: block;
+        max-width: 100%;
+    }
+    .crop-modal__actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: .5rem;
+        margin-top: 1rem;
+    }
+
+    /* Preview circular */
+    .crop-preview {
+        display: none;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: .75rem;
+    }
+    .crop-preview.active { display: flex; }
+    .crop-preview__img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--bt-verde);
+    }
+    .crop-preview__info {
+        font-size: 0.88rem;
+        color: #666;
+    }
+    .crop-preview__change {
+        font-size: 0.82rem;
+        cursor: pointer;
+        color: var(--bt-verde);
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
 {% block dashboard_content %}
 
 <h1 class="h3 fw-bold mb-4">{{ titulo_pagina }}</h1>
@@ -11,7 +82,7 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body p-4">
 
-        <form method="post" enctype="multipart/form-data" novalidate>
+        <form method="post" enctype="multipart/form-data" novalidate id="miembroForm">
             {% csrf_token %}
 
             {% if form.non_field_errors %}
@@ -35,13 +106,6 @@
             </div>
 
             <div class="mb-3">
-                <label for="{{ form.categoria.id_for_label }}" class="form-label">{{ form.categoria.label }}</label>
-                {{ form.categoria }}
-                <div class="form-text">Determina en qué botón de "Servicios de bienestar" de la portada aparece.</div>
-                {% for error in form.categoria.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-            </div>
-
-            <div class="mb-3">
                 <label for="{{ form.descripcion.id_for_label }}" class="form-label">{{ form.descripcion.label }}</label>
                 {{ form.descripcion }}
                 <div class="form-text">Una breve presentación que verán los aprendices en el sitio público.</div>
@@ -50,12 +114,27 @@
 
             <div class="mb-3">
                 <label for="{{ form.foto.id_for_label }}" class="form-label">{{ form.foto.label }}</label>
+
+                {# Vista previa de la foto actual (si existe) #}
                 {% if form.instance.foto %}
-                    <div class="mb-2">
+                    <div class="mb-2" id="fotoActual">
                         <img src="{{ form.instance.foto.url }}" alt="" style="max-height: 120px; border-radius: 50%;">
                     </div>
                 {% endif %}
-                {{ form.foto }}
+
+                {# Preview de la foto recortada #}
+                <div class="crop-preview" id="cropPreview">
+                    <img class="crop-preview__img" id="cropPreviewImg" src="" alt="Vista previa">
+                    <div>
+                        <div class="crop-preview__info">Foto recortada lista</div>
+                        <span class="crop-preview__change" id="cropChangeBtn">Cambiar foto</span>
+                    </div>
+                </div>
+
+                {# Input de archivo (se oculta tras recortar) #}
+                <div id="fotoInputWrapper">
+                    {{ form.foto }}
+                </div>
                 {% for error in form.foto.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
             </div>
 
@@ -83,4 +162,155 @@
     </div>
 </div>
 
+{# ---- Modal de recorte ---- #}
+<div class="crop-modal" id="cropModal">
+    <div class="crop-modal__body">
+        <div class="crop-modal__title">Recortar foto</div>
+        <div class="crop-modal__canvas">
+            <img id="cropImage" src="" alt="Imagen a recortar">
+        </div>
+        <div class="crop-modal__actions">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="cropCancelBtn">Cancelar</button>
+            <button type="button" class="btn btn-success btn-sm" id="cropConfirmBtn">
+                <i class="bi bi-check-lg"></i> Aplicar recorte
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    const fotoInput    = document.getElementById('{{ form.foto.id_for_label }}');
+    const modal        = document.getElementById('cropModal');
+    const cropImage    = document.getElementById('cropImage');
+    const confirmBtn   = document.getElementById('cropConfirmBtn');
+    const cancelBtn    = document.getElementById('cropCancelBtn');
+    const preview      = document.getElementById('cropPreview');
+    const previewImg   = document.getElementById('cropPreviewImg');
+    const changeBtn    = document.getElementById('cropChangeBtn');
+    const inputWrapper = document.getElementById('fotoInputWrapper');
+    const fotoActual   = document.getElementById('fotoActual');
+
+    let cropper = null;
+    let croppedBlob = null;
+    let originalFileName = '';
+
+    /* Al seleccionar archivo → abrir modal */
+    fotoInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+
+        originalFileName = file.name;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            cropImage.src = e.target.result;
+            modal.classList.add('active');
+
+            /* Destruir cropper anterior si existía */
+            if (cropper) { cropper.destroy(); }
+
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 0.85,
+                cropBoxResizable: true,
+                cropBoxMovable: true,
+                background: false,
+                modal: true,
+                guides: true,
+                center: true,
+                highlight: false,
+                ready: function () {
+                    /* Viñeta circular visual */
+                    const cropBox = document.querySelector('.cropper-crop-box');
+                    if (cropBox) {
+                        cropBox.style.borderRadius = '50%';
+                    }
+                    const viewBox = document.querySelector('.cropper-view-box');
+                    if (viewBox) {
+                        viewBox.style.borderRadius = '50%';
+                        viewBox.style.outline = '0';
+                        viewBox.style.boxShadow = '0 0 0 3px var(--bt-verde)';
+                    }
+                    const face = document.querySelector('.cropper-face');
+                    if (face) {
+                        face.style.borderRadius = '50%';
+                    }
+                }
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+
+    /* Confirmar recorte */
+    confirmBtn.addEventListener('click', function () {
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 500,
+            height: 500,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+        });
+
+        canvas.toBlob(function (blob) {
+            croppedBlob = blob;
+
+            /* Preview */
+            previewImg.src = URL.createObjectURL(blob);
+            preview.classList.add('active');
+
+            /* Ocultar input original y foto actual */
+            inputWrapper.style.display = 'none';
+            if (fotoActual) fotoActual.style.display = 'none';
+
+            /* Cerrar modal */
+            modal.classList.remove('active');
+            cropper.destroy();
+            cropper = null;
+        }, 'image/jpeg', 0.92);
+    });
+
+    /* Cancelar recorte */
+    cancelBtn.addEventListener('click', function () {
+        modal.classList.remove('active');
+        if (cropper) { cropper.destroy(); cropper = null; }
+        /* Limpiar input para que pueda re-seleccionar el mismo archivo */
+        fotoInput.value = '';
+    });
+
+    /* Cambiar foto (re-mostrar input) */
+    changeBtn.addEventListener('click', function () {
+        croppedBlob = null;
+        preview.classList.remove('active');
+        inputWrapper.style.display = '';
+        if (fotoActual) fotoActual.style.display = '';
+        fotoInput.value = '';
+        fotoInput.click();
+    });
+
+    /* Al enviar el formulario, reemplazar el archivo con el blob recortado */
+    document.getElementById('miembroForm').addEventListener('submit', function (e) {
+        if (!croppedBlob) return;   /* No se recortó nada → envío normal */
+
+        /* Crear un DataTransfer con el blob recortado */
+        const ext = originalFileName.split('.').pop() || 'jpg';
+        const baseName = originalFileName.replace(/\.[^.]+$/, '') || 'foto';
+        const newFile = new File([croppedBlob], baseName + '_crop.' + ext, {
+            type: 'image/jpeg'
+        });
+
+        const dt = new DataTransfer();
+        dt.items.add(newFile);
+        fotoInput.files = dt.files;
+    });
+})();
+</script>
 {% endblock %}
