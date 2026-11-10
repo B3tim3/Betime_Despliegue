@@ -72,6 +72,11 @@ Grupos | Be Time
                             <a href="{% url 'usuarios:grupos_editar' grupo.id %}" class="tabla-btn-accion tabla-btn-editar" title="Editar">
                                 <i class="bi bi-pencil"></i> Editar
                             </a>
+                            {% if grupo.vigencia == "finalizado" or grupo.vigencia == "cerrado" %}
+                            <a href="{% url 'usuarios:grupos_archivar' grupo.id %}" class="tabla-btn-accion" title="Archivar grupo" style="color: #6c757d;">
+                                <i class="bi bi-archive"></i> Archivar
+                            </a>
+                            {% endif %}
                             <form method="post" action="{% url 'usuarios:grupos_eliminar' grupo.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar el grupo {{ grupo.numero_grupo }}? Esta acción no se puede deshacer.">
                                 {% csrf_token %}
                                 <button type="submit" class="tabla-btn-accion tabla-btn-eliminar" title="Eliminar">

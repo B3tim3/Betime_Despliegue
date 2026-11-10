@@ -41,6 +41,10 @@ from .catalogos import (  # noqa: F401
     GrupoCreateView,
     GrupoUpdateView,
     GrupoDeleteView,
+    GrupoArchivadosListView,
+    archivar_grupo_view,
+    restaurar_grupo_view,
+    eliminar_grupo_definitivo_view,
 )
 from .aprendices import (  # noqa: F401
     AprendizListView,
@@ -85,6 +89,10 @@ __all__ = [
     "GrupoCreateView",
     "GrupoUpdateView",
     "GrupoDeleteView",
+    "GrupoArchivadosListView",
+    "archivar_grupo_view",
+    "restaurar_grupo_view",
+    "eliminar_grupo_definitivo_view",
     "AprendizListView",
     "AprendizUpdateView",
     "AprendizDeleteView",
