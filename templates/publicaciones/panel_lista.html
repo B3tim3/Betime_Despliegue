@@ -16,8 +16,6 @@ Gestionar publicaciones | Be Time
     </div>
 </div>
 
-{% include 'components/filtros/periodo.html' %}
-
 {% if publicaciones %}
     <div class="row g-2 mb-1">
         <div class="col-12 col-md-6">
@@ -33,7 +31,7 @@ Gestionar publicaciones | Be Time
     </div>
 
     <div class="table-responsive">
-        <table class="table align-middle bg-white" id="tabla-publicaciones" data-tabla-ordenable>
+        <table class="table align-middle bg-white" id="tabla-publicaciones" data-tabla-ordenable data-tabla-paginada>
             <thead>
                 <tr>
                     <th data-ordenar-columna="0">Título</th>
@@ -54,14 +52,16 @@ Gestionar publicaciones | Be Time
                         <td>
                             <span class="badge text-bg-light border">{{ publicacion.get_estado_display|default:publicacion.estado }}</span>
                         </td>
-                        <td>{{ publicacion.fecha_publicacion|date:"d/m/Y h:i A"|default:"—" }}</td>
+                        <td>{{ publicacion.fecha_publicacion|date:"d/m/Y H:i"|default:"—" }}</td>
                         <td class="text-end">
-                            <a href="{% url 'publicaciones:editar' publicacion.id %}" class="btn btn-sm btn-outline-success">
-                                Editar
+                            <a href="{% url 'publicaciones:editar' publicacion.id %}" class="tabla-btn-accion tabla-btn-editar" title="Editar">
+                                <i class="bi bi-pencil"></i> Editar
                             </a>
                             <form method="post" action="{% url 'publicaciones:eliminar' publicacion.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar la publicación {{ publicacion.titulo }}? Esta acción no se puede deshacer.">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                <button type="submit" class="tabla-btn-accion tabla-btn-eliminar" title="Eliminar">
+                                    <i class="bi bi-trash3"></i> Eliminar
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -70,11 +70,10 @@ Gestionar publicaciones | Be Time
         </table>
     </div>
 
-    {% include 'components/tabla/paginacion.html' %}
 {% else %}
     <div class="card border-0 shadow-sm">
         <div class="card-body text-center text-muted py-5">
-            No hay publicaciones en este año.{% if not periodo.es_todos %} Cambia el año o elige «Todos los años» para ver el historial.{% endif %}
+            Todavía no has creado ninguna publicación.
         </div>
     </div>
 {% endif %}

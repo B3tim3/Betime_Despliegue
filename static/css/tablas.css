@@ -1,0 +1,267 @@
+/*
+ * Estilos para el sistema de tablas mejorado — Be Time
+ *
+ * Incluye:
+ *   - Selector "Mostrar X registros" (arriba de la tabla)
+ *   - Paginación numérica con flechas y elipsis (abajo)
+ *   - Contador "Mostrando 1-10 de 85 registros"
+ *   - Botones de acción mejorados (iconos + tooltips)
+ *   - Mejoras generales a las tablas del panel
+ */
+
+
+/* ==================================================================
+   1) CONTENEDOR SUPERIOR — Selector de registros por página
+   ================================================================== */
+
+.tabla-pag-superior {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: .75rem;
+}
+
+.tabla-pag-registros {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .85rem;
+    color: #6c757d;
+}
+
+.tabla-pag-select {
+    appearance: auto;
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    padding: .25rem .5rem;
+    font-size: .85rem;
+    color: #495057;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s;
+}
+
+.tabla-pag-select:focus {
+    border-color: var(--bt-verde, #4caf50);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, .15);
+}
+
+
+/* ==================================================================
+   2) CONTENEDOR INFERIOR — Info + paginación numérica
+   ================================================================== */
+
+.tabla-pag-inferior {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-top: .75rem;
+}
+
+.tabla-pag-info {
+    font-size: .84rem;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+
+/* ==================================================================
+   3) PAGINACIÓN NUMÉRICA — botones tipo pestaña
+   ================================================================== */
+
+.tabla-pag-lista {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+}
+
+.tabla-pag-item {
+    display: inline-flex;
+}
+
+.tabla-pag-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    height: 2.2rem;
+    padding: 0 .5rem;
+    border: 1px solid #dee2e6;
+    border-radius: .5rem;
+    background: #fff;
+    color: #495057;
+    font-size: .85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s ease;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.tabla-pag-btn:hover:not(:disabled) {
+    background: var(--bt-verde, #4caf50);
+    border-color: var(--bt-verde, #4caf50);
+    color: #fff;
+}
+
+.tabla-pag-btn:focus-visible {
+    outline: 2px solid var(--bt-verde, #4caf50);
+    outline-offset: 1px;
+}
+
+.tabla-pag-item.active .tabla-pag-btn {
+    background: var(--bt-verde, #4caf50);
+    border-color: var(--bt-verde, #4caf50);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(76, 175, 80, .25);
+    cursor: default;
+}
+
+.tabla-pag-item.disabled .tabla-pag-btn {
+    opacity: .4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.tabla-pag-ellipsis span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2.2rem;
+    font-size: .85rem;
+    color: #adb5bd;
+    letter-spacing: 2px;
+}
+
+
+/* ==================================================================
+   4) BOTONES DE ACCIÓN MEJORADOS
+   ================================================================== */
+
+/* Grupo de acciones: mantener juntos y sin wrap */
+td.text-end {
+    white-space: nowrap;
+}
+
+/* Botones de acción con iconos — estilo pill más compacto */
+.tabla-btn-accion {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .3rem .7rem;
+    font-size: .78rem;
+    font-weight: 500;
+    border-radius: 2rem;
+    border: 1.5px solid;
+    background: transparent;
+    transition: all .2s ease;
+    text-decoration: none;
+    line-height: 1.4;
+    vertical-align: middle;
+}
+
+.tabla-btn-accion i {
+    font-size: .82rem;
+}
+
+/* Ver / Ver inscritos */
+.tabla-btn-ver {
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+.tabla-btn-ver:hover {
+    background: #0d6efd;
+    color: #fff;
+}
+
+/* Editar */
+.tabla-btn-editar {
+    color: var(--bt-verde, #4caf50);
+    border-color: var(--bt-verde, #4caf50);
+}
+.tabla-btn-editar:hover {
+    background: var(--bt-verde, #4caf50);
+    color: #fff;
+}
+
+/* Eliminar */
+.tabla-btn-eliminar {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+.tabla-btn-eliminar:hover {
+    background: #dc3545;
+    color: #fff;
+}
+
+
+/* ==================================================================
+   5) MEJORAS GENERALES A TABLAS DEL PANEL
+   ================================================================== */
+
+/* Líneas de la tabla más suaves */
+table.table.align-middle thead th {
+    font-size: .82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #6c757d;
+    border-bottom: 2px solid #dee2e6;
+    padding: .6rem .75rem;
+    background: #fafcf8;
+}
+
+table.table.align-middle tbody td {
+    font-size: .88rem;
+    padding: .6rem .75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+table.table.align-middle tbody tr:hover {
+    background: #f8faf5;
+}
+
+/* Badge de estado mejorado */
+table.table .badge {
+    font-size: .75rem;
+    font-weight: 500;
+    padding: .35em .7em;
+    border-radius: 2rem;
+}
+
+
+/* ==================================================================
+   6) RESPONSIVE — Paginación en móvil
+   ================================================================== */
+
+@media (max-width: 767.98px) {
+
+    .tabla-pag-inferior {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tabla-pag-superior {
+        justify-content: center;
+    }
+
+    .tabla-pag-btn {
+        min-width: 2rem;
+        height: 2rem;
+        font-size: .8rem;
+    }
+
+    .tabla-pag-lista {
+        justify-content: center;
+    }
+}

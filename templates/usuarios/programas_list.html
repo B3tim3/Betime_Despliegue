@@ -31,7 +31,7 @@ Programas de formación | Be Time
     </div>
 
     <div class="table-responsive">
-        <table class="table align-middle bg-white" id="tabla-programas" data-tabla-ordenable>
+        <table class="table align-middle bg-white" id="tabla-programas" data-tabla-ordenable data-tabla-paginada>
             <thead>
                 <tr>
                     <th data-ordenar-columna="0">Nombre</th>
@@ -51,11 +51,17 @@ Programas de formación | Be Time
                         <td>{{ programa.duracion_meses }}</td>
                         <td><span class="badge text-bg-light border">{{ programa.get_estado_display }}</span></td>
                         <td class="text-end">
-                            <a href="{% url 'usuarios:grupos_de_programa' programa.id %}" class="btn btn-sm btn-outline-primary">Ver grupos</a>
-                            <a href="{% url 'usuarios:programas_editar' programa.id %}" class="btn btn-sm btn-outline-success">Editar</a>
+                            <a href="{% url 'usuarios:grupos_de_programa' programa.id %}" class="tabla-btn-accion tabla-btn-ver" title="Ver grupos">
+                                <i class="bi bi-collection"></i> Grupos
+                            </a>
+                            <a href="{% url 'usuarios:programas_editar' programa.id %}" class="tabla-btn-accion tabla-btn-editar" title="Editar">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
                             <form method="post" action="{% url 'usuarios:programas_eliminar' programa.id %}" class="d-inline" data-confirmar-eliminar="¿Eliminar el programa {{ programa.nombre }}? Esta acción no se puede deshacer.">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                <button type="submit" class="tabla-btn-accion tabla-btn-eliminar" title="Eliminar">
+                                    <i class="bi bi-trash3"></i> Eliminar
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -64,7 +70,6 @@ Programas de formación | Be Time
         </table>
     </div>
 
-    {% include 'components/tabla/paginacion.html' %}
 {% else %}
     <div class="card border-0 shadow-sm">
         <div class="card-body text-center text-muted py-5">

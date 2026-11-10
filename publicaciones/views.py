@@ -80,7 +80,7 @@ class PublicacionListView(PeriodoListMixin, PersonalBienestarRequeridoMixin, Lis
     context_object_name = "publicaciones"
     queryset = Publicacion.objects.select_related("autor")
     ordering = ["-fecha_creacion"]
-    paginate_by = 15
+    paginate_by = 500
     campo_periodo = "fecha_creacion"    # por defecto solo el periodo vigente
 
 

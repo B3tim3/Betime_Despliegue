@@ -1,5 +1,4 @@
 {% extends 'base_private.html' %}
-{% load imagenes %}
 
 {% block title %}
 Gestionar equipo de Bienestar | Be Time
@@ -19,7 +18,7 @@ Gestionar equipo de Bienestar | Be Time
 
 {% if miembros %}
     <div class="table-responsive">
-        <table class="table align-middle bg-white">
+        <table class="table align-middle bg-white" id="tabla-bienestar" data-tabla-paginada>
             <thead>
                 <tr>
                     <th>Foto</th>
@@ -35,7 +34,7 @@ Gestionar equipo de Bienestar | Be Time
                     <tr>
                         <td>
                             {% if miembro.foto %}
-                                <img src="{{ miembro.foto|miniatura }}" alt="{{ miembro.nombre }}" loading="lazy" onerror="this.onerror=null;this.src='{{ miembro.foto.url }}'"
+                                <img src="{{ miembro.foto.url }}" alt="{{ miembro.nombre }}"
                                      style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                             {% else %}
                                 <i class="bi bi-person-circle text-muted fs-4"></i>
@@ -48,11 +47,11 @@ Gestionar equipo de Bienestar | Be Time
                             <span class="badge text-bg-light border">{{ miembro.get_estado_display|default:miembro.estado }}</span>
                         </td>
                         <td class="text-end">
-                            <a href="{% url 'bienestar:editar_miembro' miembro.id %}" class="btn btn-sm btn-outline-success">
-                                Editar
+                            <a href="{% url 'bienestar:editar_miembro' miembro.id %}" class="tabla-btn-accion tabla-btn-editar" title="Editar">
+                                <i class="bi bi-pencil"></i> Editar
                             </a>
-                            <a href="{% url 'bienestar:eliminar_miembro' miembro.id %}" class="btn btn-sm btn-outline-danger">
-                                Eliminar
+                            <a href="{% url 'bienestar:eliminar_miembro' miembro.id %}" class="tabla-btn-accion tabla-btn-eliminar" title="Eliminar">
+                                <i class="bi bi-trash3"></i> Eliminar
                             </a>
                         </td>
                     </tr>
