@@ -32,20 +32,42 @@
 
         <div class="col-12 col-lg-3 col-xl-2 mb-3 mb-lg-0">
 
+            {# Botón hamburguesa: solo visible en móvil (< lg) #}
             <button
                 class="btn btn-outline-secondary w-100 d-lg-none mb-2 d-flex justify-content-between align-items-center"
                 type="button"
-                data-bs-toggle="collapse"
+                data-bs-toggle="offcanvas"
                 data-bs-target="#sidebarPanel"
-                aria-expanded="false"
                 aria-controls="sidebarPanel"
             >
                 <span><i class="bi bi-list"></i> Menú del panel</span>
-                <i class="bi bi-chevron-down"></i>
+                <i class="bi bi-chevron-right"></i>
             </button>
 
-            <div class="collapse d-lg-block" id="sidebarPanel">
-                {% include 'components/sidebar/sidebar.html' %}
+            {# offcanvas-lg: drawer en móvil, inline en escritorio #}
+            <div class="offcanvas-lg offcanvas-start" tabindex="-1" id="sidebarPanel" aria-labelledby="sidebarPanelLabel">
+
+                {# Encabezado del drawer: avatar + nombre del usuario (solo móvil) #}
+                <div class="offcanvas-header drawer-user-header d-lg-none">
+                    <div class="drawer-user-info">
+                        <div class="drawer-avatar">
+                            {{ request.user.nombres|make_list|first }}{{ request.user.apellidos|make_list|first }}
+                        </div>
+                        <div>
+                            <div class="drawer-user-name" id="sidebarPanelLabel">{{ request.user.nombres }} {{ request.user.apellidos }}</div>
+                            <div class="drawer-user-role">
+                                {% if request.user.administrador %}Administrador{% elif request.user.personal_bienestar %}Bienestar{% elif request.user.aprendiz %}Aprendiz{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarPanel" aria-label="Cerrar"></button>
+                </div>
+
+                {# Cuerpo del drawer = el sidebar normal #}
+                <div class="offcanvas-body p-lg-0">
+                    {% include 'components/sidebar/sidebar.html' %}
+                </div>
+
             </div>
 
         </div>

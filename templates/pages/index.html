@@ -2,7 +2,7 @@
 {% load static imagenes %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home-hero.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/home-hero.css' %}?v=4">
 {% endblock %}
 
 {% block title %}
@@ -280,6 +280,66 @@ Be Time | Bienestar al Aprendiz - SENA
             </div>
 
         </div>
+    </div>
+</section>
+
+<!-- ============ EQUIPO DE DESARROLLO ============ -->
+<section id="equipo" class="home-section bg-bt-alt">
+    <div class="container">
+
+        <div class="text-center mb-4">
+            <div class="home-section__eyebrow mb-2">Quiénes somos</div>
+            <h2 class="home-section__title mb-2">Equipo de desarrollo</h2>
+            <p class="text-muted mb-0 mx-auto" style="max-width: 30rem;">
+                Aprendices del SENA que construyeron esta plataforma para el bienestar de todos.
+            </p>
+        </div>
+
+        <div class="equipo-scroll">
+            <div class="equipo-row">
+
+                <div class="equipo-card">
+                    <div class="equipo-foto-wrap">
+                        <img src="{% static 'img/equipo/felipe.jpg' %}"
+                             alt="Felipe"
+                             class="equipo-foto"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <span class="equipo-foto-fallback" style="display:none">F</span>
+                    </div>
+                    <h3 class="equipo-nombre">Juan Felipe</h3>
+                    <span class="equipo-rol">Lider de proyecto</span>
+                    <p class="equipo-desc">Ideó Be Time y gestionó la comunicación con Bienestar al Aprendiz para alinear la plataforma con las necesidades reales del centro.</p>
+                </div>
+
+                <div class="equipo-card">
+                    <div class="equipo-foto-wrap">
+                        <img src="{% static 'img/equipo/juan_andres.jpg' %}"
+                             alt="Juan Andrés"
+                             class="equipo-foto"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <span class="equipo-foto-fallback" style="display:none">JA</span>
+                    </div>
+                    <h3 class="equipo-nombre">Juan Andrés</h3>
+                    <span class="equipo-rol">Desarrollador Full Stack</span>
+                    <p class="equipo-desc">Diseñó la arquitectura del sistema y desarrolló tanto el frontend como el backend, construyendo la plataforma desde sus cimientos.</p>
+                </div>
+
+                <div class="equipo-card">
+                    <div class="equipo-foto-wrap">
+                        <img src="{% static 'img/equipo/sergio.jpg' %}"
+                             alt="Sergio"
+                             class="equipo-foto"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <span class="equipo-foto-fallback" style="display:none">S</span>
+                    </div>
+                    <h3 class="equipo-nombre">Sergio Andres</h3>
+                    <span class="equipo-rol">Analista y documentador</span>
+                    <p class="equipo-desc">Recopiló los requerimientos, elaboró la documentación técnica y realizó las revisiones de calidad del proyecto.</p>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 </section>
 

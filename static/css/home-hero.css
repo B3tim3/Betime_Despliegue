@@ -145,3 +145,113 @@
     .home-hero__art { max-width: 360px; }
     .hero-chip { font-size: .7rem; padding: .25rem .55rem .25rem .4rem; }
 }
+
+/* ==========================================================================
+   Sección: Equipo de desarrollo
+   Tres tarjetas con foto circular, nombre, rol y descripción.
+   En móvil se desliza horizontalmente (scroll snap).
+   ========================================================================== */
+
+/* Contenedor con scroll horizontal en móvil */
+.equipo-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;            /* Firefox */
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.5rem;
+}
+.equipo-scroll::-webkit-scrollbar { display: none; }
+
+.equipo-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+}
+
+/* Tarjeta de cada desarrollador */
+.equipo-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.2rem 1.2rem 1.4rem;
+    text-align: center;
+    border: 1px solid var(--bt-borde, #E1E9DC);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    scroll-snap-align: center;
+}
+
+.equipo-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(22, 36, 26, 0.1);
+}
+
+/* Contenedor de la foto: ocupa todo el ancho de la tarjeta */
+.equipo-foto-wrap {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    margin: 0 auto 1rem;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.equipo-foto {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+}
+
+/* Fallback: iniciales si la foto no carga */
+.equipo-foto-fallback {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--bt-verde, #2E8B3D), var(--bt-verde-oscuro, #1E5E2A));
+    color: #fff;
+    font-weight: 700;
+    font-size: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+}
+
+.equipo-nombre {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 0.2rem;
+    color: var(--bt-tinta, #16241A);
+}
+
+.equipo-rol {
+    display: inline-block;
+    font-size: 1.20rem;
+    font-weight: 600;
+    color: var(--bt-verde-oscuro, #1E5E2A);
+    background: var(--bt-fondo-alt, #F3F8F0);
+    padding: 0.15rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 0.6rem;
+}
+
+.equipo-desc {
+    font-size: 0.85rem;
+    color: #020202;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ---------- Móvil: scroll horizontal con snap ---------- */
+@media (max-width: 767.98px) {
+    .equipo-row {
+        display: flex;
+        gap: 1rem;
+        min-width: max-content;
+    }
+
+    .equipo-card {
+        min-width: 250px;
+        max-width: 280px;
+        flex-shrink: 0;
+    }
+}
