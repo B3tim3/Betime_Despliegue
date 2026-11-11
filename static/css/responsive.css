@@ -1,5 +1,94 @@
-/* Flechita del botón "Menú del panel" (sidebar en móvil): gira al
-   abrirse, para que quede claro que es un desplegable. */
+/* ==========================================================
+   Sidebar Offcanvas (drawer lateral en móvil)
+   ----------------------------------------------------------
+   En pantallas < lg el sidebar se convierte en un drawer que
+   se desliza desde la izquierda (offcanvas-start).  En >= lg
+   Bootstrap lo muestra inline como siempre.
+   ========================================================== */
+
+/* Drawer: ancho, fondo y sombra */
+@media (max-width: 991.98px) {
+    #sidebarPanel.offcanvas-lg {
+        max-width: 280px;
+        background-color: #fff;
+        border-right: 1px solid var(--bt-borde, #E1E9DC);
+        box-shadow: 4px 0 24px rgba(22, 36, 26, 0.12);
+    }
+
+    /* Encabezado: tarjeta de usuario */
+    .drawer-user-header {
+        padding: 1.1rem 1rem;
+        background: linear-gradient(135deg, var(--bt-verde, #2E8B3D), var(--bt-verde-oscuro, #1E5E2A));
+        border-bottom: none !important;
+        align-items: flex-start;
+    }
+
+    .drawer-user-header .btn-close {
+        filter: invert(1);
+        opacity: 0.7;
+    }
+
+    .drawer-user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+    }
+
+    .drawer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .drawer-user-name {
+        font-family: "Space Grotesk", "Inter", sans-serif;
+        font-weight: 600;
+        font-size: 0.92rem;
+        color: #fff;
+        line-height: 1.2;
+    }
+
+    .drawer-user-role {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.75);
+        font-weight: 500;
+    }
+
+    /* Cuerpo del drawer: scroll suave si el menú es largo */
+    #sidebarPanel .offcanvas-body {
+        padding: 0.5rem 0.5rem;
+        overflow-y: auto;
+    }
+
+    /* Links del sidebar un poco más grandes para tocar cómodo */
+    #sidebarPanel .sidebar-link {
+        padding: 0.65rem 1rem;
+        font-size: 0.92rem;
+    }
+
+    /* Backdrop: oscurecer el fondo */
+    .offcanvas-backdrop {
+        backdrop-filter: blur(2px);
+    }
+}
+
+/* Flechita del botón "Menú del panel": apunta a la derecha
+   indicando que el drawer se abre hacia ese lado. */
+[data-bs-toggle="offcanvas"] .bi-chevron-right {
+    transition: transform 0.2s ease;
+}
+
+/* Compatibilidad: si queda algún collapse en otras páginas */
 [data-bs-toggle="collapse"][aria-expanded="true"] .bi-chevron-down {
     transform: rotate(180deg);
 }
