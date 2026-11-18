@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Política de tratamiento de datos | Be Time{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/legal.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9">
+
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb small">
+                    <li class="breadcrumb-item"><a href="{% url 'index' %}">Inicio</a></li>
+                    <li class="breadcrumb-item active">Política de tratamiento de datos</li>
+                </ol>
+            </nav>
+
+            <div class="legal-doc">
+
+                <div class="legal-doc__header text-center mb-5">
+                    <span class="legal-doc__badge">Documento legal</span>
+                    <h1 class="legal-doc__titulo">Política de Tratamiento de Datos Personales</h1>
+                    <p class="legal-doc__subtitulo">
+                        Plataforma Be Time — Bienestar al Aprendiz
+                    </p>
+                    <p class="text-muted small">
+                        Última actualización: noviembre de 2026
+                    </p>
+                </div>
+
+                <!-- 1 -->
+                <section class="legal-doc__seccion">
+                    <h2>1. Responsable del tratamiento</h2>
+                    <p>
+                        El responsable del tratamiento de los datos personales recopilados a
+                        través de la plataforma <strong>Be Time</strong> es el área de
+                        <strong>Bienestar al Aprendiz</strong> del
+                        <strong>Centro de Diseño y Metrología (C.D.M.)</strong>, adscrito al
+                        Servicio Nacional de Aprendizaje — <strong>SENA</strong>, con domicilio
+                        en la ciudad de Bogotá D.C., Colombia.
+                    </p>
+                </section>
+
+                <!-- 2 -->
+                <section class="legal-doc__seccion">
+                    <h2>2. Marco normativo</h2>
+                    <p>
+                        La presente política se rige por la normatividad colombiana vigente en
+                        materia de protección de datos personales:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>Ley 1581 de 2012:</strong> Ley Estatutaria de Protección
+                            de Datos Personales.
+                        </li>
+                        <li>
+                            <strong>Decreto 1377 de 2013:</strong> reglamentario de la Ley
+                            1581 de 2012 (compilado en el Decreto 1074 de 2015).
+                        </li>
+                        <li>
+                            <strong>Ley 1266 de 2008:</strong> disposiciones generales del
+                            hábeas data.
+                        </li>
+                        <li>
+                            <strong>Artículo 15 de la Constitución Política de Colombia:</strong>
+                            derecho a la intimidad, al buen nombre y al hábeas data.
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- 3 -->
+                <section class="legal-doc__seccion">
+                    <h2>3. Datos personales recopilados</h2>
+                    <p>
+                        A través de Be Time se recopilan los siguientes datos personales de
+                        los usuarios:
+                    </p>
+
+                    <h3>3.1 Datos de identificación</h3>
+                    <ul>
+                        <li>Tipo de documento de identidad (CC, TI, CE, PEP, PPT).</li>
+                        <li>Número de documento de identidad.</li>
+                        <li>Nombres y apellidos.</li>
+                        <li>Género (masculino o femenino).</li>
+                    </ul>
+
+                    <h3>3.2 Datos de contacto</h3>
+                    <ul>
+                        <li>Correo electrónico.</li>
+                        <li>Número de teléfono.</li>
+                    </ul>
+
+                    <h3>3.3 Datos académicos</h3>
+                    <ul>
+                        <li>Programa de formación.</li>
+                        <li>Nivel de formación (técnico, tecnólogo, etc.).</li>
+                        <li>Jornada.</li>
+                        <li>Número de grupo.</li>
+                    </ul>
+
+                    <h3>3.4 Datos generados por el uso de la plataforma</h3>
+                    <ul>
+                        <li>Registro de inscripciones y asistencia a actividades de bienestar.</li>
+                        <li>Horas de bienestar acumuladas.</li>
+                        <li>Horas de bienestar por mérito recibidas.</li>
+                        <li>Historial de participación en actividades.</li>
+                        <li>Fecha y hora de inicio de sesión.</li>
+                    </ul>
+                </section>
+
+                <!-- 4 -->
+                <section class="legal-doc__seccion">
+                    <h2>4. Finalidades del tratamiento</h2>
+                    <p>
+                        Los datos personales recopilados serán utilizados para las siguientes
+                        finalidades:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>Gestión de cuenta:</strong> crear, administrar y mantener
+                            la cuenta del usuario en la plataforma.
+                        </li>
+                        <li>
+                            <strong>Gestión de bienestar:</strong> registrar la inscripción,
+                            asistencia y participación del aprendiz en las actividades de
+                            bienestar organizadas por el centro de formación.
+                        </li>
+                        <li>
+                            <strong>Control de horas:</strong> llevar el registro y seguimiento
+                            de las horas de bienestar acumuladas por cada aprendiz, incluyendo
+                            horas por actividades regulares y horas por mérito.
+                        </li>
+                        <li>
+                            <strong>Generación de constancias:</strong> emitir constancias
+                            oficiales de horas de bienestar para los aprendices.
+                        </li>
+                        <li>
+                            <strong>Comunicaciones institucionales:</strong> enviar
+                            notificaciones sobre actividades, novedades y recordatorios
+                            relacionados con bienestar al aprendiz.
+                        </li>
+                        <li>
+                            <strong>Recuperación de cuenta:</strong> enviar enlaces de
+                            restablecimiento de contraseña al correo electrónico registrado.
+                        </li>
+                        <li>
+                            <strong>Generación de reportes:</strong> elaborar listados de
+                            asistencia, informes estadísticos y reportes de gestión para el
+                            área de bienestar, utilizando los datos de forma agregada o
+                            individualizada según la necesidad del reporte.
+                        </li>
+                        <li>
+                            <strong>Mejora del servicio:</strong> analizar el uso de la
+                            plataforma para mejorar sus funcionalidades y la experiencia
+                            del usuario.
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- 5 -->
+                <section class="legal-doc__seccion">
+                    <h2>5. Autorización y consentimiento</h2>
+                    <p>
+                        Al registrarse en Be Time, el usuario otorga su consentimiento libre,
+                        previo, expreso e informado para el tratamiento de sus datos personales
+                        conforme a las finalidades descritas en esta política.
+                    </p>
+                    <p>
+                        La autorización se obtiene mediante la aceptación explícita de esta
+                        política en el formulario de registro, a través de la casilla de
+                        verificación dispuesta para tal fin.
+                    </p>
+                    <p>
+                        Para los aprendices menores de edad, el registro y la aceptación de
+                        esta política deberán contar con la autorización del padre, madre o
+                        representante legal, de conformidad con la legislación colombiana.
+                    </p>
+                </section>
+
+                <!-- 6 -->
+                <section class="legal-doc__seccion">
+                    <h2>6. Derechos del titular</h2>
+                    <p>
+                        De acuerdo con la Ley 1581 de 2012, el titular de los datos personales
+                        tiene derecho a:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>Conocer:</strong> acceder a sus datos personales que hayan
+                            sido objeto de tratamiento.
+                        </li>
+                        <li>
+                            <strong>Actualizar:</strong> solicitar la corrección de datos
+                            que sean inexactos, incompletos o desactualizados.
+                        </li>
+                        <li>
+                            <strong>Rectificar:</strong> solicitar la modificación de
+                            información personal que resulte errónea.
+                        </li>
+                        <li>
+                            <strong>Solicitar prueba:</strong> pedir evidencia de la
+                            autorización otorgada para el tratamiento de sus datos.
+                        </li>
+                        <li>
+                            <strong>Revocar:</strong> solicitar la revocatoria del
+                            consentimiento otorgado para el tratamiento de datos, siempre
+                            que no exista un deber legal o contractual que lo impida.
+                        </li>
+                        <li>
+                            <strong>Presentar quejas:</strong> acudir ante la Superintendencia
+                            de Industria y Comercio (SIC) cuando considere que sus derechos
+                            han sido vulnerados.
+                        </li>
+                    </ul>
+                    <p>
+                        Para ejercer estos derechos, el usuario puede comunicarse con el área
+                        de Bienestar al Aprendiz a través de los canales oficiales disponibles
+                        a través de los canales oficiales del Centro de Diseño y
+                        Metrología.
+                    </p>
+                </section>
+
+                <!-- 7 -->
+                <section class="legal-doc__seccion">
+                    <h2>7. Seguridad de los datos</h2>
+                    <p>
+                        Be Time implementa medidas técnicas y administrativas para proteger
+                        los datos personales contra acceso no autorizado, pérdida, alteración
+                        o destrucción, incluyendo:
+                    </p>
+                    <ul>
+                        <li>
+                            Almacenamiento de contraseñas mediante algoritmos de hash seguro
+                            (PBKDF2 con SHA-256), que impiden la recuperación de la contraseña
+                            original.
+                        </li>
+                        <li>
+                            Comunicaciones cifradas mediante protocolo HTTPS/TLS.
+                        </li>
+                        <li>
+                            Protección contra ataques CSRF (Cross-Site Request Forgery)
+                            mediante tokens de verificación.
+                        </li>
+                        <li>
+                            Cierre automático de sesión por inactividad prolongada.
+                        </li>
+                        <li>
+                            Límite de intentos de inicio de sesión para prevenir ataques
+                            de fuerza bruta.
+                        </li>
+                        <li>
+                            Base de datos alojada en un servicio administrado con respaldos
+                            automáticos y acceso restringido.
+                        </li>
+                        <li>
+                            Control de acceso basado en roles: cada usuario solo puede ver
+                            y gestionar la información que corresponde a su rol.
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- 8 -->
+                <section class="legal-doc__seccion">
+                    <h2>8. Transferencia y transmisión de datos</h2>
+                    <p>
+                        Los datos personales recopilados por Be Time <strong>no serán
+                        vendidos, alquilados ni cedidos a terceros</strong> para fines
+                        comerciales o publicitarios.
+                    </p>
+                    <p>
+                        Los datos podrán ser compartidos únicamente con:
+                    </p>
+                    <ul>
+                        <li>
+                            Funcionarios del SENA que lo requieran para el cumplimiento de
+                            sus funciones institucionales relacionadas con bienestar al
+                            aprendiz.
+                        </li>
+                        <li>
+                            Autoridades competentes cuando exista una obligación legal o
+                            una orden judicial que lo exija.
+                        </li>
+                    </ul>
+                    <p>
+                        La base de datos se encuentra alojada en servidores en la nube
+                        (Aiven / Render), cuyos centros de datos pueden estar ubicados
+                        fuera de Colombia. El uso de estos servicios cumple con estándares
+                        internacionales de seguridad y protección de datos.
+                    </p>
+                </section>
+
+                <!-- 9 -->
+                <section class="legal-doc__seccion">
+                    <h2>9. Conservación de los datos</h2>
+                    <p>
+                        Los datos personales serán conservados durante el tiempo que el
+                        usuario mantenga su cuenta activa en la plataforma y, posteriormente,
+                        durante el periodo necesario para cumplir con obligaciones legales,
+                        resolver disputas o hacer cumplir los acuerdos.
+                    </p>
+                    <p>
+                        Los registros de horas de bienestar y asistencia a actividades se
+                        conservarán como parte del historial académico del aprendiz, de
+                        acuerdo con las políticas de gestión documental del SENA.
+                    </p>
+                </section>
+
+                <!-- 10 -->
+                <section class="legal-doc__seccion">
+                    <h2>10. Cookies y datos de navegación</h2>
+                    <p>
+                        Be Time utiliza cookies de sesión estrictamente necesarias para el
+                        funcionamiento de la plataforma (autenticación, protección CSRF).
+                        No se utilizan cookies de seguimiento, publicidad ni analítica de
+                        terceros.
+                    </p>
+                </section>
+
+                <!-- 11 -->
+                <section class="legal-doc__seccion">
+                    <h2>11. Modificaciones a esta política</h2>
+                    <p>
+                        Esta Política de Tratamiento de Datos Personales podrá ser actualizada
+                        en cualquier momento. Las modificaciones serán publicadas en esta misma
+                        página con la fecha de la última actualización. El uso continuado de la
+                        plataforma después de cualquier cambio constituye la aceptación de la
+                        política vigente.
+                    </p>
+                </section>
+
+                <!-- 12 -->
+                <section class="legal-doc__seccion">
+                    <h2>12. Contacto y reclamaciones</h2>
+                    <p>
+                        Para ejercer sus derechos como titular de datos personales, presentar
+                        consultas o reclamaciones relacionadas con el tratamiento de su
+                        información, el usuario puede dirigirse a:
+                    </p>
+                    <div class="legal-doc__contacto">
+                        <p>
+                            <strong>Bienestar al Aprendiz</strong><br>
+                            Centro de Diseño y Metrología — SENA<br>
+                            Bogotá D.C., Colombia
+                        </p>
+                        <p>
+                            Los canales de contacto están disponibles en la sección
+                            la página principal de la plataforma.
+                        </p>
+                    </div>
+                    <p>
+                        La respuesta a las consultas se realizará en un plazo máximo de diez
+                        (10) días hábiles contados a partir de la fecha de recibo de la
+                        solicitud. Las reclamaciones serán atendidas en un plazo máximo de
+                        quince (15) días hábiles, de conformidad con lo establecido en la
+                        Ley 1581 de 2012.
+                    </p>
+                </section>
+
+                <div class="legal-doc__footer text-center mt-5">
+                    <p class="text-muted small">
+                        <strong>Be Time</strong> — Bienestar al Aprendiz<br>
+                        SENA · Centro de Diseño y Metrología<br>
+                        Bogotá D.C., Colombia · 2026
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

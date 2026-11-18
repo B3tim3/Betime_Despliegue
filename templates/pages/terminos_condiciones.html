@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Términos y condiciones | Be Time{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/legal.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9">
+
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb small">
+                    <li class="breadcrumb-item"><a href="{% url 'index' %}">Inicio</a></li>
+                    <li class="breadcrumb-item active">Términos y condiciones</li>
+                </ol>
+            </nav>
+
+            <div class="legal-doc">
+
+                <div class="legal-doc__header text-center mb-5">
+                    <span class="legal-doc__badge">Documento legal</span>
+                    <h1 class="legal-doc__titulo">Términos y Condiciones de Uso</h1>
+                    <p class="legal-doc__subtitulo">
+                        Plataforma Be Time — Bienestar al Aprendiz
+                    </p>
+                    <p class="text-muted small">
+                        Última actualización: noviembre de 2026
+                    </p>
+                </div>
+
+                <!-- 1 -->
+                <section class="legal-doc__seccion">
+                    <h2>1. Objeto y aceptación</h2>
+                    <p>
+                        Los presentes Términos y Condiciones regulan el acceso y uso de la
+                        plataforma web <strong>Be Time</strong>, desarrollada como herramienta
+                        de apoyo al área de <strong>Bienestar al Aprendiz</strong> del
+                        <strong>Centro de Diseño y Metrología (C.D.M.)</strong> del Servicio
+                        Nacional de Aprendizaje — <strong>SENA</strong>.
+                    </p>
+                    <p>
+                        Al registrarse y utilizar la plataforma, el usuario declara haber leído,
+                        comprendido y aceptado en su totalidad estos Términos y Condiciones, así
+                        como la <a href="{% url 'politica_datos' %}">Política de Tratamiento de
+                        Datos Personales</a>.
+                    </p>
+                </section>
+
+                <!-- 2 -->
+                <section class="legal-doc__seccion">
+                    <h2>2. Definiciones</h2>
+                    <ul>
+                        <li>
+                            <strong>Plataforma:</strong> la aplicación web Be Time, accesible a
+                            través de su dominio oficial.
+                        </li>
+                        <li>
+                            <strong>Usuario:</strong> toda persona natural que se registra y
+                            accede a Be Time, ya sea en calidad de aprendiz, personal de
+                            bienestar o administrador.
+                        </li>
+                        <li>
+                            <strong>Aprendiz:</strong> estudiante activo del SENA, inscrito en
+                            un programa de formación del Centro de Diseño y Metrología.
+                        </li>
+                        <li>
+                            <strong>Personal de Bienestar:</strong> funcionario o contratista
+                            del SENA encargado de gestionar las actividades de bienestar.
+                        </li>
+                        <li>
+                            <strong>Administrador:</strong> usuario con privilegios de
+                            configuración y gestión global de la plataforma.
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- 3 -->
+                <section class="legal-doc__seccion">
+                    <h2>3. Registro y cuenta de usuario</h2>
+                    <p>
+                        Para utilizar Be Time, el usuario debe completar el formulario de
+                        registro proporcionando información veraz y actualizada, incluyendo su
+                        tipo y número de documento de identidad, nombres, apellidos, correo
+                        electrónico, género, teléfono y datos académicos (programa de formación,
+                        jornada y grupo).
+                    </p>
+                    <p>El usuario se compromete a:</p>
+                    <ul>
+                        <li>Proporcionar datos verídicos, completos y actualizados.</li>
+                        <li>
+                            Mantener la confidencialidad de sus credenciales de acceso
+                            (número de documento y contraseña).
+                        </li>
+                        <li>
+                            No compartir su cuenta con terceros ni permitir el acceso no
+                            autorizado.
+                        </li>
+                        <li>
+                            Notificar de inmediato al personal de bienestar ante cualquier
+                            uso no autorizado de su cuenta.
+                        </li>
+                    </ul>
+                    <p>
+                        La plataforma se reserva el derecho de suspender o eliminar cuentas que
+                        contengan información falsa o que incumplan estos términos.
+                    </p>
+                </section>
+
+                <!-- 4 -->
+                <section class="legal-doc__seccion">
+                    <h2>4. Uso permitido de la plataforma</h2>
+                    <p>Be Time está diseñada exclusivamente para:</p>
+                    <ul>
+                        <li>
+                            Consultar, inscribirse y participar en actividades de bienestar
+                            organizadas por el Centro de Diseño y Metrología.
+                        </li>
+                        <li>
+                            Registrar y hacer seguimiento de las horas de bienestar
+                            acumuladas por los aprendices.
+                        </li>
+                        <li>
+                            Recibir horas de bienestar por mérito mediante códigos de
+                            actividades extracurriculares.
+                        </li>
+                        <li>Consultar publicaciones e información institucional.</li>
+                        <li>
+                            Recibir notificaciones sobre actividades, inscripciones y
+                            novedades de bienestar.
+                        </li>
+                        <li>
+                            Descargar constancias de horas de bienestar acumuladas.
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- 5 -->
+                <section class="legal-doc__seccion">
+                    <h2>5. Conducta del usuario</h2>
+                    <p>El usuario se compromete a no:</p>
+                    <ul>
+                        <li>
+                            Utilizar la plataforma con fines distintos a los establecidos en
+                            el numeral anterior.
+                        </li>
+                        <li>
+                            Suplantar la identidad de otro usuario o registrarse con datos
+                            ajenos.
+                        </li>
+                        <li>
+                            Intentar acceder a funciones, datos o áreas de la plataforma para
+                            las cuales no tiene autorización.
+                        </li>
+                        <li>
+                            Manipular, alterar o falsificar registros de asistencia, horas de
+                            bienestar o cualquier otro dato.
+                        </li>
+                        <li>
+                            Realizar acciones que comprometan la seguridad, estabilidad o
+                            rendimiento de la plataforma.
+                        </li>
+                        <li>
+                            Compartir códigos QR personales o de actividades con otros
+                            aprendices para registrar asistencias indebidas.
+                        </li>
+                    </ul>
+                    <p>
+                        El incumplimiento de estas normas podrá resultar en la suspensión
+                        temporal o permanente de la cuenta, sin perjuicio de las acciones
+                        disciplinarias que correspondan según el reglamento del SENA.
+                    </p>
+                </section>
+
+                <!-- 6 -->
+                <section class="legal-doc__seccion">
+                    <h2>6. Propiedad intelectual</h2>
+                    <p>
+                        La plataforma Be Time, incluyendo su diseño, código fuente, logotipos,
+                        textos, imágenes y demás elementos, es propiedad del equipo de
+                        desarrollo del proyecto en el marco del programa de formación
+                        <strong>Análisis y Desarrollo de Software (ADSO)</strong> del SENA,
+                        Centro de Diseño y Metrología.
+                    </p>
+                    <p>
+                        Queda prohibida la reproducción, distribución, modificación o uso
+                        comercial de cualquier contenido de la plataforma sin autorización
+                        expresa y por escrito.
+                    </p>
+                </section>
+
+                <!-- 7 -->
+                <section class="legal-doc__seccion">
+                    <h2>7. Disponibilidad del servicio</h2>
+                    <p>
+                        Be Time se ofrece "tal cual" y "según disponibilidad". El equipo de
+                        desarrollo y el Centro de Diseño y Metrología no garantizan que la
+                        plataforma funcione de manera ininterrumpida, libre de errores o
+                        completamente segura.
+                    </p>
+                    <p>
+                        Se podrán realizar mantenimientos programados o de emergencia que
+                        impliquen la suspensión temporal del servicio, procurando notificar
+                        a los usuarios con la debida antelación cuando sea posible.
+                    </p>
+                </section>
+
+                <!-- 8 -->
+                <section class="legal-doc__seccion">
+                    <h2>8. Limitación de responsabilidad</h2>
+                    <p>
+                        Be Time y sus desarrolladores no serán responsables por:
+                    </p>
+                    <ul>
+                        <li>
+                            Daños directos o indirectos derivados del uso o imposibilidad
+                            de uso de la plataforma.
+                        </li>
+                        <li>
+                            Pérdida de datos ocasionada por fallos técnicos, interrupciones
+                            del servicio o eventos de fuerza mayor.
+                        </li>
+                        <li>
+                            Accesos no autorizados a cuentas de usuario causados por
+                            negligencia del propio usuario en la custodia de sus credenciales.
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- 9 -->
+                <section class="legal-doc__seccion">
+                    <h2>9. Modificaciones</h2>
+                    <p>
+                        Los presentes Términos y Condiciones podrán ser modificados en cualquier
+                        momento. Las modificaciones serán publicadas en esta misma página y
+                        entrarán en vigencia a partir de su publicación. El uso continuado de la
+                        plataforma después de cualquier cambio constituye la aceptación de los
+                        nuevos términos.
+                    </p>
+                </section>
+
+                <!-- 10 -->
+                <section class="legal-doc__seccion">
+                    <h2>10. Legislación aplicable</h2>
+                    <p>
+                        Estos Términos y Condiciones se rigen por la legislación de la
+                        <strong>República de Colombia</strong>. Para cualquier controversia
+                        que surja en relación con el uso de Be Time, las partes se someten
+                        a la jurisdicción de los tribunales competentes de la ciudad de
+                        Bogotá D.C., Colombia.
+                    </p>
+                </section>
+
+                <!-- 11 -->
+                <section class="legal-doc__seccion">
+                    <h2>11. Contacto</h2>
+                    <p>
+                        Para cualquier duda, sugerencia o solicitud relacionada con estos
+                        Términos y Condiciones, el usuario puede comunicarse con el área de
+                        Bienestar al Aprendiz del Centro de Diseño y Metrología a través de
+                        los canales oficiales del centro.
+                    </p>
+                </section>
+
+                <div class="legal-doc__footer text-center mt-5">
+                    <p class="text-muted small">
+                        <strong>Be Time</strong> — Bienestar al Aprendiz<br>
+                        SENA · Centro de Diseño y Metrología<br>
+                        Bogotá D.C., Colombia · 2026
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

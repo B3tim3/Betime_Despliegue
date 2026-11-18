@@ -1,0 +1,198 @@
+/* ==========================================================================
+   legal.css — Estilos para páginas legales (Términos, Política de datos)
+   Plataforma Be Time · Bienestar al Aprendiz · SENA C.D.M.
+   ========================================================================== */
+
+/* ---------- Contenedor principal ---------- */
+.legal-doc {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--bt-tinta, #16241A);
+}
+
+/* ---------- Encabezado ---------- */
+.legal-doc__header {
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--bt-borde, #E1E9DC);
+}
+
+.legal-doc__badge {
+    display: inline-block;
+    padding: 0.3rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bt-verde-oscuro, #1E5E2A);
+    background-color: var(--bt-fondo-alt, #F3F8F0);
+    border: 1px solid var(--bt-borde, #E1E9DC);
+    border-radius: 50rem;
+}
+
+.legal-doc__titulo {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--bt-verde-oscuro, #1E5E2A);
+    margin-bottom: 0.5rem;
+}
+
+.legal-doc__subtitulo {
+    font-size: 1.1rem;
+    color: #5a6b5e;
+    margin-bottom: 0.25rem;
+}
+
+/* ---------- Secciones ---------- */
+.legal-doc__seccion {
+    padding: 1.75rem 0;
+    border-bottom: 1px solid var(--bt-borde, #E1E9DC);
+}
+
+.legal-doc__seccion:last-of-type {
+    border-bottom: none;
+}
+
+.legal-doc__seccion h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--bt-verde-oscuro, #1E5E2A);
+    margin-bottom: 1rem;
+}
+
+.legal-doc__seccion h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--bt-tinta, #16241A);
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.legal-doc__seccion p {
+    margin-bottom: 0.85rem;
+}
+
+.legal-doc__seccion ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.legal-doc__seccion ul li {
+    margin-bottom: 0.5rem;
+}
+
+.legal-doc__seccion a {
+    color: var(--bt-verde, #2E8B3D);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.legal-doc__seccion a:hover {
+    color: var(--bt-verde-oscuro, #1E5E2A);
+}
+
+/* ---------- Bloque de contacto ---------- */
+.legal-doc__contacto {
+    background-color: var(--bt-fondo-alt, #F3F8F0);
+    border-left: 4px solid var(--bt-verde, #2E8B3D);
+    padding: 1rem 1.25rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+    margin: 1rem 0;
+}
+
+.legal-doc__contacto p {
+    margin-bottom: 0.5rem;
+}
+
+.legal-doc__contacto p:last-child {
+    margin-bottom: 0;
+}
+
+/* ---------- Pie de documento ---------- */
+.legal-doc__footer {
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--bt-borde, #E1E9DC);
+}
+
+/* ---------- Checkboxes legales en formulario de registro ---------- */
+.legal-checks {
+    background-color: var(--bt-fondo-alt, #F3F8F0);
+    border: 1px solid var(--bt-borde, #E1E9DC);
+    border-radius: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.legal-checks__titulo {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--bt-verde-oscuro, #1E5E2A);
+    margin-bottom: 0.75rem;
+}
+
+.legal-checks .form-check {
+    margin-bottom: 0.6rem;
+}
+
+.legal-checks .form-check:last-child {
+    margin-bottom: 0;
+}
+
+.legal-checks .form-check-input:checked {
+    background-color: var(--bt-verde, #2E8B3D);
+    border-color: var(--bt-verde, #2E8B3D);
+}
+
+.legal-checks .form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(46, 139, 61, 0.25);
+    border-color: var(--bt-verde, #2E8B3D);
+}
+
+.legal-checks .form-check-label {
+    font-size: 0.9rem;
+    color: var(--bt-tinta, #16241A);
+}
+
+.legal-checks .form-check-label a {
+    color: var(--bt-verde, #2E8B3D);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.legal-checks .form-check-label a:hover {
+    color: var(--bt-verde-oscuro, #1E5E2A);
+}
+
+/* ---------- Breadcrumb ---------- */
+.breadcrumb-item a {
+    color: var(--bt-verde, #2E8B3D);
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--bt-verde-oscuro, #1E5E2A);
+    text-decoration: underline;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 576px) {
+    .legal-doc__titulo {
+        font-size: 1.5rem;
+    }
+
+    .legal-doc__seccion h2 {
+        font-size: 1.15rem;
+    }
+
+    .legal-doc__seccion {
+        padding: 1.25rem 0;
+    }
+
+    .legal-checks {
+        padding: 1rem;
+    }
+}
