@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
 Crear cuenta | Be Time
 {% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/legal.css' %}">
 <style>
     /* ---------- Registro por pasos ----------
        Sin JavaScript se ven los tres bloques seguidos (el formulario sigue
@@ -257,6 +259,9 @@ Crear cuenta | Be Time
                                 </div>
                             </div>
 
+                            {# ===== TÉRMINOS Y POLÍTICA DE DATOS ===== #}
+                            {% include "usuarios/includes/legal_checks.html" %}
+
                             <div class="registro-acciones">
                                 <button type="button" class="btn btn-outline-secondary" data-accion="anterior" data-solo-js>Atrás</button>
                                 <button type="submit" class="btn btn-success">Crear cuenta</button>
@@ -281,6 +286,7 @@ Crear cuenta | Be Time
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/legal_validation.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 

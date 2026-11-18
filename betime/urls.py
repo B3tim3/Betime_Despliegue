@@ -18,6 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +28,10 @@ urlpatterns = [
     path('actividades/', include('actividades.urls')),
     path('bienestar/', include('bienestar.urls')),
     path('notificaciones/', include('notificaciones.urls')),
+
+    # Páginas legales
+    path('terminos-y-condiciones/', TemplateView.as_view(template_name='pages/terminos_condiciones.html'), name='terminos_condiciones'),
+    path('politica-de-datos/', TemplateView.as_view(template_name='pages/politica_datos.html'), name='politica_datos'),
 ]
 
 if settings.DEBUG:

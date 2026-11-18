@@ -1,0 +1,51 @@
+{% comment %}
+    Fragmento para incluir en el formulario de registro de usuarios.
+    Agrega dos checkboxes obligatorios: Términos y condiciones + Tratamiento de datos.
+
+    USO:
+    En la plantilla del formulario de registro (registro.html), justo antes
+    del botón de envío, agregar:
+        {% include "usuarios/includes/legal_checks.html" %}
+{% endcomment %}
+
+<div class="legal-checks">
+    <p class="legal-checks__titulo">Aspectos legales</p>
+
+    <!-- Checkbox 1: Términos y condiciones -->
+    <div class="form-check">
+        <input class="form-check-input"
+               type="checkbox"
+               id="acepta_terminos"
+               name="acepta_terminos"
+               required>
+        <label class="form-check-label" for="acepta_terminos">
+            He leído y acepto los
+            <a href="{% url 'terminos_condiciones' %}" target="_blank">
+                Términos y Condiciones
+            </a>
+            de uso de Be Time.
+        </label>
+        <div class="invalid-feedback">
+            Debes aceptar los términos y condiciones para registrarte.
+        </div>
+    </div>
+
+    <!-- Checkbox 2: Política de tratamiento de datos -->
+    <div class="form-check">
+        <input class="form-check-input"
+               type="checkbox"
+               id="acepta_datos"
+               name="acepta_datos"
+               required>
+        <label class="form-check-label" for="acepta_datos">
+            Autorizo el
+            <a href="{% url 'politica_datos' %}" target="_blank">
+                tratamiento de mis datos personales
+            </a>
+            conforme a la Ley 1581 de 2012.
+        </label>
+        <div class="invalid-feedback">
+            Debes autorizar el tratamiento de datos para registrarte.
+        </div>
+    </div>
+</div>
