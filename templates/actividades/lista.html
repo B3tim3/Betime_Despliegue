@@ -5,6 +5,24 @@
 Actividades | Be Time
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    .tab-actividades .nav-link {
+        color: var(--bt-verde-oscuro, #1E5E2A);
+        font-weight: 600;
+        border-radius: 50rem;
+        padding: 0.4rem 1.2rem;
+    }
+    .tab-actividades .nav-link.active {
+        background-color: var(--bt-verde, #2E8B3D);
+        color: #fff;
+    }
+    .tab-actividades .nav-link:not(.active):hover {
+        background-color: var(--bt-fondo-alt, #F3F8F0);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <section class="home-section">
@@ -15,8 +33,24 @@ Actividades | Be Time
                 <i class="bi bi-arrow-left"></i> Volver al inicio
             </a>
             <div class="home-section__eyebrow mb-1">Agenda</div>
-            <h1 class="home-section__title mb-0">Próximas actividades</h1>
+            <h1 class="home-section__title mb-0">Actividades</h1>
         </div>
+
+        {# Pestañas: Próximas / Pasadas #}
+        <ul class="nav nav-pills gap-2 mb-4 tab-actividades" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'proximas' %}active{% endif %}"
+                   href="{% url 'actividades:lista' %}?tab=proximas">
+                    <i class="bi bi-calendar-event"></i> Próximas
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'pasadas' %}active{% endif %}"
+                   href="{% url 'actividades:lista' %}?tab=pasadas">
+                    <i class="bi bi-clock-history"></i> Pasadas
+                </a>
+            </li>
+        </ul>
 
         {% if actividades %}
             <div class="mb-4">
@@ -74,9 +108,53 @@ Actividades | Be Time
                     </a>
                 {% endfor %}
             </div>
+
+            {# Paginación #}
+            {% if page_obj.has_other_pages %}
+                <nav aria-label="Páginas de actividades" class="d-flex justify-content-center mb-4">
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?tab={{ tab }}&page={{ page_obj.previous_page_number }}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i></span></li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                                <li class="page-item"><a class="page-link" href="?tab={{ tab }}&page={{ num }}">{{ num }}</a></li>
+                            {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                                <li class="page-item"><a class="page-link" href="?tab={{ tab }}&page={{ num }}">{{ num }}</a></li>
+                            {% elif num == 2 or num == page_obj.paginator.num_pages|add:"-1" %}
+                                <li class="page-item disabled"><span class="page-link">…</span></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?tab={{ tab }}&page={{ page_obj.next_page_number }}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-right"></i></span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+
         {% else %}
             <div class="home-card p-4 text-center text-muted">
-                No hay actividades programadas por el momento.
+                {% if tab == "pasadas" %}
+                    No hay actividades pasadas registradas.
+                {% else %}
+                    No hay actividades programadas por el momento.
+                {% endif %}
             </div>
         {% endif %}
 

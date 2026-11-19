@@ -1,5 +1,5 @@
 from .login import LoginForm
-from .perfil import PerfilAprendizForm, CambiarContrasenaForm
+from .perfil import PerfilAprendizForm, PerfilBienestarForm, CambiarContrasenaForm
 from .registro import RegistroAprendizForm
 from .crear_usuario import CrearUsuarioAdminForm
 from .recuperacion import RecuperarContrasenaForm, NuevaContrasenaForm
@@ -8,6 +8,7 @@ from .aprendiz_panel import AprendizPanelForm
 
 __all__ = [
     "PerfilAprendizForm",
+    "PerfilBienestarForm",
     "CambiarContrasenaForm",
     "LoginForm",
     "RegistroAprendizForm",

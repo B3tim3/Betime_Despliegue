@@ -1,0 +1,103 @@
+{% extends 'base_private.html' %}
+
+{% block title %}
+Mi perfil | Be Time
+{% endblock %}
+
+{% block dashboard_content %}
+
+<h1 class="h3 fw-bold mb-1">Mi perfil</h1>
+<p class="text-muted mb-4">
+    Mantén tus datos al día. Si necesitas cambiar tu fecha de ingreso, contacta al administrador.
+</p>
+
+<form method="post" id="perfil-form" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2">
+            {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 fw-bold mb-3">Datos personales</h2>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Tipo de documento</label>
+                    <input type="text" class="form-control" value="{{ personal.usuario.get_tipo_documento_display }}" disabled>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Número de documento</label>
+                    <input type="text" class="form-control" value="{{ personal.usuario.numero_documento }}" disabled>
+                </div>
+                <div class="col-12">
+                    <div class="form-text mt-0">
+                        El documento es con el que inicias sesión y no se puede cambiar aquí.
+                        Si tiene un error, contacta al administrador.
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.nombres.id_for_label }}" class="form-label">{{ form.nombres.label }}</label>
+                    {{ form.nombres }}
+                    {% for error in form.nombres.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.apellidos.id_for_label }}" class="form-label">{{ form.apellidos.label }}</label>
+                    {{ form.apellidos }}
+                    {% for error in form.apellidos.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.telefono.id_for_label }}" class="form-label">{{ form.telefono.label }}</label>
+                    {{ form.telefono }}
+                    {% for error in form.telefono.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                    {{ form.email }}
+                    {% for error in form.email.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 fw-bold mb-1">Información laboral</h2>
+            <p class="text-muted small mb-3">
+                La fecha de ingreso solo la modifica un administrador.
+            </p>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.cargo.id_for_label }}" class="form-label">{{ form.cargo.label }}</label>
+                    {{ form.cargo }}
+                    {% for error in form.cargo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Fecha de ingreso</label>
+                    <input type="text" class="form-control" value="{{ personal.fecha_ingreso|date:'d/m/Y' }}" disabled>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Estado</label>
+                    <input type="text" class="form-control" value="{{ personal.get_estado_display }}" disabled>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check2"></i> Guardar cambios
+        </button>
+        <a href="{% url 'usuarios:dashboard' %}" class="btn btn-outline-secondary">Cancelar</a>
+        <a href="{% url 'usuarios:cambiar_contrasena' %}" class="btn btn-outline-secondary ms-md-auto">
+            <i class="bi bi-key"></i> Cambiar contraseña
+        </a>
+    </div>
+</form>
+
+{% endblock %}

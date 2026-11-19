@@ -21,6 +21,7 @@ from .dashboards import (  # noqa: F401
 from .cuentas import (  # noqa: F401
     crear_usuario_admin,
     perfil_aprendiz,
+    perfil_bienestar,
     CambiarContrasenaView,
 )
 from .catalogos import (  # noqa: F401
@@ -71,6 +72,7 @@ __all__ = [
     "dashboard_admin",
     "crear_usuario_admin",
     "perfil_aprendiz",
+    "perfil_bienestar",
     "CambiarContrasenaView",
     "EliminarProtegidoMixin",
     "ProgramaFormacionListView",

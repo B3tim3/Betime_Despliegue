@@ -9,7 +9,8 @@ from django.db.models import Count, Q, Sum
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
-from bienestar.services.progreso import calcular_progreso, horas_de
+from bienestar.models import ActividadExtracurricular
+from bienestar.services.progreso import calcular_progreso, horas_de, total_horas_de
 from actividades.models import Actividad, Inscripcion
 from actividades.services.estados import sincronizar_estados
 from publicaciones.models import Publicacion
@@ -82,6 +83,49 @@ def _resumen_del_panel():
     """Números y próximas actividades que se ven en el inicio de Bienestar y del administrador."""
     sincronizar_estados()
     vigentes = Actividad.objects.filter(estado__in=["programado", "en_curso"])
+
+    # --- Nuevas estadísticas para dashboards enriquecidos ---
+
+    # Actividades finalizadas que aún tienen inscritos sin asistencia registrada
+    # (es decir, Bienestar no pasó el checklist completo)
+    finalizadas_pendientes = Actividad.objects.filter(
+        estado="finalizado"
+    ).annotate(
+        inscritos_sin_asistencia=Count(
+            "inscripciones",
+            filter=Q(inscripciones__estado="inscrito") & ~Q(inscripciones__asistencia__asistio=True)
+        ),
+        total_inscritos_activos=Count(
+            "inscripciones",
+            filter=~Q(inscripciones__estado="cancelada")
+        ),
+    ).filter(inscritos_sin_asistencia__gt=0).order_by("-fecha_fin")[:5]
+
+    # Horas por mérito abiertas (motivos extracurriculares)
+    merito_abiertas = ActividadExtracurricular.objects.filter(
+        estado="abierta"
+    ).annotate(
+        total=Count("participaciones"),
+        con_horas=Count("participaciones", filter=Q(participaciones__estado="otorgada")),
+    ).order_by("-fecha")[:5]
+
+    # Aprendices con 0 horas (riesgo de no cumplir la meta)
+    total_sin_horas = Aprendiz.objects.filter(
+        estado="activo"
+    ).exclude(
+        # Tiene al menos 1 hora por actividad
+        usuario__aprendiz__participaciones_extracurriculares__estado="otorgada",
+    ).exclude(
+        # O por inscripción con asistencia
+        inscripciones__asistencia__asistio=True,
+    ).count()
+
+    # Inscripciones recientes (últimos 7 días)
+    hace_7_dias = timezone.now() - timezone.timedelta(days=7)
+    inscripciones_recientes = Inscripcion.objects.filter(
+        fecha_inscripcion__gte=hace_7_dias
+    ).exclude(estado="cancelada").count()
+
     return {
         "total_aprendices_activos": Aprendiz.objects.filter(estado="activo").count(),
         "total_actividades_vigentes": vigentes.count(),
@@ -89,6 +133,11 @@ def _resumen_del_panel():
         "actividades_vigentes": vigentes.annotate(
             total_inscritos=Count("inscripciones", filter=~Q(inscripciones__estado="cancelada"))
         ).order_by("fecha_inicio")[:5],
+        # Nuevos datos
+        "finalizadas_pendientes": finalizadas_pendientes,
+        "merito_abiertas": merito_abiertas,
+        "total_sin_horas": total_sin_horas,
+        "inscripciones_recientes": inscripciones_recientes,
     }
 
 

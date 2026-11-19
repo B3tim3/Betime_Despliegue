@@ -1,8 +1,41 @@
 {% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    {# ── Toast container: fijo en la parte superior, visible en móvil y desktop ── #}
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1090; pointer-events: none;">
+        <div id="bt-toast-container" style="pointer-events: auto; max-width: 420px; width: 100%;">
+            {% for message in messages %}
+                <div class="toast align-items-center border-0 text-bg-{{ message.tags|default:'info' }} mb-2"
+                     role="alert" aria-live="assertive" aria-atomic="true"
+                     data-bs-autohide="true" data-bs-delay="5000">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            {% if message.tags == 'success' %}
+                                <i class="bi bi-check-circle-fill me-1"></i>
+                            {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            {% elif message.tags == 'warning' %}
+                                <i class="bi bi-exclamation-circle-fill me-1"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle-fill me-1"></i>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                                data-bs-dismiss="toast" aria-label="Cerrar"></button>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-    {% endfor %}
+    </div>
+
+    <script>
+        // Inicializar todos los toasts de Django messages al cargar la página.
+        document.addEventListener("DOMContentLoaded", function () {
+            var contenedor = document.getElementById("bt-toast-container");
+            if (!contenedor || typeof bootstrap === "undefined") return;
+            contenedor.querySelectorAll(".toast").forEach(function (el) {
+                var toast = bootstrap.Toast.getOrCreateInstance(el);
+                toast.show();
+            });
+        });
+    </script>
 {% endif %}

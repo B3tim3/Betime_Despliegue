@@ -18,3 +18,26 @@ def actualizar_perfil_aprendiz(aprendiz, datos):
     usuario.telefono = datos["telefono"]
     usuario.email = datos["email"]
     usuario.save(update_fields=["nombres", "apellidos", "genero", "telefono", "email"])
+
+
+@transaction.atomic
+def actualizar_perfil_bienestar(personal, datos):
+    """
+    Guarda los cambios de "Mi perfil" del personal de Bienestar.
+
+    `datos` es el cleaned_data de PerfilBienestarForm. Se actualizan:
+    - En Usuario: nombres, apellidos, teléfono, email.
+    - En PersonalBienestar: cargo.
+
+    No se modifica el documento (identidad de login) ni la fecha de ingreso
+    (dato administrativo que solo cambia un Administrador).
+    """
+    usuario = personal.usuario
+    usuario.nombres = datos["nombres"]
+    usuario.apellidos = datos["apellidos"]
+    usuario.telefono = datos["telefono"]
+    usuario.email = datos["email"]
+    usuario.save(update_fields=["nombres", "apellidos", "telefono", "email"])
+
+    personal.cargo = datos["cargo"]
+    personal.save(update_fields=["cargo"])

@@ -4,6 +4,47 @@
 Horas por mérito | Be Time
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    .merit-accordion .accordion-button {
+        background-color: var(--bt-fondo-alt, #F3F8F0);
+        color: var(--bt-verde-oscuro, #1E5E2A);
+        font-weight: 700;
+        font-size: 1.05rem;
+        border: 1px solid var(--bt-borde, #E1E9DC);
+    }
+    .merit-accordion .accordion-button:not(.collapsed) {
+        background-color: var(--bt-verde, #2E8B3D);
+        color: #fff;
+        box-shadow: none;
+    }
+    .merit-accordion .accordion-button:not(.collapsed)::after {
+        filter: brightness(0) invert(1);
+    }
+    .merit-accordion .accordion-button:focus {
+        box-shadow: 0 0 0 0.2rem rgba(46, 139, 61, 0.25);
+    }
+    .merit-accordion .accordion-body {
+        padding: 0;
+    }
+    .merit-accordion .badge-count {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25em 0.65em;
+        border-radius: 50rem;
+        margin-left: 0.5rem;
+    }
+    .merit-accordion .accordion-button:not(.collapsed) .badge-count {
+        background-color: rgba(255,255,255,0.25);
+        color: #fff;
+    }
+    .merit-accordion .accordion-button.collapsed .badge-count {
+        background-color: var(--bt-verde, #2E8B3D);
+        color: #fff;
+    }
+</style>
+{% endblock %}
+
 {% block dashboard_content %}
 
 <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
@@ -20,26 +61,61 @@ Horas por mérito | Be Time
 {% include 'components/filtros/periodo.html' %}
 
 {% if actividades %}
-    <div class="table-responsive">
-        <table class="table align-middle bg-white">
-            <thead>
-                <tr><th>Motivo</th><th>Fecha</th><th>Código</th><th>Horas</th><th>Con horas / en lista</th><th>Estado</th><th></th></tr>
-            </thead>
-            <tbody>
-                {% for a in actividades %}
-                    <tr>
-                        <td class="fw-semibold">{{ a.titulo }}</td>
-                        <td>{{ a.fecha|date:"d/m/Y" }}</td>
-                        <td><code class="fs-6">{{ a.codigo }}</code></td>
-                        <td>{{ a.horas }}</td>
-                        <td>{{ a.con_horas }} / {{ a.total }}</td>
-                        <td><span class="badge {% if a.abierta %}bg-success{% else %}text-bg-secondary{% endif %}">{{ a.get_estado_display }}</span></td>
-                        <td class="text-end"><a href="{% url 'bienestar:actividad_detalle' a.id %}" class="btn btn-sm btn-outline-success">Abrir</a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+    {% regroup actividades by fecha|date:"Y-m" as meses %}
+
+    <div class="accordion merit-accordion" id="accordionMerito">
+        {% for mes in meses %}
+            <div class="accordion-item border-0 mb-2 rounded overflow-hidden shadow-sm">
+                <h2 class="accordion-header">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#mes-{{ forloop.counter }}"
+                            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                            aria-controls="mes-{{ forloop.counter }}">
+                        {{ mes.list.0.fecha|date:"F Y" }}
+                        <span class="badge-count">{{ mes.list|length }}</span>
+                    </button>
+                </h2>
+                <div id="mes-{{ forloop.counter }}"
+                     class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                     data-bs-parent="#accordionMerito">
+                    <div class="accordion-body">
+                        <div class="table-responsive">
+                            <table class="table align-middle bg-white mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Motivo</th>
+                                        <th>Fecha</th>
+                                        <th>Código</th>
+                                        <th>Horas</th>
+                                        <th>Con horas / en lista</th>
+                                        <th>Estado</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for a in mes.list %}
+                                        <tr>
+                                            <td class="fw-semibold">{{ a.titulo }}</td>
+                                            <td>{{ a.fecha|date:"d/m/Y" }}</td>
+                                            <td><code class="fs-6">{{ a.codigo }}</code></td>
+                                            <td>{{ a.horas }}</td>
+                                            <td>{{ a.con_horas }} / {{ a.total }}</td>
+                                            <td><span class="badge {% if a.abierta %}bg-success{% else %}text-bg-secondary{% endif %}">{{ a.get_estado_display }}</span></td>
+                                            <td class="text-end"><a href="{% url 'bienestar:actividad_detalle' a.id %}" class="btn btn-sm btn-outline-success">Abrir</a></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
+
 {% else %}
     <div class="card border-0 shadow-sm"><div class="card-body text-center text-muted py-5">
         No hay horas por mérito registradas en este año.{% if not periodo.es_todos %} Cambia el año o elige «Todos los años».{% endif %}

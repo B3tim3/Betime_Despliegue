@@ -2,6 +2,7 @@ from django.contrib import messages
 import re
 
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -32,14 +33,28 @@ def lista_actividades(request):
 
     sincronizar_estados()
 
-    # Incluye los que están en curso (ya empezaron pero no terminan): por eso se
-    # filtra por fecha_fin y no por fecha_inicio.
-    actividades = Actividad.objects.con_cupos().exclude(estado="cancelado").filter(
-        fecha_fin__gte=timezone.now()
-    ).order_by("fecha_inicio")
+    # Pestaña activa: "proximas" (por defecto) o "pasadas"
+    tab = request.GET.get("tab", "proximas")
+
+    if tab == "pasadas":
+        actividades_qs = Actividad.objects.con_cupos().filter(
+            Q(estado="finalizado") | Q(fecha_fin__lt=timezone.now())
+        ).exclude(estado="cancelado").order_by("-fecha_inicio")
+    else:
+        tab = "proximas"  # normalizar
+        actividades_qs = Actividad.objects.con_cupos().exclude(estado="cancelado").filter(
+            fecha_fin__gte=timezone.now()
+        ).order_by("fecha_inicio")
+
+    # Paginación: 12 actividades por página
+    paginator = Paginator(actividades_qs, 12)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     return render(request, "actividades/lista.html", {
-        "actividades": actividades,
+        "actividades": page_obj,
+        "page_obj": page_obj,
+        "tab": tab,
     })
 
 

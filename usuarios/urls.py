@@ -15,6 +15,7 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
 
     path("perfil/", views.perfil_aprendiz, name="perfil"),
+    path("perfil/bienestar/", views.perfil_bienestar, name="perfil_bienestar"),
     path("perfil/contrasena/", views.CambiarContrasenaView.as_view(), name="cambiar_contrasena"),
 
     path("dashboard/", views.dashboard_redirect, name="dashboard"),

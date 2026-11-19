@@ -89,6 +89,88 @@ class PerfilAprendizForm(forms.Form):
         return telefono
 
 
+class PerfilBienestarForm(forms.Form):
+    """
+    Edición de los datos del personal de Bienestar ("Mi perfil").
+
+    El personal de Bienestar puede editar sus propios datos de contacto:
+    nombres, apellidos, correo, teléfono y cargo.
+
+    NO puede cambiar el documento (identidad de login) ni la fecha de
+    ingreso (dato administrativo que solo cambia un administrador).
+    """
+
+    nombres = forms.CharField(
+        label="Nombres", max_length=100,
+        widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "given-name"}),
+    )
+    apellidos = forms.CharField(
+        label="Apellidos", max_length=100,
+        widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "family-name"}),
+    )
+    telefono = forms.CharField(
+        label="Teléfono de contacto", max_length=20, required=False,
+        widget=forms.TextInput(attrs={
+            "class": "form-control", "autocomplete": "tel", "inputmode": "tel",
+            "placeholder": "Ej. 3001234567",
+        }),
+    )
+    email = forms.EmailField(
+        label="Correo electrónico",
+        widget=forms.EmailInput(attrs={"class": "form-control", "autocomplete": "email"}),
+    )
+    cargo = forms.CharField(
+        label="Cargo", max_length=100,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+
+    def __init__(self, *args, personal, **kwargs):
+        self.personal = personal
+        self.usuario = personal.usuario
+
+        if not args or args[0] is None:
+            kwargs.setdefault("initial", {
+                "nombres": self.usuario.nombres,
+                "apellidos": self.usuario.apellidos,
+                "telefono": self.usuario.telefono,
+                "email": self.usuario.email,
+                "cargo": self.personal.cargo,
+            })
+
+        super().__init__(*args, **kwargs)
+
+    # ---------- Validaciones ----------
+
+    def clean_nombres(self):
+        return " ".join(self.cleaned_data["nombres"].split())
+
+    def clean_apellidos(self):
+        return " ".join(self.cleaned_data["apellidos"].split())
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip()
+        Usuario = get_user_model()
+        if Usuario.objects.filter(email__iexact=email).exclude(pk=self.usuario.pk).exists():
+            raise forms.ValidationError(
+                "Ya existe otra cuenta registrada con este correo electrónico."
+            )
+        return email
+
+    def clean_telefono(self):
+        telefono = self.cleaned_data["telefono"].strip()
+        if not telefono:
+            return ""
+        telefono = re.sub(r"[\s\-().]", "", telefono)
+        if not re.fullmatch(r"\+?\d{7,13}", telefono):
+            raise forms.ValidationError(
+                "Ingresa un número de teléfono válido (solo números, entre 7 y 13 dígitos)."
+            )
+        return telefono
+
+    def clean_cargo(self):
+        return " ".join(self.cleaned_data["cargo"].split())
+
+
 class CambiarContrasenaForm(PasswordChangeForm):
     """El formulario estándar de Django con las clases de Bootstrap."""
 

@@ -1,5 +1,6 @@
 """
-Cuentas de usuario: creación por un administrador, perfil del aprendiz y cambio de contraseña.
+Cuentas de usuario: creación por un administrador, perfil del aprendiz,
+perfil de Bienestar y cambio de contraseña.
 """
 
 from django.contrib import messages
@@ -14,11 +15,12 @@ from usuarios.forms import (
     CambiarContrasenaForm,
     CrearUsuarioAdminForm,
     PerfilAprendizForm,
+    PerfilBienestarForm,
 )
-from usuarios.models import Aprendiz
+from usuarios.models import Aprendiz, PersonalBienestar
 from usuarios.services import crear_usuario_administrativo
 from usuarios.services.datos_aprendiz import CENTRO_FORMACION
-from usuarios.services.perfil import actualizar_perfil_aprendiz
+from usuarios.services.perfil import actualizar_perfil_aprendiz, actualizar_perfil_bienestar
 
 
 @administrador_requerido
@@ -95,6 +97,48 @@ def perfil_aprendiz(request):
         "form": form,
         "aprendiz": aprendiz,
         "centro_formacion": CENTRO_FORMACION,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Mi perfil (personal de Bienestar)
+# ---------------------------------------------------------------------------
+
+@login_required(login_url="usuarios:login")
+def perfil_bienestar(request):
+    """
+    "Mi perfil": el personal de Bienestar ve y actualiza sus propios datos.
+
+    Puede editar: nombres, apellidos, correo, teléfono y cargo.
+    NO puede editar: documento (identidad de login) ni fecha de ingreso
+    (dato administrativo).
+
+    El Administrador NO accede a esta vista (no edita sus propios datos
+    por jerarquía del sistema). El Administrador solo puede modificar los
+    datos de Bienestar desde el panel de usuarios.
+    """
+
+    if not hasattr(request.user, "personal_bienestar"):
+        return redirect("usuarios:dashboard")
+
+    # Si el usuario es Administrador, no puede editar su propio perfil
+    if hasattr(request.user, "administrador"):
+        return redirect("usuarios:dashboard")
+
+    personal = PersonalBienestar.objects.select_related(
+        "usuario"
+    ).get(usuario=request.user)
+
+    form = PerfilBienestarForm(request.POST or None, personal=personal)
+
+    if request.method == "POST" and form.is_valid():
+        actualizar_perfil_bienestar(personal, form.cleaned_data)
+        messages.success(request, "Tus datos se actualizaron correctamente.")
+        return redirect("usuarios:perfil_bienestar")
+
+    return render(request, "usuarios/perfil_bienestar.html", {
+        "form": form,
+        "personal": personal,
     })
 
 

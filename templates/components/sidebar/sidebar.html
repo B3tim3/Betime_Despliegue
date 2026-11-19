@@ -9,11 +9,17 @@
 {% url 'usuarios:grupos_lista' as url_grupos %}
 {% url 'usuarios:grupos_archivados' as url_archivados %}
 {% url 'usuarios:aprendices_lista' as url_aprendices %}
+{% url 'actividades:lista' as url_actividades_publicas %}
+{% url 'publicaciones:lista' as url_publicaciones_publicas %}
 
 {% if request.user.aprendiz %}
     {% url 'usuarios:perfil' as url_perfil %}
     {% url 'bienestar:mi_historial' as url_historial %}
     {% url 'bienestar:recibir_extracurriculares' as url_extracurriculares %}
+{% endif %}
+
+{% if request.user.personal_bienestar and not request.user.administrador %}
+    {% url 'usuarios:perfil_bienestar' as url_perfil_bienestar %}
 {% endif %}
 
 {% if request.user.administrador %}
@@ -28,7 +34,7 @@
 <nav class="sidebar-nav" aria-label="Menú del panel">
 
     {# ── Volver al sitio ── #}
-    <a href="/" class="sidebar-link sidebar-back">
+    <a href="{% url 'index' %}" class="sidebar-link sidebar-back">
         <i class="bi bi-box-arrow-left"></i>
         <span>Volver al sitio</span>
     </a>
@@ -61,10 +67,34 @@
             <i class="bi bi-stars"></i>
             <span>Horas por mérito</span>
         </a>
+
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-section-label">Explorar</div>
+
+        <a href="{{ url_actividades_publicas }}" class="sidebar-link {% if request.path == url_actividades_publicas %}active{% endif %}">
+            <i class="bi bi-calendar-event"></i>
+            <span>Actividades</span>
+        </a>
+
+        <a href="{{ url_publicaciones_publicas }}" class="sidebar-link {% if request.path == url_publicaciones_publicas %}active{% endif %}">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>Publicaciones</span>
+        </a>
     {% endif %}
 
     {# ══════════ Bienestar / Administrador ══════════ #}
     {% if request.user.personal_bienestar or request.user.administrador %}
+
+        {# ── Mi perfil (solo Bienestar, NO admin) ── #}
+        {% if request.user.personal_bienestar and not request.user.administrador %}
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-section-label">Mi cuenta</div>
+
+            <a href="{{ url_perfil_bienestar }}" class="sidebar-link {% if request.path == url_perfil_bienestar %}active{% endif %}">
+                <i class="bi bi-person-circle"></i>
+                <span>Mi perfil</span>
+            </a>
+        {% endif %}
 
         <div class="sidebar-divider"></div>
         <div class="sidebar-section-label">Gestión</div>

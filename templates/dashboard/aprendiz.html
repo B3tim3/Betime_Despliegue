@@ -38,6 +38,46 @@ Mi panel | Be Time
     {% endif %}
 </p>
 
+{# ══════════ Tarjeta de bienvenida para aprendices nuevos ══════════ #}
+{% if progreso.total == 0 and not inscripciones %}
+<div class="card border-0 shadow-sm mb-4" style="border-left: 4px solid var(--bt-verde, #2E8B3D) !important;">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-start gap-3">
+            <div class="fs-1 text-success d-none d-sm-block">
+                <i class="bi bi-emoji-smile"></i>
+            </div>
+            <div>
+                <h2 class="h5 fw-bold mb-2">
+                    <i class="bi bi-emoji-smile d-sm-none text-success"></i>
+                    ¡Bienvenido a Be Time!
+                </h2>
+                <p class="mb-2">
+                    Aquí podrás inscribirte a actividades de bienestar, sumar horas y hacer seguimiento de tu progreso.
+                    Para empezar, te recomendamos:
+                </p>
+                <div class="d-flex flex-column gap-1 mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success rounded-circle" style="width:24px;height:24px;line-height:24px;padding:0;font-size:.75rem;">1</span>
+                        <span>Completa tu <a href="{% url 'usuarios:perfil' %}" class="fw-semibold">perfil</a> con tus datos de contacto.</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success rounded-circle" style="width:24px;height:24px;line-height:24px;padding:0;font-size:.75rem;">2</span>
+                        <span>Explora las <a href="{% url 'actividades:lista' %}" class="fw-semibold">actividades disponibles</a> e inscríbete a una.</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success rounded-circle" style="width:24px;height:24px;line-height:24px;padding:0;font-size:.75rem;">3</span>
+                        <span>Asiste con tu código QR y empieza a sumar horas.</span>
+                    </div>
+                </div>
+                <a href="{% url 'actividades:lista' %}" class="btn btn-success btn-sm">
+                    <i class="bi bi-calendar-event"></i> Ver actividades disponibles
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
         <p class="text-muted mb-1">Horas de bienestar acumuladas</p>

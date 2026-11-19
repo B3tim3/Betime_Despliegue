@@ -5,10 +5,11 @@
 {{ actividad.titulo }} | Be Time
 {% endblock %}
 
-{% block content %}
-
-{# El CSS se enlaza aquí (y no en extra_css) para que funcione aunque base.html no tenga ese bloque. ?v= evita que el navegador use una copia vieja. #}
+{% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/actividad-detalle.css' %}?v=3">
+{% endblock %}
+
+{% block content %}
 
 <section class="ev">
     <div class="container">
