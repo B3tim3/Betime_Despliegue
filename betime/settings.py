@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_tables2',
     'django_filters',
+    'anymail',          # ← Envío de correo por HTTPS (Resend)
     # Apps propias
     'core',
     'usuarios',
@@ -140,8 +141,8 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"   # destino de collectstatic en Render
 
 # WhiteNoise: comprime y sirve archivos estáticos desde Gunicorn en producción.
-# CompressedManifestStaticFilesStorage genera hashes en los nombres de archivo
-# y comprime con gzip/brotli para que el navegador los descargue más rápido.
+# CompressedStaticFilesStorage comprime con gzip/brotli para que el navegador
+# los descargue más rápido.
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
@@ -170,17 +171,32 @@ MESSAGE_TAGS = {
 
 
 # ---------------------------------------------------------------------------
-# Correo (credenciales fuera del código)
+# Correo — Resend (envía por HTTPS, funciona en Render free)
+# ---------------------------------------------------------------------------
+# Render free bloquea el puerto 587 (SMTP). Resend usa HTTPS (puerto 443)
+# que sí está permitido. Se necesita:
+#   1. Crear cuenta en https://resend.com (gratis: 100 correos/día)
+#   2. Verificar el dominio o usar onboarding@resend.dev para pruebas
+#   3. Crear un API Key y ponerlo en la variable RESEND_API_KEY en Render
+#
+# En local, si no hay RESEND_API_KEY, se usa el backend de consola
+# (imprime el correo en la terminal en vez de enviarlo).
 # ---------------------------------------------------------------------------
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+_resend_key = os.getenv("RESEND_API_KEY", "")
+
+if _resend_key:
+    # Producción: envío real por Resend (HTTPS)
+    EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+    ANYMAIL = {
+        "RESEND_API_KEY": _resend_key,
+    }
+else:
+    # Local sin Resend: imprime correos en la consola (útil para desarrollo)
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Be Time <betimesena2026@gmail.com>")
-EMAIL_TIMEOUT = 10  # Si no conecta en 10 s, falla rápido en vez de trabar el sitio
+EMAIL_TIMEOUT = 10  # Seguro: si algo falla, no traba el sitio
 PASSWORD_RESET_TIMEOUT = 20 * 60  # 20 minutos
 
 
