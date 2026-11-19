@@ -144,7 +144,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"   # destino de collectstatic en Render
 # y comprime con gzip/brotli para que el navegador los descargue más rápido.
 STORAGES = {
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
